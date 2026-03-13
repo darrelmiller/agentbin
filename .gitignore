@@ -1,0 +1,23 @@
+# .NET build output
+**/bin/
+**/obj/
+
+# NuGet extracted folders (keep .nupkg files, ignore extracted)
+nupkgs/*_extracted/
+
+# Java build output
+**/target/
+test-java-sdk/
+
+# Stray test files at root
+TestA2ARaw.java
+
+# IDE / editor
+.vs/
+.vscode/
+*.user
+*.suo
+
+# OS
+Thumbs.db
+.DS_Store
