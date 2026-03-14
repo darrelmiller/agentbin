@@ -1,0 +1,536 @@
+### AgentBin A2A Test File
+### Use with VS Code REST Client extension (humao.rest-client)
+### Toggle @baseUrl between local and Azure as needed.
+
+@baseUrl = https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io
+# @baseUrl = http://localhost:5000
+
+### ═══════════════════════════════════════════════════════════════
+### HEALTH CHECK
+### ═══════════════════════════════════════════════════════════════
+
+GET {{baseUrl}}/health
+
+### ═══════════════════════════════════════════════════════════════
+### AGENT CARDS — v1.0
+### ═══════════════════════════════════════════════════════════════
+
+### Echo Agent Card (v1.0)
+GET {{baseUrl}}/echo/.well-known/agent-card.json
+A2A-Version: 1.0
+
+### Spec Agent Card (v1.0)
+GET {{baseUrl}}/spec/.well-known/agent-card.json
+A2A-Version: 1.0
+
+### Root listing (v1.0)
+GET {{baseUrl}}/.well-known/agent-card.json
+A2A-Version: 1.0
+
+### ═══════════════════════════════════════════════════════════════
+### AGENT CARDS — v0.3 (no A2A-Version header)
+### ═══════════════════════════════════════════════════════════════
+
+### Echo Agent Card (v0.3 — has protocolVersion, url at top level)
+GET {{baseUrl}}/echo/.well-known/agent-card.json
+
+### Spec Agent Card (v0.3)
+GET {{baseUrl}}/spec/.well-known/agent-card.json
+
+### ═══════════════════════════════════════════════════════════════
+### v1.0 — ECHO AGENT
+### ═══════════════════════════════════════════════════════════════
+
+### Echo — simple message (v1.0)
+POST {{baseUrl}}/echo
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "echo-v10-1",
+  "params": {
+    "message": {
+      "messageId": "msg-echo-v10-1",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "Hello from v1.0 client!" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v1.0 — SPEC AGENT: message-only
+### Returns a message response (no task created)
+### ═══════════════════════════════════════════════════════════════
+
+### Message Only (v1.0)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "msg-only-v10",
+  "params": {
+    "message": {
+      "messageId": "msg-mo-1",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "message-only hello world" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v1.0 — SPEC AGENT: task-lifecycle
+### Full task state machine: submitted → working → completed
+### Returns a task with artifacts
+### ═══════════════════════════════════════════════════════════════
+
+### Task Lifecycle (v1.0)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "task-lc-v10",
+  "params": {
+    "message": {
+      "messageId": "msg-lc-1",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "task-lifecycle process this data" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v1.0 — SPEC AGENT: task-failure
+### Task transitions to failed state with error message
+### ═══════════════════════════════════════════════════════════════
+
+### Task Failure (v1.0)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "task-fail-v10",
+  "params": {
+    "message": {
+      "messageId": "msg-fail-1",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "task-failure trigger error" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v1.0 — SPEC AGENT: task-cancel
+### Step 1: Start a cancellable task (stays in working state)
+### Step 2: Cancel it with CancelTask using the returned taskId
+### ═══════════════════════════════════════════════════════════════
+
+### Task Cancel — Step 1: Start task
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "task-cancel-start",
+  "params": {
+    "message": {
+      "messageId": "msg-cancel-1",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "task-cancel start" }]
+    }
+  }
+}
+
+### Task Cancel — Step 2: Cancel it (replace TASK_ID_HERE with id from above)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "CancelTask",
+  "id": "task-cancel-do",
+  "params": {
+    "id": "TASK_ID_HERE"
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v1.0 — SPEC AGENT: multi-turn
+### Step 1: Start conversation (returns input-required state)
+### Step 2: Continue with task reference (say "done" to complete)
+### ═══════════════════════════════════════════════════════════════
+
+### Multi-Turn — Step 1: Start
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "mt-start",
+  "params": {
+    "message": {
+      "messageId": "msg-mt-1",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "multi-turn start conversation" }]
+    }
+  }
+}
+
+### Multi-Turn — Step 2: Reply (replace TASK_ID_HERE with id from above)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "mt-reply",
+  "params": {
+    "message": {
+      "messageId": "msg-mt-2",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "here is more input" }]
+    },
+    "taskId": "TASK_ID_HERE"
+  }
+}
+
+### Multi-Turn — Step 3: Complete (replace TASK_ID_HERE)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "mt-done",
+  "params": {
+    "message": {
+      "messageId": "msg-mt-3",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "done" }]
+    },
+    "taskId": "TASK_ID_HERE"
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v1.0 — SPEC AGENT: streaming
+### SSE response with status updates and artifact chunks
+### ═══════════════════════════════════════════════════════════════
+
+### Streaming (v1.0)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendStreamingMessage",
+  "id": "stream-v10",
+  "params": {
+    "message": {
+      "messageId": "msg-stream-1",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "streaming generate output" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v1.0 — SPEC AGENT: long-running
+### Returns a working task — poll with GetTask to watch progress
+### ═══════════════════════════════════════════════════════════════
+
+### Long Running — Start (v1.0)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "long-start",
+  "params": {
+    "message": {
+      "messageId": "msg-long-1",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "long-running start process" }]
+    }
+  }
+}
+
+### Long Running — Poll (replace TASK_ID_HERE with id from above)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "GetTask",
+  "id": "long-poll",
+  "params": {
+    "id": "TASK_ID_HERE"
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v1.0 — SPEC AGENT: data-types
+### Returns mixed content: text, JSON, file (SVG), multi-part
+### ═══════════════════════════════════════════════════════════════
+
+### Data Types (v1.0)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "dt-v10",
+  "params": {
+    "message": {
+      "messageId": "msg-dt-1",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "data-types show all" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v1.0 — SPEC AGENT: help (unknown skill)
+### ═══════════════════════════════════════════════════════════════
+
+### Help / Unknown Skill (v1.0)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "SendMessage",
+  "id": "help-v10",
+  "params": {
+    "message": {
+      "messageId": "msg-help-1",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "what can you do?" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v0.3 — ECHO AGENT
+### No A2A-Version header, kebab-case method, lowercase role,
+### parts with "kind" discriminator
+### ═══════════════════════════════════════════════════════════════
+
+### Echo (v0.3)
+POST {{baseUrl}}/echo
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "id": "echo-v03-1",
+  "params": {
+    "message": {
+      "messageId": "msg-echo-v03-1",
+      "role": "user",
+      "parts": [{ "kind": "text", "text": "Hello from v0.3 client!" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v0.3 — SPEC AGENT: message-only
+### ═══════════════════════════════════════════════════════════════
+
+### Message Only (v0.3)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "id": "mo-v03",
+  "params": {
+    "message": {
+      "messageId": "msg-mo-v03",
+      "role": "user",
+      "parts": [{ "kind": "text", "text": "message-only hello from v0.3" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v0.3 — SPEC AGENT: task-lifecycle
+### Expect: kind=task, state=completed (kebab-case)
+### ═══════════════════════════════════════════════════════════════
+
+### Task Lifecycle (v0.3)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "id": "lc-v03",
+  "params": {
+    "message": {
+      "messageId": "msg-lc-v03",
+      "role": "user",
+      "parts": [{ "kind": "text", "text": "task-lifecycle process this" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v0.3 — SPEC AGENT: task-failure
+### Expect: kind=task, state=failed
+### ═══════════════════════════════════════════════════════════════
+
+### Task Failure (v0.3)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "id": "fail-v03",
+  "params": {
+    "message": {
+      "messageId": "msg-fail-v03",
+      "role": "user",
+      "parts": [{ "kind": "text", "text": "task-failure trigger error" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v0.3 — SPEC AGENT: data-types
+### Expect: artifact parts with kind=text, kind=data, kind=file
+### ═══════════════════════════════════════════════════════════════
+
+### Data Types (v0.3)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "id": "dt-v03",
+  "params": {
+    "message": {
+      "messageId": "msg-dt-v03",
+      "role": "user",
+      "parts": [{ "kind": "text", "text": "data-types show all" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v0.3 — SPEC AGENT: streaming
+### SSE with v0.3 event format (kind: status-update, artifact-update)
+### ═══════════════════════════════════════════════════════════════
+
+### Streaming (v0.3)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "message/stream",
+  "id": "stream-v03",
+  "params": {
+    "message": {
+      "messageId": "msg-stream-v03",
+      "role": "user",
+      "parts": [{ "kind": "text", "text": "streaming generate output" }]
+    }
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v0.3 — SPEC AGENT: multi-turn
+### ═══════════════════════════════════════════════════════════════
+
+### Multi-Turn Start (v0.3)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "id": "mt-v03-start",
+  "params": {
+    "message": {
+      "messageId": "msg-mt-v03-1",
+      "role": "user",
+      "parts": [{ "kind": "text", "text": "multi-turn start conversation" }]
+    }
+  }
+}
+
+### Multi-Turn Reply (v0.3 — replace TASK_ID_HERE)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "id": "mt-v03-reply",
+  "params": {
+    "message": {
+      "messageId": "msg-mt-v03-2",
+      "role": "user",
+      "parts": [{ "kind": "text", "text": "done" }]
+    },
+    "taskId": "TASK_ID_HERE"
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### v0.3 — GetTask / CancelTask
+### ═══════════════════════════════════════════════════════════════
+
+### Get Task (v0.3 — replace TASK_ID_HERE)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "tasks/get",
+  "id": "get-v03",
+  "params": {
+    "id": "TASK_ID_HERE"
+  }
+}
+
+### Cancel Task (v0.3 — replace TASK_ID_HERE)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "tasks/cancel",
+  "id": "cancel-v03",
+  "params": {
+    "id": "TASK_ID_HERE"
+  }
+}
