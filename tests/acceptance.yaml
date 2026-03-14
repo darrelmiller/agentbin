@@ -1,0 +1,1417 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# AgentBin A2A Acceptance Test Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# This file defines the expected behavior of the AgentBin A2A test agents.
+# It is the source of truth for generating client tests across languages.
+#
+# FORMAT CONVENTIONS:
+#   - `request.body` is the full JSON-RPC request body (not just params)
+#   - `expect.body` uses dot-path assertions against the JSON response
+#   - `{capture: varName}` extracts a value from the response for later steps
+#   - `{exists: true}` asserts the field is present (any value)
+#   - `{contains: "text"}` asserts a substring match
+#   - `{type: "string"|"number"|"array"|"object"}` asserts the JSON type
+#   - `{count: N}` asserts array length; `{countGte: N}` asserts >= N
+#   - `{oneOf: [values]}` asserts the value is one of the listed values
+#   - `{absent: true}` asserts the field is NOT present
+#   - A bare value means exact match
+#
+# WIRE FORMAT RULES (A2A v1.0):
+#   - JSON field names: camelCase (e.g., messageId, contextId, taskId)
+#   - Enum values: SCREAMING_SNAKE_CASE (e.g., ROLE_USER, TASK_STATE_COMPLETED)
+#   - oneof discriminator: field name presence (e.g., "task" vs "message" in result)
+#   - Default-value fields MUST be omitted (ProtoJSON rule)
+#   - SSE events are JSON-RPC wrapped: data: {"jsonrpc":"2.0","id":N,"result":{...}}
+#
+# VARIABLES:
+#   {{baseUrl}} — agent base URL (e.g., http://localhost:5000 or Azure FQDN)
+#   {{$uuid}}   — generate a fresh UUID for each use
+#   {{stepId.varName}} — reference a captured variable from a prior step
+#
+
+schema_version: "1.0"
+agents:
+  echo:
+    path: /echo
+    card: /echo/.well-known/agent-card.json
+  spec:
+    path: /spec
+    card: /spec/.well-known/agent-card.json
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AGENT CARD DISCOVERY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+scenarios:
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: agent-card-echo
+    name: Echo Agent Card Discovery
+    description: >
+      GET the echo agent card with A2A-Version header.
+      Verify it conforms to the v1.0 AgentCard schema.
+    agent: echo
+    tags: [discovery, agent-card, v1.0]
+    steps:
+      - id: get-card
+        description: Fetch the v1.0 agent card
+        request:
+          method: GET
+          path: "{{baseUrl}}/echo/.well-known/agent-card.json"
+          headers:
+            A2A-Version: "1.0"
+        expect:
+          status: 200
+          contentType: application/json
+          body:
+            name: {type: string}
+            description: {type: string}
+            version: {type: string}
+            supportedInterfaces: {type: array, countGte: 1}
+            supportedInterfaces[0].url: {type: string, contains: "/echo"}
+            supportedInterfaces[0].protocolBinding: "JSONRPC"
+            supportedInterfaces[0].protocolVersion: "1.0"
+            capabilities: {type: object}
+            skills: {type: array, countGte: 1}
+            defaultInputModes: {type: array}
+            defaultOutputModes: {type: array}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: agent-card-spec
+    name: Spec Agent Card Discovery
+    description: >
+      GET the spec agent card. Verify it advertises streaming capability
+      and all 8 skills.
+    agent: spec
+    tags: [discovery, agent-card, v1.0]
+    steps:
+      - id: get-card
+        description: Fetch the v1.0 spec agent card
+        request:
+          method: GET
+          path: "{{baseUrl}}/spec/.well-known/agent-card.json"
+          headers:
+            A2A-Version: "1.0"
+        expect:
+          status: 200
+          body:
+            name: {type: string}
+            supportedInterfaces[0].protocolVersion: "1.0"
+            capabilities.streaming: true
+            skills: {type: array, count: 8}
+            skills[0].id: {type: string}
+            skills[0].name: {type: string}
+            skills[0].description: {type: string}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ECHO AGENT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: echo-simple-message
+    name: Echo Agent — Simple Message
+    description: >
+      Send a text message to the echo agent. Expect a direct Message
+      response (not a Task) with the echoed text.
+    agent: echo
+    tags: [echo, message, v1.0]
+    steps:
+      - id: send
+        description: Send a message and receive echoed response
+        request:
+          method: POST
+          path: "{{baseUrl}}/echo"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "hello world"
+        expect:
+          status: 200
+          contentType: application/json
+          body:
+            jsonrpc: "2.0"
+            # result MUST contain "message" (not "task") — this is a message-only agent
+            result.message: {exists: true}
+            result.task: {absent: true}
+            result.message.role: ROLE_AGENT
+            result.message.messageId: {type: string}
+            result.message.parts: {type: array, count: 1}
+            result.message.parts[0].text: {type: string, contains: "hello world"}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPEC AGENT — MESSAGE-ONLY SKILL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: spec-message-only
+    name: Spec Agent — Message Only (No Task)
+    description: >
+      Send a "message-only" prefixed message. Agent MUST respond with a
+      direct Message (not a Task). This tests the simplest interaction
+      pattern where no task state machine is involved.
+    agent: spec
+    tags: [spec, message-only, message, v1.0]
+    steps:
+      - id: send
+        description: Send message-only request
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "message-only hello world"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.message: {exists: true}
+            result.task: {absent: true}
+            result.message.role: ROLE_AGENT
+            result.message.parts: {type: array, countGte: 1}
+            result.message.parts[0].text: {type: string, contains: "message-only"}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPEC AGENT — TASK LIFECYCLE SKILL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: spec-task-lifecycle
+    name: Spec Agent — Task Lifecycle (Completed)
+    description: >
+      Send a "task-lifecycle" message. Agent creates a task, transitions
+      through submitted → working → completed, and returns the final task
+      with at least one artifact. Because returnImmediately defaults to false,
+      the response blocks until the task reaches a terminal state.
+    agent: spec
+    tags: [spec, task-lifecycle, task, v1.0]
+    steps:
+      - id: send
+        description: Send task-lifecycle request (blocking — waits for completion)
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "task-lifecycle process this data"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.task: {exists: true}
+            result.message: {absent: true}
+            result.task.id: {type: string}
+            result.task.status.state: TASK_STATE_COMPLETED
+            result.task.artifacts: {type: array, countGte: 1}
+            result.task.artifacts[0].parts: {type: array, countGte: 1}
+            result.task.artifacts[0].parts[0].text: {type: string}
+        capture:
+          taskId: result.task.id
+
+      - id: get-task
+        description: Retrieve the completed task by ID to verify it persists
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: GetTask
+            id: "{{$uuid}}"
+            params:
+              id: "{{send.taskId}}"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.id: "{{send.taskId}}"
+            result.status.state: TASK_STATE_COMPLETED
+            result.artifacts: {type: array, countGte: 1}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPEC AGENT — TASK FAILURE SKILL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: spec-task-failure
+    name: Spec Agent — Task Failure
+    description: >
+      Send a "task-failure" message. Agent creates a task that transitions
+      to FAILED state with an error message in status.message.
+    agent: spec
+    tags: [spec, task-failure, task, error, v1.0]
+    steps:
+      - id: send
+        description: Send task-failure request
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "task-failure trigger error"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.task: {exists: true}
+            result.task.id: {type: string}
+            result.task.status.state: TASK_STATE_FAILED
+            result.task.status.message: {exists: true}
+            result.task.status.message.role: ROLE_AGENT
+            result.task.status.message.parts: {type: array, countGte: 1}
+            result.task.status.message.parts[0].text: {type: string, contains: "task-failure"}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPEC AGENT — TASK CANCEL SKILL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: spec-task-cancel
+    name: Spec Agent — Task Cancel
+    description: >
+      Start a cancellable task using returnImmediately:true so the agent
+      returns immediately with a WORKING task. Then cancel it with CancelTask.
+      Requires the agent to support returnImmediately (configuration field).
+    agent: spec
+    tags: [spec, task-cancel, task, cancel, v1.0]
+    preconditions:
+      - Agent supports returnImmediately (SendMessageConfiguration)
+    steps:
+      - id: start
+        description: >
+          Start the task-cancel skill with returnImmediately:true.
+          Agent should return a task in WORKING state without waiting
+          for completion.
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "task-cancel start"
+              configuration:
+                returnImmediately: true
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.task: {exists: true}
+            result.task.id: {type: string}
+            result.task.status.state: {oneOf: [TASK_STATE_SUBMITTED, TASK_STATE_WORKING]}
+        capture:
+          taskId: result.task.id
+
+      - id: cancel
+        description: Cancel the task
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: CancelTask
+            id: "{{$uuid}}"
+            params:
+              id: "{{start.taskId}}"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.id: "{{start.taskId}}"
+            result.status.state: TASK_STATE_CANCELED
+
+      - id: verify
+        description: GetTask to confirm it stays canceled
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: GetTask
+            id: "{{$uuid}}"
+            params:
+              id: "{{start.taskId}}"
+        expect:
+          status: 200
+          body:
+            result.id: "{{start.taskId}}"
+            result.status.state: TASK_STATE_CANCELED
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPEC AGENT — MULTI-TURN SKILL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: spec-multi-turn
+    name: Spec Agent — Multi-Turn Conversation
+    description: >
+      Start a multi-turn conversation. Agent returns a task in
+      INPUT_REQUIRED state. Client sends follow-up messages referencing
+      the taskId. Finally, sending "done" completes the task.
+    agent: spec
+    tags: [spec, multi-turn, task, input-required, v1.0]
+    steps:
+      - id: turn1
+        description: >
+          Start the multi-turn conversation. Agent should return a task
+          in INPUT_REQUIRED state, asking for more input.
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "multi-turn start conversation"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.task: {exists: true}
+            result.task.id: {type: string}
+            result.task.status.state: TASK_STATE_INPUT_REQUIRED
+            result.task.status.message: {exists: true}
+            result.task.status.message.role: ROLE_AGENT
+            result.task.status.message.parts[0].text: {type: string, contains: "multi-turn"}
+        capture:
+          taskId: result.task.id
+          contextId: result.task.contextId
+
+      - id: turn2
+        description: >
+          Send a follow-up message with the taskId from turn 1.
+          Agent should acknowledge and remain in INPUT_REQUIRED state.
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                taskId: "{{turn1.taskId}}"
+                contextId: "{{turn1.contextId}}"
+                parts:
+                  - text: "here is more input"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.task: {exists: true}
+            result.task.id: "{{turn1.taskId}}"
+            result.task.status.state: TASK_STATE_INPUT_REQUIRED
+
+      - id: turn3-done
+        description: >
+          Send "done" to complete the conversation. Agent should
+          transition to COMPLETED state with artifacts.
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                taskId: "{{turn1.taskId}}"
+                contextId: "{{turn1.contextId}}"
+                parts:
+                  - text: "done"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.task: {exists: true}
+            result.task.id: "{{turn1.taskId}}"
+            result.task.status.state: TASK_STATE_COMPLETED
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPEC AGENT — STREAMING SKILL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: spec-streaming
+    name: Spec Agent — Streaming (SSE)
+    description: >
+      Send a streaming request via SendStreamingMessage. Agent responds
+      with text/event-stream containing JSON-RPC wrapped SSE events:
+      status updates, artifact updates, and a final task in terminal state.
+    agent: spec
+    tags: [spec, streaming, sse, v1.0]
+    preconditions:
+      - Agent card capabilities.streaming == true
+    steps:
+      - id: stream
+        description: >
+          Send a streaming request. Response is text/event-stream with
+          multiple "data:" lines, each a JSON-RPC response containing
+          a StreamResponse payload.
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendStreamingMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "streaming generate output"
+        expect:
+          status: 200
+          contentType: text/event-stream
+          sse:
+            # SSE events are JSON-RPC wrapped:
+            #   data: {"jsonrpc":"2.0","id":"...","result":{<StreamResponse>}}
+            #
+            # StreamResponse payload is one of (field-presence discriminated):
+            #   {"task": {...}}
+            #   {"message": {...}}
+            #   {"statusUpdate": {"taskId":"...", "status":{...}, "final":bool}}
+            #   {"artifactUpdate": {"taskId":"...", "artifact":{...}, "lastChunk":bool}}
+            events:
+              - description: At least one event with a statusUpdate or task
+                result: {exists: true}
+              - description: At least one artifactUpdate event
+                result.artifactUpdate: {exists: true}
+                result.artifactUpdate.artifact.parts: {type: array, countGte: 1}
+            finalEvent:
+              description: >
+                The last event MUST contain a terminal task state.
+                This can be a "task" payload or a "statusUpdate" with final:true.
+              result.task.status.state: {oneOf: [TASK_STATE_COMPLETED, TASK_STATE_FAILED]}
+            minEventCount: 3
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPEC AGENT — LONG-RUNNING SKILL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: spec-long-running
+    name: Spec Agent — Long-Running Task with Polling
+    description: >
+      Start a long-running task with returnImmediately:true, then poll
+      with GetTask until it reaches a terminal state. This tests the
+      async task lifecycle and polling pattern.
+    agent: spec
+    tags: [spec, long-running, task, polling, v1.0]
+    preconditions:
+      - Agent supports returnImmediately (SendMessageConfiguration)
+    steps:
+      - id: start
+        description: >
+          Start long-running task with returnImmediately:true.
+          Agent returns task in non-terminal state immediately.
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "long-running start process"
+              configuration:
+                returnImmediately: true
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.task: {exists: true}
+            result.task.id: {type: string}
+            result.task.status.state: {oneOf: [TASK_STATE_SUBMITTED, TASK_STATE_WORKING]}
+        capture:
+          taskId: result.task.id
+
+      - id: poll
+        description: >
+          Poll with GetTask. Repeat until state is terminal.
+          May see WORKING with progress messages in status.message.
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: GetTask
+            id: "{{$uuid}}"
+            params:
+              id: "{{start.taskId}}"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.id: "{{start.taskId}}"
+            result.status.state: {type: string}
+        repeat:
+          until: result.status.state == TASK_STATE_COMPLETED
+          maxAttempts: 15
+          delayMs: 2000
+
+      - id: final-check
+        description: Verify the final task has artifacts from all steps
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: GetTask
+            id: "{{$uuid}}"
+            params:
+              id: "{{start.taskId}}"
+        expect:
+          status: 200
+          body:
+            result.status.state: TASK_STATE_COMPLETED
+            result.artifacts: {type: array, countGte: 1}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPEC AGENT — DATA TYPES SKILL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: spec-data-types
+    name: Spec Agent — Mixed Data Types
+    description: >
+      Send a "data-types" message. Agent returns a completed task with
+      multiple artifacts containing different Part types: text, data
+      (structured JSON), and file (binary with mediaType).
+    agent: spec
+    tags: [spec, data-types, task, parts, v1.0]
+    steps:
+      - id: send
+        description: Request all data types
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "data-types show all"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.task: {exists: true}
+            result.task.status.state: TASK_STATE_COMPLETED
+            result.task.artifacts: {type: array, countGte: 4}
+
+      - id: verify-text-artifact
+        description: >
+          At least one artifact should contain a text Part.
+          A text Part has a "text" field (string).
+        assertion:
+          source: "{{send.response}}"
+          any:
+            path: result.task.artifacts[*].parts[*]
+            match:
+              text: {type: string}
+
+      - id: verify-data-artifact
+        description: >
+          At least one artifact should contain a data Part.
+          A data Part has a "data" field (object/struct).
+        assertion:
+          source: "{{send.response}}"
+          any:
+            path: result.task.artifacts[*].parts[*]
+            match:
+              data: {type: object}
+
+      - id: verify-file-artifact
+        description: >
+          At least one artifact should contain a file Part.
+          A file Part has either "url" (string) or "raw" (base64 bytes),
+          plus "mediaType" (string).
+        assertion:
+          source: "{{send.response}}"
+          any:
+            path: result.task.artifacts[*].parts[*]
+            match:
+              mediaType: {type: string}
+              # Either "url" or "raw" must be present
+              # (this is a oneof in the proto)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPEC AGENT — HELP / UNKNOWN SKILL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: spec-help
+    name: Spec Agent — Help Response
+    description: >
+      Send an unrecognized message. Agent responds with help text
+      listing available skills. This is a message-only response.
+    agent: spec
+    tags: [spec, help, message, v1.0]
+    steps:
+      - id: send
+        description: Send unrecognized input
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "what can you do?"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.message: {exists: true}
+            result.message.role: ROLE_AGENT
+            result.message.parts[0].text: {type: string, contains: "message-only"}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ERROR HANDLING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: error-task-not-found
+    name: Error — TaskNotFoundError
+    description: >
+      GetTask with a non-existent task ID. Agent MUST return a JSON-RPC
+      error with code -32001 (TaskNotFoundError).
+    agent: spec
+    tags: [error, task-not-found, v1.0]
+    steps:
+      - id: get-missing
+        description: Request a task that does not exist
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: GetTask
+            id: "{{$uuid}}"
+            params:
+              id: "00000000-0000-0000-0000-000000000000"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            error: {exists: true}
+            error.code: -32001
+            error.message: {type: string}
+            result: {absent: true}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: error-cancel-not-found
+    name: Error — CancelTask on Non-Existent Task
+    description: >
+      CancelTask with a non-existent task ID. Agent MUST return
+      TaskNotFoundError (-32001).
+    agent: spec
+    tags: [error, cancel, task-not-found, v1.0]
+    steps:
+      - id: cancel-missing
+        description: Cancel a task that does not exist
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: CancelTask
+            id: "{{$uuid}}"
+            params:
+              id: "00000000-0000-0000-0000-000000000000"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            error: {exists: true}
+            error.code: {oneOf: [-32001, -32002]}
+            error.message: {type: string}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: error-cancel-completed-task
+    name: Error — CancelTask on Completed Task
+    description: >
+      Create a task that completes, then try to cancel it.
+      Agent MUST return TaskNotCancelableError (-32002).
+    agent: spec
+    tags: [error, cancel, not-cancelable, v1.0]
+    steps:
+      - id: create
+        description: Create a task that completes immediately
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "task-lifecycle quick test"
+        expect:
+          status: 200
+          body:
+            result.task.status.state: TASK_STATE_COMPLETED
+        capture:
+          taskId: result.task.id
+
+      - id: cancel-completed
+        description: Try to cancel the already-completed task
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: CancelTask
+            id: "{{$uuid}}"
+            params:
+              id: "{{create.taskId}}"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            error: {exists: true}
+            error.code: -32002
+            error.message: {type: string}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: error-method-not-found
+    name: Error — MethodNotFoundError
+    description: >
+      Send a request with an unknown JSON-RPC method name.
+      Agent MUST return standard JSON-RPC MethodNotFound error (-32601).
+    agent: spec
+    tags: [error, method-not-found, v1.0]
+    steps:
+      - id: bad-method
+        description: Send unknown method
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: DoSomethingUnsupported
+            id: "{{$uuid}}"
+            params: {}
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            error: {exists: true}
+            error.code: -32601
+            error.message: {type: string}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: error-invalid-json
+    name: Error — Invalid JSON
+    description: >
+      Send malformed JSON. Agent MUST return JSONParseError (-32700).
+    agent: spec
+    tags: [error, parse-error, v1.0]
+    steps:
+      - id: bad-json
+        description: Send unparseable body
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          rawBody: "{this is not valid json"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            error: {exists: true}
+            error.code: -32700
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# GET TASK — HISTORY LENGTH
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: get-task-history-length
+    name: GetTask — History Length Control
+    description: >
+      Create a task, then retrieve it with different historyLength values.
+      historyLength=0 should omit history. historyLength=N should return
+      at most N messages.
+    agent: spec
+    tags: [get-task, history, v1.0]
+    steps:
+      - id: create
+        description: Create a completed task
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "task-lifecycle for history test"
+        capture:
+          taskId: result.task.id
+
+      - id: get-no-history
+        description: GetTask with historyLength=0 — history should be absent or empty
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: GetTask
+            id: "{{$uuid}}"
+            params:
+              id: "{{create.taskId}}"
+              historyLength: 0
+        expect:
+          status: 200
+          body:
+            result.id: "{{create.taskId}}"
+            # history should be absent or empty array
+            result.history: {absent: true}  # or {count: 0}
+
+      - id: get-with-history
+        description: GetTask with historyLength unset — server returns default history
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: GetTask
+            id: "{{$uuid}}"
+            params:
+              id: "{{create.taskId}}"
+        expect:
+          status: 200
+          body:
+            result.id: "{{create.taskId}}"
+            result.status.state: TASK_STATE_COMPLETED
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# v0.3 BACKWARD COMPATIBILITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: v03-agent-card
+    name: v0.3 — Agent Card Format
+    description: >
+      GET agent card WITHOUT A2A-Version header. Agent MUST return v0.3
+      format: protocolVersion at top level, url at top level,
+      capabilities.supportsStreaming instead of capabilities.streaming.
+    agent: echo
+    tags: [v0.3, discovery, agent-card]
+    steps:
+      - id: get-card
+        description: Fetch agent card with no A2A-Version header
+        request:
+          method: GET
+          path: "{{baseUrl}}/echo/.well-known/agent-card.json"
+          # NOTE: No A2A-Version header — this signals a v0.3 client
+        expect:
+          status: 200
+          body:
+            name: {type: string}
+            url: {type: string, contains: "/echo"}
+            protocolVersion: "0.3.0"
+            capabilities.supportsStreaming: {type: boolean}
+            # v0.3 does NOT have supportedInterfaces[]
+            supportedInterfaces: {absent: true}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: v03-echo-message
+    name: v0.3 — Echo Message
+    description: >
+      Send a v0.3 format message (kebab-case method, lowercase role,
+      kind-discriminated parts). Agent translates to v1.0 internally and
+      returns v0.3 format response.
+    agent: echo
+    tags: [v0.3, echo, message]
+    steps:
+      - id: send
+        description: Send v0.3 message/send
+        request:
+          method: POST
+          path: "{{baseUrl}}/echo"
+          headers:
+            Content-Type: application/json
+            # NOTE: No A2A-Version header
+          body:
+            jsonrpc: "2.0"
+            method: "message/send"
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: user
+                parts:
+                  - kind: text
+                    text: "hello from v0.3"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            # v0.3 response: result has "kind" discriminator at top level
+            result.kind: message
+            result.role: agent
+            result.parts: {type: array, countGte: 1}
+            result.parts[0].kind: text
+            result.parts[0].text: {type: string, contains: "hello from v0.3"}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: v03-task-lifecycle
+    name: v0.3 — Task Lifecycle
+    description: >
+      Send a v0.3 task-lifecycle request. Response should be a v0.3
+      task with kebab-case state values and kind discriminators.
+    agent: spec
+    tags: [v0.3, task-lifecycle, task]
+    steps:
+      - id: send
+        description: Send v0.3 message/send for task-lifecycle
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+          body:
+            jsonrpc: "2.0"
+            method: "message/send"
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: user
+                parts:
+                  - kind: text
+                    text: "task-lifecycle process this"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.kind: task
+            result.status.state: completed
+            result.artifacts: {type: array, countGte: 1}
+            result.artifacts[0].parts[0].kind: text
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: v03-task-failure
+    name: v0.3 — Task Failure
+    description: >
+      v0.3 task-failure. State should be "failed" (kebab-case).
+    agent: spec
+    tags: [v0.3, task-failure, task]
+    steps:
+      - id: send
+        description: Send v0.3 task-failure request
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+          body:
+            jsonrpc: "2.0"
+            method: "message/send"
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: user
+                parts:
+                  - kind: text
+                    text: "task-failure trigger error"
+        expect:
+          status: 200
+          body:
+            result.kind: task
+            result.status.state: failed
+            result.status.message.role: agent
+            result.status.message.parts[0].kind: text
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: v03-data-types
+    name: v0.3 — Data Types
+    description: >
+      v0.3 data-types. Parts should use kind discriminators:
+      kind=text, kind=data, kind=file (with file.uri or file.bytes).
+    agent: spec
+    tags: [v0.3, data-types, parts]
+    steps:
+      - id: send
+        description: Send v0.3 data-types request
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+          body:
+            jsonrpc: "2.0"
+            method: "message/send"
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: user
+                parts:
+                  - kind: text
+                    text: "data-types show all"
+        expect:
+          status: 200
+          body:
+            result.kind: task
+            result.status.state: completed
+            result.artifacts: {type: array, countGte: 4}
+        # Verify kind discriminators on parts
+        assertions:
+          - description: At least one text part with kind=text
+            any:
+              path: result.artifacts[*].parts[*]
+              match:
+                kind: text
+                text: {type: string}
+          - description: At least one data part with kind=data
+            any:
+              path: result.artifacts[*].parts[*]
+              match:
+                kind: data
+                data: {type: object}
+          - description: At least one file part with kind=file
+            any:
+              path: result.artifacts[*].parts[*]
+              match:
+                kind: file
+                file: {type: object}
+                file.mimeType: {type: string}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: v03-get-task
+    name: v0.3 — GetTask (tasks/get)
+    description: >
+      Create a task via v0.3, then retrieve it with tasks/get.
+    agent: spec
+    tags: [v0.3, get-task]
+    steps:
+      - id: create
+        description: Create a task via v0.3
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+          body:
+            jsonrpc: "2.0"
+            method: "message/send"
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: user
+                parts:
+                  - kind: text
+                    text: "task-lifecycle test"
+        capture:
+          taskId: result.id
+
+      - id: get
+        description: Retrieve the task with v0.3 tasks/get
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+          body:
+            jsonrpc: "2.0"
+            method: "tasks/get"
+            id: "{{$uuid}}"
+            params:
+              id: "{{create.taskId}}"
+        expect:
+          status: 200
+          body:
+            result.kind: task
+            result.id: "{{create.taskId}}"
+            result.status.state: completed
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# WIRE FORMAT COMPLIANCE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: wire-format-camelcase
+    name: Wire Format — camelCase Field Names
+    description: >
+      Verify all response field names use camelCase per the A2A v1.0 spec.
+      No snake_case fields should appear in responses.
+    agent: spec
+    tags: [wire-format, v1.0]
+    steps:
+      - id: send
+        description: Send a task-lifecycle request and check field casing
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "task-lifecycle verify wire format"
+        expect:
+          status: 200
+          body:
+            # These camelCase fields MUST be present (not snake_case)
+            result.task.id: {type: string}
+            result.task.status: {exists: true}
+            result.task.artifacts: {type: array}
+          wireFormat:
+            # The raw JSON MUST NOT contain snake_case versions of these fields
+            absent_keys:
+              - context_id
+              - message_id
+              - task_id
+              - artifact_id
+              - status_update
+              - artifact_update
+              - protocol_version
+              - media_type
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: wire-format-enum-values
+    name: Wire Format — Enum Values
+    description: >
+      Verify enum values use SCREAMING_SNAKE_CASE with proper prefixes
+      per ProtoJSON spec (ROLE_USER, TASK_STATE_COMPLETED, etc.).
+    agent: spec
+    tags: [wire-format, enums, v1.0]
+    steps:
+      - id: check-role
+        description: Verify role enum format
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "message-only verify enums"
+        expect:
+          status: 200
+          body:
+            # Role MUST be SCREAMING_SNAKE with ROLE_ prefix
+            result.message.role: ROLE_AGENT
+
+      - id: check-state
+        description: Verify task state enum format
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "task-lifecycle verify state enum"
+        expect:
+          status: 200
+          body:
+            # State MUST be SCREAMING_SNAKE with TASK_STATE_ prefix
+            result.task.status.state: TASK_STATE_COMPLETED
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: wire-format-default-values-omitted
+    name: Wire Format — Default Values Omitted
+    description: >
+      Per ProtoJSON rules, fields with default/zero values MUST be omitted.
+      For example, an empty taskId should not appear as "taskId":"".
+    agent: echo
+    tags: [wire-format, protojson, v1.0]
+    steps:
+      - id: send
+        description: Send a simple message and check for absent default fields
+        request:
+          method: POST
+          path: "{{baseUrl}}/echo"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "default value test"
+        expect:
+          status: 200
+          wireFormat:
+            # Fields with default values (empty string, false, 0) MUST be absent
+            absent_keys_with_default_values:
+              - description: taskId should not appear as empty string in message
+                path: result.message.taskId
+                defaultValue: ""
+              - description: contextId should not appear as empty string if not set
+                path: result.message.contextId
+                defaultValue: ""
