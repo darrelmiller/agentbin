@@ -2,6 +2,8 @@
 
 AgentBin is a publicly accessible, unauthenticated service that hosts A2A v1.0 agents designed as a **test bed for A2A client interactions**. Client implementers can validate their A2A integrations against live endpoints.
 
+📊 **[Compatibility Dashboard](https://darrelmiller.github.io/agentbin/)** — Live cross-language SDK test results
+
 ## Agents
 
 ### Echo Agent (`/echo`)
