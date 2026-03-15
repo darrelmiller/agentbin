@@ -13,6 +13,14 @@ public sealed class SpecAgent : IAgentHandler
 {
     public async Task ExecuteAsync(RequestContext context, AgentEventQueue eventQueue, CancellationToken cancellationToken)
     {
+        // Continuations (follow-up messages with taskId) go straight to the
+        // handler that owns the task — the user text won't have a skill prefix.
+        if (context.IsContinuation)
+        {
+            await HandleMultiTurn(context, eventQueue, cancellationToken);
+            return;
+        }
+
         var text = context.UserText?.Trim().ToLowerInvariant() ?? "";
 
         // Route to the appropriate skill based on message text
@@ -179,7 +187,8 @@ public sealed class SpecAgent : IAgentHandler
             return;
         }
 
-        // Continuation turn
+        // Continuation turn — re-emit the task to start a new response, then transition
+        await updater.SubmitAsync(ct);
         var userText = context.UserText?.Trim().ToLowerInvariant() ?? "";
         if (userText.Contains("done"))
         {
@@ -199,7 +208,8 @@ public sealed class SpecAgent : IAgentHandler
         }
         else
         {
-            // Not done yet — ask for more input
+            // Not done yet — acknowledge and ask for more input
+            await updater.StartWorkAsync(cancellationToken: ct);
             await updater.AddArtifactAsync(
                 [Part.FromText($"[multi-turn] Continuation received: {context.UserText}")],
                 name: $"turn-{DateTime.UtcNow.Ticks}",

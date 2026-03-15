@@ -5,12 +5,6 @@
 @baseUrl = https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io
 # @baseUrl = http://localhost:5000
 
-# Derived variables (resolved from named request responses)
-@taskCancelTaskIdV10 = {{taskCancelStartV10.response.body.$.result.id}}
-@multiTurnTaskIdV10 = {{multiTurnStartV10.response.body.$.result.id}}
-@longRunningTaskIdV10 = {{longRunningStartV10.response.body.$.result.id}}
-@multiTurnTaskIdV03 = {{multiTurnStartV03.response.body.$.result.id}}
-
 ### ═══════════════════════════════════════════════════════════════
 ### HEALTH CHECK
 ### ═══════════════════════════════════════════════════════════════
@@ -18,19 +12,28 @@
 GET {{baseUrl}}/health
 
 ### ═══════════════════════════════════════════════════════════════
-### AGENT CARDS — v1.0
+### AGENT CARDS — JSON-RPC (v1.0)
 ### ═══════════════════════════════════════════════════════════════
 
-// These are "intentional" violations of the .well-known specification in the interim of getting a proper solution to AI Card discovery with AI Catalog
-
-### Echo Agent Card (v1.0)
+### Echo Agent Card (JSON-RPC well-known)
 GET {{baseUrl}}/echo/.well-known/agent-card.json
 A2A-Version: 1.0
 
-### Spec Agent Card (v1.0)
+### Spec Agent Card (JSON-RPC well-known)
 GET {{baseUrl}}/spec/.well-known/agent-card.json
 A2A-Version: 1.0
 
+### ═══════════════════════════════════════════════════════════════
+### AGENT CARDS — REST binding
+### ═══════════════════════════════════════════════════════════════
+
+### Echo Agent Card (REST)
+GET {{baseUrl}}/echo/v1/card
+A2A-Version: 1.0
+
+### Spec Agent Card (REST)
+GET {{baseUrl}}/spec/v1/card
+A2A-Version: 1.0
 
 ### ═══════════════════════════════════════════════════════════════
 ### AGENT CARDS — v0.3 (no A2A-Version header)
@@ -43,10 +46,10 @@ GET {{baseUrl}}/echo/.well-known/agent-card.json
 GET {{baseUrl}}/spec/.well-known/agent-card.json
 
 ### ═══════════════════════════════════════════════════════════════
-### v1.0 — ECHO AGENT
+### JSON-RPC — ECHO AGENT
 ### ═══════════════════════════════════════════════════════════════
 
-### Echo — simple message (v1.0)
+### Echo — simple message (JSON-RPC)
 POST {{baseUrl}}/echo
 Content-Type: application/json
 A2A-Version: 1.0
@@ -65,11 +68,28 @@ A2A-Version: 1.0
 }
 
 ### ═══════════════════════════════════════════════════════════════
-### v1.0 — SPEC AGENT: message-only
+### REST — ECHO AGENT
+### ═══════════════════════════════════════════════════════════════
+
+### Echo — simple message (REST)
+POST {{baseUrl}}/echo/v1/message:send
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "message": {
+    "messageId": "msg-echo-rest-1",
+    "role": "ROLE_USER",
+    "parts": [{ "text": "Hello from REST client!" }]
+  }
+}
+
+### ═══════════════════════════════════════════════════════════════
+### JSON-RPC — SPEC AGENT: message-only
 ### Returns a message response (no task created)
 ### ═══════════════════════════════════════════════════════════════
 
-### Message Only (v1.0)
+### Message Only (JSON-RPC)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -87,13 +107,27 @@ A2A-Version: 1.0
   }
 }
 
+### Message Only (REST)
+POST {{baseUrl}}/spec/v1/message:send
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "message": {
+    "messageId": "msg-mo-rest-1",
+    "role": "ROLE_USER",
+    "parts": [{ "text": "message-only hello world" }]
+  }
+}
+
 ### ═══════════════════════════════════════════════════════════════
-### v1.0 — SPEC AGENT: task-lifecycle
+### JSON-RPC — SPEC AGENT: task-lifecycle
 ### Full task state machine: submitted → working → completed
 ### Returns a task with artifacts
 ### ═══════════════════════════════════════════════════════════════
 
-### Task Lifecycle (v1.0)
+### Task Lifecycle (JSON-RPC)
+# @name taskLifecycleV10
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -111,12 +145,49 @@ A2A-Version: 1.0
   }
 }
 
+### Task Lifecycle (REST)
+POST {{baseUrl}}/spec/v1/message:send
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "message": {
+    "messageId": "msg-lc-rest-1",
+    "role": "ROLE_USER",
+    "parts": [{ "text": "task-lifecycle process this data" }]
+  }
+}
+
 ### ═══════════════════════════════════════════════════════════════
-### v1.0 — SPEC AGENT: task-failure
+### GetTask — retrieve previously created task
+### ═══════════════════════════════════════════════════════════════
+
+@taskLifecycleTaskId = {{taskLifecycleV10.response.body.$.result.task.id}}
+
+### GetTask (JSON-RPC)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "GetTask",
+  "id": "get-task-1",
+  "params": {
+    "id": "{{taskLifecycleTaskId}}"
+  }
+}
+
+### GetTask (REST)
+GET {{baseUrl}}/spec/v1/tasks/{{taskLifecycleTaskId}}
+A2A-Version: 1.0
+
+### ═══════════════════════════════════════════════════════════════
+### JSON-RPC — SPEC AGENT: task-failure
 ### Task transitions to failed state with error message
 ### ═══════════════════════════════════════════════════════════════
 
-### Task Failure (v1.0)
+### Task Failure (JSON-RPC)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -134,53 +205,56 @@ A2A-Version: 1.0
   }
 }
 
-### ═══════════════════════════════════════════════════════════════
-### v1.0 — SPEC AGENT: task-cancel
-### Step 1: Start a cancellable task (stays in working state)
-### Step 2: Cancel it with CancelTask using the returned taskId
-### ═══════════════════════════════════════════════════════════════
-
-### Task Cancel — Step 1: Start task
-# @name taskCancelStartV10
-POST {{baseUrl}}/spec
+### Task Failure (REST)
+POST {{baseUrl}}/spec/v1/message:send
 Content-Type: application/json
 A2A-Version: 1.0
 
 {
-  "jsonrpc": "2.0",
-  "method": "SendMessage",
-  "id": "task-cancel-start",
-  "params": {
-    "message": {
-      "messageId": "msg-cancel-1",
-      "role": "ROLE_USER",
-      "parts": [{ "text": "task-cancel start" }],
-      "returnImmediately": true
-    }
-  }
-}
-
-### Task Cancel — Step 2: Cancel it (uses task id from step 1)
-POST {{baseUrl}}/spec
-Content-Type: application/json
-A2A-Version: 1.0
-
-{
-  "jsonrpc": "2.0",
-  "method": "CancelTask",
-  "id": "task-cancel-do",
-  "params": {
-    "id": "{{taskCancelTaskIdV10}}"
+  "message": {
+    "messageId": "msg-fail-rest-1",
+    "role": "ROLE_USER",
+    "parts": [{ "text": "task-failure trigger error" }]
   }
 }
 
 ### ═══════════════════════════════════════════════════════════════
-### v1.0 — SPEC AGENT: multi-turn
-### Step 1: Start conversation (returns input-required state)
-### Step 2: Continue with task reference (say "done" to complete)
+### SPEC AGENT: task-cancel
+### ⚠ BLOCKED: .NET SDK doesn't support returnImmediately.
+### The server completes tasks synchronously, so there's never a
+### task in WORKING state for the client to cancel.
+### task-cancel skill hangs until timeout waiting for cancellation.
 ### ═══════════════════════════════════════════════════════════════
 
-### Multi-Turn — Step 1: Start
+### Task Cancel — Start task (JSON-RPC)
+### ⚠ This request will HANG — server waits for cancel that can't come
+# POST {{baseUrl}}/spec
+# Content-Type: application/json
+# A2A-Version: 1.0
+#
+# {
+#   "jsonrpc": "2.0",
+#   "method": "SendMessage",
+#   "id": "task-cancel-start",
+#   "params": {
+#     "message": {
+#       "messageId": "msg-cancel-1",
+#       "role": "ROLE_USER",
+#       "parts": [{ "text": "task-cancel start" }]
+#     },
+#     "configuration": { "returnImmediately": true }
+#   }
+# }
+
+### ═══════════════════════════════════════════════════════════════
+### SPEC AGENT: multi-turn
+### Step 1: Start → returns INPUT_REQUIRED
+### Step 2: Follow-up with taskId INSIDE message → more input
+### Step 3: Say "done" with taskId → COMPLETED
+### NOTE: taskId goes inside message object, not at params level
+### ═══════════════════════════════════════════════════════════════
+
+### Multi-Turn — Step 1: Start (JSON-RPC)
 # @name multiTurnStartV10
 POST {{baseUrl}}/spec
 Content-Type: application/json
@@ -199,7 +273,9 @@ A2A-Version: 1.0
   }
 }
 
-### Multi-Turn — Step 2: Reply (uses task id from step 1)
+@multiTurnTaskIdV10 = {{multiTurnStartV10.response.body.$.result.task.id}}
+
+### Multi-Turn — Step 2: Follow-up (taskId inside message)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -212,13 +288,13 @@ A2A-Version: 1.0
     "message": {
       "messageId": "msg-mt-2",
       "role": "ROLE_USER",
-      "parts": [{ "text": "here is more input" }]
-    },
-    "taskId": "{{multiTurnTaskIdV10}}"
+      "parts": [{ "text": "here is more input" }],
+      "taskId": "{{multiTurnTaskIdV10}}"
+    }
   }
 }
 
-### Multi-Turn — Step 3: Complete (uses task id from step 1)
+### Multi-Turn — Step 3: Complete (say "done")
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -231,18 +307,62 @@ A2A-Version: 1.0
     "message": {
       "messageId": "msg-mt-3",
       "role": "ROLE_USER",
-      "parts": [{ "text": "done" }]
-    },
-    "taskId": "{{multiTurnTaskIdV10}}"
+      "parts": [{ "text": "done" }],
+      "taskId": "{{multiTurnTaskIdV10}}"
+    }
+  }
+}
+
+### Multi-Turn — Step 1: Start (REST)
+# @name multiTurnStartRest
+POST {{baseUrl}}/spec/v1/message:send
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "message": {
+    "messageId": "msg-mt-rest-1",
+    "role": "ROLE_USER",
+    "parts": [{ "text": "multi-turn start conversation" }]
+  }
+}
+
+@multiTurnRestTaskId = {{multiTurnStartRest.response.body.$.task.id}}
+
+### Multi-Turn — Step 2: Follow-up (REST)
+POST {{baseUrl}}/spec/v1/message:send
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "message": {
+    "messageId": "msg-mt-rest-2",
+    "role": "ROLE_USER",
+    "parts": [{ "text": "here is REST input" }],
+    "taskId": "{{multiTurnRestTaskId}}"
+  }
+}
+
+### Multi-Turn — Step 3: Complete (REST)
+POST {{baseUrl}}/spec/v1/message:send
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "message": {
+    "messageId": "msg-mt-rest-3",
+    "role": "ROLE_USER",
+    "parts": [{ "text": "done" }],
+    "taskId": "{{multiTurnRestTaskId}}"
   }
 }
 
 ### ═══════════════════════════════════════════════════════════════
-### v1.0 — SPEC AGENT: streaming
+### SPEC AGENT: streaming
 ### SSE response with status updates and artifact chunks
 ### ═══════════════════════════════════════════════════════════════
 
-### Streaming (v1.0)
+### Streaming (JSON-RPC)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -260,13 +380,28 @@ A2A-Version: 1.0
   }
 }
 
+### Streaming (REST)
+POST {{baseUrl}}/spec/v1/message:stream
+Content-Type: application/json
+A2A-Version: 1.0
+Accept: text/event-stream
+
+{
+  "message": {
+    "messageId": "msg-stream-rest-1",
+    "role": "ROLE_USER",
+    "parts": [{ "text": "streaming generate output" }]
+  }
+}
+
 ### ═══════════════════════════════════════════════════════════════
-### v1.0 — SPEC AGENT: long-running
-### Returns a working task — poll with GetTask to watch progress
+### SPEC AGENT: long-running
+### ⚠ LIMITATION: Returns completed task synchronously because
+### .NET SDK doesn't support returnImmediately. Ideally this
+### would return WORKING and the client would poll with GetTask.
 ### ═══════════════════════════════════════════════════════════════
 
-### Long Running — Start (v1.0)
-# @name longRunningStartV10
+### Long Running (JSON-RPC) — completes synchronously (~5s)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -284,26 +419,12 @@ A2A-Version: 1.0
   }
 }
 
-### Long Running — Poll (uses task id from start request)
-POST {{baseUrl}}/spec
-Content-Type: application/json
-A2A-Version: 1.0
-
-{
-  "jsonrpc": "2.0",
-  "method": "GetTask",
-  "id": "long-poll",
-  "params": {
-    "id": "{{longRunningTaskIdV10}}"
-  }
-}
-
 ### ═══════════════════════════════════════════════════════════════
-### v1.0 — SPEC AGENT: data-types
+### SPEC AGENT: data-types
 ### Returns mixed content: text, JSON, file (SVG), multi-part
 ### ═══════════════════════════════════════════════════════════════
 
-### Data Types (v1.0)
+### Data Types (JSON-RPC)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -321,11 +442,24 @@ A2A-Version: 1.0
   }
 }
 
+### Data Types (REST)
+POST {{baseUrl}}/spec/v1/message:send
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "message": {
+    "messageId": "msg-dt-rest-1",
+    "role": "ROLE_USER",
+    "parts": [{ "text": "data-types show all" }]
+  }
+}
+
 ### ═══════════════════════════════════════════════════════════════
-### v1.0 — SPEC AGENT: help (unknown skill)
+### SPEC AGENT: help (unknown skill)
 ### ═══════════════════════════════════════════════════════════════
 
-### Help / Unknown Skill (v1.0)
+### Help / Unknown Skill (JSON-RPC)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -342,6 +476,104 @@ A2A-Version: 1.0
     }
   }
 }
+
+### ═══════════════════════════════════════════════════════════════
+### ListTasks
+### ═══════════════════════════════════════════════════════════════
+
+### ListTasks — all tasks (JSON-RPC)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "ListTasks",
+  "id": "list-all",
+  "params": {}
+}
+
+### ListTasks — all tasks (REST)
+GET {{baseUrl}}/spec/v1/tasks
+A2A-Version: 1.0
+
+### ListTasks — filtered by contextId (REST)
+GET {{baseUrl}}/spec/v1/tasks?contextId={{multiTurnStartRest.response.body.$.task.contextId}}
+A2A-Version: 1.0
+
+### ═══════════════════════════════════════════════════════════════
+### ERROR HANDLING
+### ═══════════════════════════════════════════════════════════════
+
+### GetTask — not found (JSON-RPC)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "GetTask",
+  "id": "get-missing",
+  "params": {
+    "id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+
+### GetTask — not found (REST → 404)
+GET {{baseUrl}}/spec/v1/tasks/00000000-0000-0000-0000-000000000000
+A2A-Version: 1.0
+
+### CancelTask — not found (JSON-RPC)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "CancelTask",
+  "id": "cancel-missing",
+  "params": {
+    "id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+
+### CancelTask — completed task (JSON-RPC, should error)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "CancelTask",
+  "id": "cancel-completed",
+  "params": {
+    "id": "{{taskLifecycleTaskId}}"
+  }
+}
+
+### CancelTask — not found (REST → 404)
+POST {{baseUrl}}/spec/v1/tasks/00000000-0000-0000-0000-000000000000:cancel
+Content-Type: application/json
+A2A-Version: 1.0
+
+### Unknown method (JSON-RPC → -32601)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+{
+  "jsonrpc": "2.0",
+  "method": "DoSomethingFake",
+  "id": "fake-1",
+  "params": {}
+}
+
+### Invalid JSON (JSON-RPC → should be -32700 but returns -32603)
+POST {{baseUrl}}/spec
+Content-Type: application/json
+A2A-Version: 1.0
+
+not valid json at all
 
 ### ═══════════════════════════════════════════════════════════════
 ### v0.3 — ECHO AGENT
@@ -367,7 +599,7 @@ Content-Type: application/json
 }
 
 ### ═══════════════════════════════════════════════════════════════
-### v0.3 — SPEC AGENT: message-only
+### v0.3 — SPEC AGENT
 ### ═══════════════════════════════════════════════════════════════
 
 ### Message Only (v0.3)
@@ -387,11 +619,6 @@ Content-Type: application/json
   }
 }
 
-### ═══════════════════════════════════════════════════════════════
-### v0.3 — SPEC AGENT: task-lifecycle
-### Expect: kind=task, state=completed (kebab-case)
-### ═══════════════════════════════════════════════════════════════
-
 ### Task Lifecycle (v0.3)
 POST {{baseUrl}}/spec
 Content-Type: application/json
@@ -408,11 +635,6 @@ Content-Type: application/json
     }
   }
 }
-
-### ═══════════════════════════════════════════════════════════════
-### v0.3 — SPEC AGENT: task-failure
-### Expect: kind=task, state=failed
-### ═══════════════════════════════════════════════════════════════
 
 ### Task Failure (v0.3)
 POST {{baseUrl}}/spec
@@ -431,11 +653,6 @@ Content-Type: application/json
   }
 }
 
-### ═══════════════════════════════════════════════════════════════
-### v0.3 — SPEC AGENT: data-types
-### Expect: artifact parts with kind=text, kind=data, kind=file
-### ═══════════════════════════════════════════════════════════════
-
 ### Data Types (v0.3)
 POST {{baseUrl}}/spec
 Content-Type: application/json
@@ -453,11 +670,6 @@ Content-Type: application/json
   }
 }
 
-### ═══════════════════════════════════════════════════════════════
-### v0.3 — SPEC AGENT: streaming
-### SSE with v0.3 event format (kind: status-update, artifact-update)
-### ═══════════════════════════════════════════════════════════════
-
 ### Streaming (v0.3)
 POST {{baseUrl}}/spec
 Content-Type: application/json
@@ -472,75 +684,5 @@ Content-Type: application/json
       "role": "user",
       "parts": [{ "kind": "text", "text": "streaming generate output" }]
     }
-  }
-}
-
-### ═══════════════════════════════════════════════════════════════
-### v0.3 — SPEC AGENT: multi-turn
-### ═══════════════════════════════════════════════════════════════
-
-### Multi-Turn Start (v0.3)
-# @name multiTurnStartV03
-POST {{baseUrl}}/spec
-Content-Type: application/json
-
-{
-  "jsonrpc": "2.0",
-  "method": "message/send",
-  "id": "mt-v03-start",
-  "params": {
-    "message": {
-      "messageId": "msg-mt-v03-1",
-      "role": "user",
-      "parts": [{ "kind": "text", "text": "multi-turn start conversation" }]
-    }
-  }
-}
-
-### Multi-Turn Reply (v0.3 — uses task id from Multi-Turn Start)
-POST {{baseUrl}}/spec
-Content-Type: application/json
-
-{
-  "jsonrpc": "2.0",
-  "method": "message/send",
-  "id": "mt-v03-reply",
-  "params": {
-    "message": {
-      "messageId": "msg-mt-v03-2",
-      "role": "user",
-      "parts": [{ "kind": "text", "text": "done" }]
-    },
-    "taskId": "{{multiTurnTaskIdV03}}"
-  }
-}
-
-### ═══════════════════════════════════════════════════════════════
-### v0.3 — GetTask / CancelTask
-### ═══════════════════════════════════════════════════════════════
-
-### Get Task (v0.3 — uses task id from Multi-Turn Start)
-POST {{baseUrl}}/spec
-Content-Type: application/json
-
-{
-  "jsonrpc": "2.0",
-  "method": "tasks/get",
-  "id": "get-v03",
-  "params": {
-    "id": "{{multiTurnTaskIdV03}}"
-  }
-}
-
-### Cancel Task (v0.3 — uses task id from Multi-Turn Start)
-POST {{baseUrl}}/spec
-Content-Type: application/json
-
-{
-  "jsonrpc": "2.0",
-  "method": "tasks/cancel",
-  "id": "cancel-v03",
-  "params": {
-    "id": "{{multiTurnTaskIdV03}}"
   }
 }
