@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentBin A2A Compatibility Dashboard</title>
+<style>
+  :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+         background: var(--bg); color: var(--text); padding: 2rem; }
+  h1 { font-size: 1.6rem; margin-bottom: 0.3rem; }
+  .subtitle { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem; }
+  .summary { display: flex; gap: 2rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+                   padding: 1rem 1.5rem; min-width: 150px; }
+  .summary-card .label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; }
+  .summary-card .value { font-size: 1.8rem; font-weight: 700; }
+  .bar { height: 6px; border-radius: 3px; background: #f44336; margin-top: 0.5rem; overflow: hidden; }
+  .bar-fill { height: 100%; background: #4caf50; border-radius: 3px; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px;
+           overflow: hidden; border: 1px solid var(--border); }
+  th { background: #21262d; padding: 12px 16px; text-align: center; font-size: 0.85rem;
+       border-bottom: 2px solid var(--border); vertical-align: top; }
+  th:first-child { text-align: left; }
+  td { padding: 8px 16px; border-bottom: 1px solid var(--border); text-align: center;
+       font-size: 1.2rem; vertical-align: middle; }
+  td:first-child { text-align: left; font-size: 0.85rem; }
+  td code { color: var(--muted); font-size: 0.75rem; }
+  .cat-row td { background: #21262d; font-weight: 600; font-size: 0.8rem; text-transform: uppercase;
+                 color: var(--muted); letter-spacing: 0.05em; padding: 6px 16px; }
+  .pass { cursor: help; }
+  .fail { cursor: help; }
+  .skip { color: var(--muted); font-size: 0.8rem; }
+  tr:hover td:not(.cat-row td) { background: rgba(255,255,255,0.03); }
+  .footer { color: var(--muted); font-size: 0.75rem; margin-top: 1rem; }
+  small { color: var(--muted); }
+</style>
+</head>
+<body>
+<h1>🔌 AgentBin A2A Compatibility Dashboard</h1>
+<p class="subtitle">Generated 2026-03-15 13:48 UTC • Target: <code>http://localhost:5000</code></p>
+
+<div class="summary">
+  <div class="summary-card">
+    <div class="label">Total Tests</div>
+    <div class="value">112</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Passing</div>
+    <div class="value" style="color:#4caf50">104</div>
+    <div class="bar"><div class="bar-fill" style="width:93%"></div></div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Failing</div>
+    <div class="value" style="color:#f44336">8</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Clients</div>
+    <div class="value">4</div>
+  </div>
+</div>
+
+<table>
+<thead><tr><th>Test</th><th>&#9726; .NET<br><small>A2A 1.0.0-alpha</small><br><small>Protocol v1.0</small><br><span style="color:#f44336;font-weight:bold">26/28</span></th><th>&#9671; Go<br><small>a2a-go</small><br><small>Protocol v1.0</small><br><span style="color:#f44336;font-weight:bold">26/28</span></th><th>&#9673; Python<br><small>a2a-sdk 0.3.25</small><br><small>Protocol v0.3</small><br><span style="color:#f44336;font-weight:bold">26/28</span></th><th>&#9672; Java<br><small>java.net.http (raw)</small><br><small>Protocol v1.0</small><br><span style="color:#f44336;font-weight:bold">26/28</span></th></tr></thead>
+<tbody>
+<tr class="binding-row"><td colspan="5">&#9656; JSON-RPC</td></tr>
+<tr class="cat-row"><td colspan="5">Discovery</td></tr>
+<tr><td class="test-name">Echo Agent Card<br><code>jsonrpc/agent-card-echo</code></td><td class="pass" title="name=Echo Agent, skills=1&#10;(428ms)">&#10003;</td><td class="pass" title="name=Echo Agent, skills=1&#10;(53ms)">&#10003;</td><td class="pass" title="name=Echo Agent, skills=1&#10;(436ms)">&#10003;</td><td class="pass" title="name=Echo Agent, skills=1&#10;(136ms)">&#10003;</td></tr>
+<tr><td class="test-name">Spec Agent Card<br><code>jsonrpc/agent-card-spec</code></td><td class="pass" title="skills=8&#10;(5ms)">&#10003;</td><td class="pass" title="name=AgentBin Spec Agent, skills=8&#10;(1ms)">&#10003;</td><td class="pass" title="name=AgentBin Spec Agent, skills=['message-only', 'task-lifecycle', 'task-failure', 'task-cancel', 'multi-turn', 'streaming', 'long-running', 'data-types']&#10;(29ms)">&#10003;</td><td class="pass" title="name=AgentBin Spec Agent, skills=8&#10;(3ms)">&#10003;</td></tr>
+<tr class="cat-row"><td colspan="5">Echo Agent</td></tr>
+<tr><td class="test-name">Echo Send Message<br><code>jsonrpc/echo-send-message</code></td><td class="pass" title="text=Echo: hello from .NET SDK&#10;(168ms)">&#10003;</td><td class="pass" title="response=Echo: hello from Go&#10;(1ms)">&#10003;</td><td class="pass" title="reply='Echo: Hello from Python SDK!'&#10;(20ms)">&#10003;</td><td class="pass" title="echo=Echo: hello from Java&#10;(7ms)">&#10003;</td></tr>
+<tr class="cat-row"><td colspan="5">Spec Agent</td></tr>
+<tr><td class="test-name">Message Only<br><code>jsonrpc/spec-message-only</code></td><td class="pass" title="role=Agent&#10;(2ms)">&#10003;</td><td class="pass" title="got Message, text=[message-only] You said: message-only">&#10003;</td><td class="pass" title="gotMessage=True, text='[message-only] You said: message-only hello world'&#10;(24ms)">&#10003;</td><td class="pass" title="text=[message-only] You said: message-only hello from Java, messageOnly=true&#10;(4ms)">&#10003;</td></tr>
+<tr><td class="test-name">Task Lifecycle<br><code>jsonrpc/spec-task-lifecycle</code></td><td class="pass" title="state=Completed, artifacts=1&#10;(8ms)">&#10003;</td><td class="pass" title="state=TASK_STATE_COMPLETED, artifacts=1, id=b089fab8723148f690594432464043f0">&#10003;</td><td class="pass" title="state=TASK_STATE_COMPLETED, artifacts=True, taskId=fc54471cbe594292a9c6fa9cfbe82d5f&#10;(36ms)">&#10003;</td><td class="pass" title="completed=true, artifacts=true, taskId=9a7a7bb43c97462f8ccfe063823a7e1c, text=[task-lifecycle] Processed: task-lifecyc...&#10;(4ms)">&#10003;</td></tr>
+<tr><td class="test-name">GetTask<br><code>jsonrpc/spec-get-task</code></td><td class="pass" title="state=Completed&#10;(5ms)">&#10003;</td><td class="pass" title="id=b089fab8723148f690594432464043f0, state=TASK_STATE_COMPLETED">&#10003;</td><td class="pass" title="taskId=fc54471cbe594292a9c6fa9cfbe82d5f, state=TASK_STATE_COMPLETED&#10;(21ms)">&#10003;</td><td class="pass" title="found=true, state=TASK_STATE_COMPLETED&#10;(4ms)">&#10003;</td></tr>
+<tr><td class="test-name">Task Failure<br><code>jsonrpc/spec-task-failure</code></td><td class="pass" title="state=Failed&#10;(2ms)">&#10003;</td><td class="pass" title="state=TASK_STATE_FAILED&#10;(1ms)">&#10003;</td><td class="pass" title="state=TASK_STATE_FAILED&#10;(26ms)">&#10003;</td><td class="pass" title="state=TASK_STATE_FAILED, hasFailed=true&#10;(4ms)">&#10003;</td></tr>
+<tr><td class="test-name">Data Types<br><code>jsonrpc/spec-data-types</code></td><td class="pass" title="text=True, data=True, file=True&#10;(9ms)">&#10003;</td><td class="pass" title="text=true, data=true, file=true&#10;(1ms)">&#10003;</td><td class="pass" title="kinds=['data', 'file', 'text']&#10;(23ms)">&#10003;</td><td class="pass" title="text=true, data=true, file=true&#10;(3ms)">&#10003;</td></tr>
+<tr><td class="test-name">Streaming<br><code>jsonrpc/spec-streaming</code></td><td class="pass" title="events=7, artifact=True, completed=True&#10;(2029ms)">&#10003;</td><td class="pass" title="events=7, lastState=TASK_STATE_COMPLETED, hasArtifact=true&#10;(2013ms)">&#10003;</td><td class="pass" title="events=7, text='[streaming] Chunk 4: Finalizing output...'&#10;(2050ms)">&#10003;</td><td class="pass" title="events=7, completed=true&#10;(2022ms)">&#10003;</td></tr>
+<tr><td class="test-name">Multi-Turn<br><code>jsonrpc/spec-multi-turn</code></td><td class="pass" title="step1=InputRequired, step2=InputRequired, step3=Completed&#10;(8ms)">&#10003;</td><td class="pass" title="taskId=dfe08d9bc40b4867b6cdb7fe922f58c0, 3 steps completed&#10;(2ms)">&#10003;</td><td class="pass" title="states=[TASK_STATE_INPUT_REQUIRED,TASK_STATE_INPUT_REQUIRED,TASK_STATE_COMPLETED], taskId=2cbb5fb234ba4b058123d34c6476f6d6&#10;(85ms)">&#10003;</td><td class="pass" title="step1=INPUT_REQUIRED:true, step2=INPUT_REQUIRED:true, step3=COMPLETED:true, taskId=34fe3e334ba04b87bbdcfab97895eb18&#10;(40ms)">&#10003;</td></tr>
+<tr><td class="test-name">Task Cancel (via streaming)<br><code>jsonrpc/spec-task-cancel</code></td><td class="pass" title="state=TASK_STATE_CANCELED&#10;(437ms)">&#10003;</td><td class="pass" title="taskId=4ccdfc5117c64c64bc799f7c09adb9eb, state=TASK_STATE_CANCELED (via GetTask)&#10;(10001ms)">&#10003;</td><td class="pass" title="taskId=b0f338397ce7407a8374c6f4b78cde00, canceled=True&#10;(93ms)">&#10003;</td><td class="pass" title="taskId=b57f6534b5ce42f2a5edbb4d0d48d8e4, state=TASK_STATE_CANCELED&#10;(65ms)">&#10003;</td></tr>
+<tr><td class="test-name">ListTasks<br><code>jsonrpc/spec-list-tasks</code></td><td class="pass" title="count=50&#10;(81ms)">&#10003;</td><td class="pass" title="tasks=50 (need&gt;=1)&#10;(68ms)">&#10003;</td><td class="pass" title="status=200, taskCount=50&#10;(72ms)">&#10003;</td><td class="pass" title="hasResult=true, taskCount&gt;=50&#10;(25ms)">&#10003;</td></tr>
+<tr><td class="test-name">Return Immediately<br><code>jsonrpc/spec-return-immediately</code></td><td class="fail" title="returnImmediately ignored by SDK — state=TASK_STATE_COMPLETED, time=10039ms">&#10007;</td><td class="fail" title="took 10.1s, state=TASK_STATE_COMPLETED â€” returnImmediately ignored by SDK">&#10007;</td><td class="fail" title="returnImmediately ignored by SDK — blocked 10.1s, state=TASK_STATE_COMPLETED">&#10007;</td><td class="fail" title="returnImmediately ignored by SDK, took 10029ms">&#10007;</td></tr>
+<tr class="cat-row"><td colspan="5">Error Handling</td></tr>
+<tr><td class="test-name">Task Not Found Error<br><code>jsonrpc/error-task-not-found</code></td><td class="pass" title="errorCode=TaskNotFound&#10;(153ms)">&#10003;</td><td class="pass" title="got expected error: Task '00000000-0000-0000-0000-000000000000' not found.">&#10003;</td><td class="pass" title="hasError=True, code=-32001, msg=&quot;Task '00000000-0000-0000-0000-000000000&#10;(138ms)">&#10003;</td><td class="pass" title="code=-32001, message=Task '00000000-0000-0000-0000-000000000000' not fo...&#10;(5ms)">&#10003;</td></tr>
+<tr class="binding-row"><td colspan="5">&#9656; HTTP+JSON (REST)</td></tr>
+<tr class="cat-row"><td colspan="5">Discovery</td></tr>
+<tr><td class="test-name">Echo Agent Card<br><code>rest/agent-card-echo</code></td><td class="pass" title="name=Echo Agent&#10;(2ms)">&#10003;</td><td class="pass" title="status=200, hasName=true&#10;(2ms)">&#10003;</td><td class="pass" title="status=200, name=Echo Agent&#10;(21ms)">&#10003;</td><td class="pass" title="name=Echo Agent, skills=1&#10;(2ms)">&#10003;</td></tr>
+<tr><td class="test-name">Spec Agent Card<br><code>rest/agent-card-spec</code></td><td class="pass" title="skills=8">&#10003;</td><td class="pass" title="status=200, hasSkills=true&#10;(1ms)">&#10003;</td><td class="pass" title="status=200, name=AgentBin Spec Agent&#10;(18ms)">&#10003;</td><td class="pass" title="name=AgentBin Spec Agent, skills=8&#10;(2ms)">&#10003;</td></tr>
+<tr class="cat-row"><td colspan="5">Echo Agent</td></tr>
+<tr><td class="test-name">Echo Send Message<br><code>rest/echo-send-message</code></td><td class="pass" title="text=Echo: hello REST from .NET&#10;(10ms)">&#10003;</td><td class="pass" title="status=200, hasHello=true, body={&quot;message&quot;:{&quot;role&quot;:&quot;ROLE_AGENT&quot;,&quot;parts&quot;:[{&quot;text&quot;:&quot;Echo: hello from Go REST&quot;}],&quot;messageId&quot;:&quot;70bd614e178f4c3fb919fe01bfd67...">&#10003;</td><td class="pass" title="status=200, reply='Echo: Hello from REST!'&#10;(23ms)">&#10003;</td><td class="pass" title="echo=Echo: hello from Java REST&#10;(5ms)">&#10003;</td></tr>
+<tr class="cat-row"><td colspan="5">Spec Agent</td></tr>
+<tr><td class="test-name">Message Only<br><code>rest/spec-message-only</code></td><td class="pass" title="message=True, task=False&#10;(1ms)">&#10003;</td><td class="pass" title="hasMessage=true, hasTask=false">&#10003;</td><td class="pass" title="status=200, gotMessage=True, text='[message-only] You said: message-only hello world'&#10;(23ms)">&#10003;</td><td class="pass" title="text=[message-only] You said: message-only hello from Java REST, messageOnly=true&#10;(3ms)">&#10003;</td></tr>
+<tr><td class="test-name">Task Lifecycle<br><code>rest/spec-task-lifecycle</code></td><td class="pass" title="state=TASK_STATE_COMPLETED, artifacts=1&#10;(3ms)">&#10003;</td><td class="pass" title="taskId=8b8b6ad44d3340038a252fba2955877d, hasArtifacts=true(1)">&#10003;</td><td class="pass" title="state=TASK_STATE_COMPLETED, artifacts=True, taskId=9dc151fb29d74b28840398549d649757&#10;(25ms)">&#10003;</td><td class="pass" title="completed=true, artifacts=true, taskId=f45149a78d914b858010062baf2cb6e1, text=[task-lifecycle] Processed: task-lifecyc...&#10;(2ms)">&#10003;</td></tr>
+<tr><td class="test-name">GetTask<br><code>rest/spec-get-task</code></td><td class="pass" title="id=d5bdec91a6b1451fa3d47329a54e23c2, status=OK&#10;(2ms)">&#10003;</td><td class="pass" title="id=8b8b6ad44d3340038a252fba2955877d, expected=8b8b6ad44d3340038a252fba2955877d">&#10003;</td><td class="pass" title="status=200, taskId=9dc151fb29d74b28840398549d649757, state=TASK_STATE_COMPLETED&#10;(18ms)">&#10003;</td><td class="pass" title="found=true, state=TASK_STATE_COMPLETED&#10;(73ms)">&#10003;</td></tr>
+<tr><td class="test-name">Task Failure<br><code>rest/spec-task-failure</code></td><td class="pass" title="state=TASK_STATE_FAILED&#10;(1ms)">&#10003;</td><td class="pass" title="state=TASK_STATE_FAILED&#10;(1ms)">&#10003;</td><td class="pass" title="state=TASK_STATE_FAILED&#10;(14ms)">&#10003;</td><td class="pass" title="state=TASK_STATE_FAILED, hasFailed=true&#10;(2ms)">&#10003;</td></tr>
+<tr><td class="test-name">Data Types<br><code>rest/spec-data-types</code></td><td class="pass" title="text=True, data=True, file=True&#10;(3ms)">&#10003;</td><td class="pass" title="hasText=true, hasData=true, hasMediaType=true&#10;(1ms)">&#10003;</td><td class="pass" title="hasText=True, hasData=True, hasMediaType=True&#10;(17ms)">&#10003;</td><td class="pass" title="text=true, data=true, file=true&#10;(2ms)">&#10003;</td></tr>
+<tr><td class="test-name">Streaming<br><code>rest/spec-streaming</code></td><td class="pass" title="sseEvents=7&#10;(2022ms)">&#10003;</td><td class="pass" title="dataLines=7 (need&gt;=3)&#10;(2026ms)">&#10003;</td><td class="pass" title="dataEvents=7&#10;(2058ms)">&#10003;</td><td class="pass" title="events=7, completed=true&#10;(2030ms)">&#10003;</td></tr>
+<tr><td class="test-name">Multi-Turn<br><code>rest/spec-multi-turn</code></td><td class="pass" title="step1=TASK_STATE_INPUT_REQUIRED, step2=TASK_STATE_INPUT_REQUIRED, step3=TASK_STATE_COMPLETED&#10;(9ms)">&#10003;</td><td class="pass" title="taskId=63a9dcfd188949cb9ac5e51acb58c313, 3 steps completed&#10;(2ms)">&#10003;</td><td class="pass" title="states=[TASK_STATE_INPUT_REQUIRED,TASK_STATE_INPUT_REQUIRED,TASK_STATE_COMPLETED], taskId=20a50e9095844d4792eb4eeb095704a0&#10;(90ms)">&#10003;</td><td class="pass" title="step1=INPUT_REQUIRED:true, step2=INPUT_REQUIRED:true, step3=COMPLETED:true, taskId=6df364699798417b966c827e62c017b9&#10;(8ms)">&#10003;</td></tr>
+<tr><td class="test-name">Task Cancel (via streaming)<br><code>rest/spec-task-cancel</code></td><td class="pass" title="state=TASK_STATE_CANCELED&#10;(5ms)">&#10003;</td><td class="pass" title="taskId=0a92c04413114154929fd7326726be7f, state=CANCELED&#10;(28ms)">&#10003;</td><td class="pass" title="taskId=9a866e2faf094ca19865eeb516658de5, canceled=True&#10;(50ms)">&#10003;</td><td class="pass" title="taskId=c880f82448c74398b9a374a4e8440ce1, state=TASK_STATE_CANCELED&#10;(20ms)">&#10003;</td></tr>
+<tr><td class="test-name">ListTasks<br><code>rest/spec-list-tasks</code></td><td class="pass" title="status=OK, count=50&#10;(20ms)">&#10003;</td><td class="pass" title="tasks=50 (need&gt;=1)&#10;(176ms)">&#10003;</td><td class="pass" title="status=200, taskCount=50&#10;(33ms)">&#10003;</td><td class="pass" title="isArray=false, taskCount&gt;=50&#10;(6ms)">&#10003;</td></tr>
+<tr><td class="test-name">Return Immediately<br><code>rest/spec-return-immediately</code></td><td class="fail" title="returnImmediately ignored by SDK — state=TASK_STATE_COMPLETED, time=10039ms">&#10007;</td><td class="fail" title="took 10.1s, state=TASK_STATE_COMPLETED â€” returnImmediately ignored by SDK">&#10007;</td><td class="fail" title="returnImmediately ignored by SDK — blocked 10.1s, state=TASK_STATE_COMPLETED">&#10007;</td><td class="fail" title="returnImmediately ignored by SDK, took 10021ms">&#10007;</td></tr>
+<tr class="cat-row"><td colspan="5">Error Handling</td></tr>
+<tr><td class="test-name">Task Not Found Error<br><code>rest/error-task-not-found</code></td><td class="pass" title="status=NotFound&#10;(5ms)">&#10003;</td><td class="pass" title="status=404 (expected 404)&#10;(2ms)">&#10003;</td><td class="pass" title="status=404&#10;(27ms)">&#10003;</td><td class="pass" title="HTTP 404&#10;(15ms)">&#10003;</td></tr>
+
+</tbody>
+</table>
+
+<p class="footer">
+  Hover over cells for details. Tests defined in <code>tests/acceptance.yaml</code>.
+  Clients: .NET, Go, Python, Java.
+</p>
+</body>
+</html>

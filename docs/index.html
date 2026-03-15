@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentBin — A2A v1.0 Test Bed</title>
+<style>
+  :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+         background: var(--bg); color: var(--text); }
+  header { padding: 2rem 2rem 1rem; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 2rem; margin-bottom: 0.3rem; }
+  .tagline { color: var(--muted); margin-bottom: 1.5rem; }
+  nav { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  nav a { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+          padding: 0.75rem 1.25rem; color: var(--accent); text-decoration: none;
+          font-size: 0.9rem; transition: border-color 0.2s; }
+  nav a:hover { border-color: var(--accent); }
+  nav a.active { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+  main { max-width: 1200px; margin: 0 auto; padding: 0 2rem 2rem; }
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+             padding: 1.5rem; margin-bottom: 1.5rem; }
+  .section h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .section p, .section li { color: var(--muted); line-height: 1.6; }
+  .section ul { padding-left: 1.5rem; }
+  .section code { background: var(--bg); padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.85em; }
+  .endpoints { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+  .endpoint { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+  .endpoint h3 { font-size: 1rem; color: var(--accent); margin-bottom: 0.3rem; }
+  .endpoint .url { font-family: monospace; font-size: 0.85rem; color: var(--text); word-break: break-all; }
+  .endpoint .desc { color: var(--muted); font-size: 0.8rem; margin-top: 0.3rem; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  iframe { width: 100%; border: none; border-radius: 8px; min-height: 800px; background: var(--bg); }
+  footer { text-align: center; color: var(--muted); font-size: 0.75rem; padding: 1rem; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>&#128268; AgentBin</h1>
+  <p class="tagline">A2A v1.0 Specification Test Bed &mdash; publicly accessible agents for validating A2A client implementations</p>
+  <nav>
+    <a href="#" class="active" data-tab="overview">Overview</a>
+    <a href="#" data-tab="dashboard">Compatibility Dashboard</a>
+    <a href="#" data-tab="endpoints">Endpoints</a>
+  </nav>
+</header>
+
+<main>
+  <!-- Overview Tab -->
+  <div id="overview" class="tab-content active">
+    <div class="section">
+      <h2>What is AgentBin?</h2>
+      <p>AgentBin is a publicly accessible, unauthenticated service hosting A2A v1.0 agents.
+         It serves as a <strong>test bed</strong> for client implementers to validate their A2A integrations
+         against a live endpoint that exercises all interaction patterns defined in the specification.</p>
+    </div>
+
+    <div class="section">
+      <h2>Agents</h2>
+      <div class="endpoints">
+        <div class="endpoint">
+          <h3>SpecAgent (/spec)</h3>
+          <div class="desc">Multi-skill spec compliance agent with 8 skills exercising all A2A v1.0 patterns:
+            message-only, task-lifecycle, task-failure, task-cancel, multi-turn, streaming, long-running, and data-types.
+            Supports both JSON-RPC and HTTP+JSON (REST) bindings.</div>
+        </div>
+        <div class="endpoint">
+          <h3>EchoAgent (/echo)</h3>
+          <div class="desc">Minimal echo agent that returns your message back. Validates multi-agent hosting and provides a baseline sanity check.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Supported Bindings</h2>
+      <ul>
+        <li><strong>JSON-RPC</strong> &mdash; Standard A2A JSON-RPC 2.0 binding at <code>/echo</code> and <code>/spec</code></li>
+        <li><strong>HTTP+JSON (REST)</strong> &mdash; RESTful binding at <code>/echo/v1/...</code> and <code>/spec/v1/...</code></li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Quick Start</h2>
+      <p>Discover the agent card, then send a message:</p>
+      <pre style="background:var(--bg);padding:1rem;border-radius:8px;overflow-x:auto;font-size:0.85rem;margin-top:0.5rem;"><code># JSON-RPC: Get agent card
+curl -H "A2A-Version: 1.0" \
+  https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec/.well-known/agent.json
+
+# REST: Send a message
+curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
+  https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec/v1/message:send \
+  -d '{"message":{"messageId":"1","role":"ROLE_USER","parts":[{"text":"task-lifecycle hello"}]}}'</code></pre>
+    </div>
+  </div>
+
+  <!-- Dashboard Tab -->
+  <div id="dashboard" class="tab-content">
+    <iframe id="dashboard-frame" src="dashboard.html" title="Compatibility Dashboard"></iframe>
+  </div>
+
+  <!-- Endpoints Tab -->
+  <div id="endpoints" class="tab-content">
+    <div class="section">
+      <h2>Base URL</h2>
+      <p><code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
+    </div>
+
+    <div class="section">
+      <h2>JSON-RPC Endpoints</h2>
+      <div class="endpoints">
+        <div class="endpoint">
+          <h3>POST /echo</h3>
+          <div class="desc">JSON-RPC 2.0 endpoint for EchoAgent</div>
+        </div>
+        <div class="endpoint">
+          <h3>POST /spec</h3>
+          <div class="desc">JSON-RPC 2.0 endpoint for SpecAgent</div>
+        </div>
+        <div class="endpoint">
+          <h3>GET /echo/.well-known/agent.json</h3>
+          <div class="desc">EchoAgent agent card</div>
+        </div>
+        <div class="endpoint">
+          <h3>GET /spec/.well-known/agent.json</h3>
+          <div class="desc">SpecAgent agent card</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>HTTP+JSON REST Endpoints</h2>
+      <div class="endpoints">
+        <div class="endpoint">
+          <h3>GET /spec/v1/card</h3>
+          <div class="desc">Agent card (REST)</div>
+        </div>
+        <div class="endpoint">
+          <h3>POST /spec/v1/message:send</h3>
+          <div class="desc">Send message (synchronous)</div>
+        </div>
+        <div class="endpoint">
+          <h3>POST /spec/v1/message:stream</h3>
+          <div class="desc">Send message (streaming SSE)</div>
+        </div>
+        <div class="endpoint">
+          <h3>GET /spec/v1/tasks/{id}</h3>
+          <div class="desc">Get task by ID</div>
+        </div>
+        <div class="endpoint">
+          <h3>GET /spec/v1/tasks</h3>
+          <div class="desc">List tasks</div>
+        </div>
+        <div class="endpoint">
+          <h3>POST /spec/v1/tasks/{id}:cancel</h3>
+          <div class="desc">Cancel a task</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>SpecAgent Skills</h2>
+      <p>Send a message starting with the skill keyword:</p>
+      <div class="endpoints">
+        <div class="endpoint"><h3>message-only</h3><div class="desc">Stateless message response (no task created)</div></div>
+        <div class="endpoint"><h3>task-lifecycle</h3><div class="desc">Full task: submitted &rarr; working &rarr; completed with artifacts</div></div>
+        <div class="endpoint"><h3>task-failure</h3><div class="desc">Task that transitions to failed state</div></div>
+        <div class="endpoint"><h3>task-cancel</h3><div class="desc">Long-running task that can be canceled</div></div>
+        <div class="endpoint"><h3>multi-turn</h3><div class="desc">Multi-turn: input-required &rarr; follow-up &rarr; completed</div></div>
+        <div class="endpoint"><h3>streaming</h3><div class="desc">Streams status updates and artifact chunks via SSE</div></div>
+        <div class="endpoint"><h3>long-running</h3><div class="desc">Simulates long-running task with periodic updates</div></div>
+        <div class="endpoint"><h3>data-types</h3><div class="desc">Returns text, JSON data, and file content parts</div></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <a href="https://github.com/darrelmiller/agentbin">GitHub</a> &middot;
+  A2A v1.0 Specification Test Bed
+</footer>
+
+<script>
+  document.querySelectorAll('nav a').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      link.classList.add('active');
+      document.getElementById(link.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

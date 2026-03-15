@@ -31,3 +31,4 @@ tests/ClientTests/go/agentbin-test.exe
 tests/ClientTests/go/agentbin-test
 
 *.class
+__pycache__/

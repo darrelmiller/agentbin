@@ -141,7 +141,7 @@ public sealed class SpecAgent : IAgentHandler
         // Stay in working state — wait for cancellation or timeout
         try
         {
-            await Task.Delay(TimeSpan.FromMinutes(5), ct);
+            await Task.Delay(TimeSpan.FromSeconds(30), ct);
             // If we get here, nobody canceled us — complete normally
             await updater.CompleteAsync(
                 new Message

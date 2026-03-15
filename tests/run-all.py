@@ -38,6 +38,10 @@ BASE_TESTS = [
     ("spec-task-failure", "Task Failure", "Spec Agent"),
     ("spec-data-types", "Data Types", "Spec Agent"),
     ("spec-streaming", "Streaming", "Spec Agent"),
+    ("spec-multi-turn", "Multi-Turn", "Spec Agent"),
+    ("spec-task-cancel", "Task Cancel (via streaming)", "Spec Agent"),
+    ("spec-list-tasks", "ListTasks", "Spec Agent"),
+    ("spec-return-immediately", "Return Immediately", "Spec Agent"),
     ("error-task-not-found", "Task Not Found Error", "Error Handling"),
 ]
 
@@ -302,6 +306,13 @@ def main():
     out_path = TESTS_DIR / "dashboard.html"
     out_path.write_text(html, encoding="utf-8")
     print(f"\n✅ Dashboard written to {out_path}")
+
+    # Also copy to docs/ for GitHub Pages
+    docs_path = TESTS_DIR.parent / "docs" / "dashboard.html"
+    if docs_path.parent.exists():
+        docs_path.write_text(html, encoding="utf-8")
+        print(f"✅ Dashboard copied to {docs_path}")
+
     return 0
 
 

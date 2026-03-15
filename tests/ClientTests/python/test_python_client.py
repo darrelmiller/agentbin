@@ -256,6 +256,155 @@ async def test_error_task_not_found():
            f"hasError={has_error}, code={error_code}, msg={error_msg!r:.40}", ms)
 
 
+async def test_spec_multi_turn():
+    """Multi-turn: 3-step conversation with task continuation via SDK."""
+    t0 = time.time()
+    hc = httpx.AsyncClient(timeout=httpx.Timeout(30.0), headers=A2A_HEADERS)
+    try:
+        config = ClientConfig(httpx_client=hc)
+        client = await ClientFactory.connect(f"{BASE_URL}/spec", client_config=config)
+
+        # Step 1: start conversation
+        msg1 = create_text_message_object(role="ROLE_USER", content="multi-turn start conversation")
+        task1 = None
+        async for _, task in client.send_message(msg1):
+            if task:
+                task1 = task
+
+        state1 = task_state_name(task1)
+        task_id = task1.id if task1 else None
+        if state1 != "TASK_STATE_INPUT_REQUIRED" or not task_id:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/spec-multi-turn", "Spec Multi-Turn", False,
+                   f"step1: expected INPUT_REQUIRED got {state1}", ms)
+            return
+
+        # Step 2: follow-up with same taskId
+        msg2 = create_text_message_object(role="ROLE_USER", content="more data")
+        msg2.task_id = task_id
+        task2 = None
+        async for _, task in client.send_message(msg2):
+            if task:
+                task2 = task
+
+        state2 = task_state_name(task2)
+        if state2 != "TASK_STATE_INPUT_REQUIRED":
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/spec-multi-turn", "Spec Multi-Turn", False,
+                   f"step2: expected INPUT_REQUIRED got {state2}", ms)
+            return
+
+        # Step 3: complete the conversation
+        msg3 = create_text_message_object(role="ROLE_USER", content="done")
+        msg3.task_id = task_id
+        task3 = None
+        async for _, task in client.send_message(msg3):
+            if task:
+                task3 = task
+
+        state3 = task_state_name(task3)
+        ms = int((time.time() - t0) * 1000)
+        ok = state3 == "TASK_STATE_COMPLETED"
+        record("jsonrpc/spec-multi-turn", "Spec Multi-Turn", ok,
+               f"states=[{state1},{state2},{state3}], taskId={task_id}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_spec_task_cancel():
+    """Cancel a streaming task via CancelTask JSON-RPC method."""
+    t0 = time.time()
+    task_id = None
+    canceled = False
+
+    async def do_cancel():
+        nonlocal task_id, canceled
+        hc = httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS)
+        try:
+            config = ClientConfig(streaming=True, httpx_client=hc)
+            client = await ClientFactory.connect(f"{BASE_URL}/spec", client_config=config)
+            msg = create_text_message_object(role="ROLE_USER", content="task-cancel")
+
+            # Read first event to get taskId
+            async for _, task in client.send_message(msg):
+                if task:
+                    task_id = task.id
+                    break
+
+            if not task_id:
+                return
+
+            # Send CancelTask via raw JSON-RPC
+            body = make_jsonrpc("CancelTask", {"id": task_id})
+            async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc2:
+                resp = await hc2.post(f"{BASE_URL}/spec", json=body)
+            data = resp.json()
+            result = data.get("result", {})
+            task_obj = result.get("task", result) if isinstance(result, dict) else {}
+            state = task_obj.get("status", {}).get("state", "")
+            canceled = state in ("canceled", "TASK_STATE_CANCELED")
+        finally:
+            await hc.aclose()
+
+    await asyncio.wait_for(do_cancel(), timeout=10.0)
+    ms = int((time.time() - t0) * 1000)
+    ok = task_id is not None and canceled
+    record("jsonrpc/spec-task-cancel", "Spec Task Cancel", ok,
+           f"taskId={task_id}, canceled={canceled}", ms)
+
+
+async def test_spec_list_tasks():
+    """ListTasks via raw JSON-RPC."""
+    t0 = time.time()
+    body = make_jsonrpc("ListTasks", {})
+    async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
+        resp = await hc.post(f"{BASE_URL}/spec", json=body)
+    ms = int((time.time() - t0) * 1000)
+    data = resp.json()
+    result = data.get("result", {})
+    tasks = result.get("tasks", result) if isinstance(result, dict) else []
+    if isinstance(tasks, dict):
+        tasks = tasks.get("tasks", [])
+    count = len(tasks) if isinstance(tasks, list) else 0
+    ok = resp.status_code == 200 and count >= 1
+    record("jsonrpc/spec-list-tasks", "Spec ListTasks", ok,
+           f"status={resp.status_code}, taskCount={count}", ms)
+
+
+async def test_spec_return_immediately():
+    """SendMessage with returnImmediately — expected to fail."""
+    t0 = time.time()
+
+    async def do_send():
+        params = make_send_params("long-running test")
+        params["configuration"] = {"returnImmediately": True}
+        body = make_jsonrpc("SendMessage", params)
+        async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
+            return await hc.post(f"{BASE_URL}/spec", json=body)
+
+    resp = await asyncio.wait_for(do_send(), timeout=15.0)
+    elapsed = time.time() - t0
+    ms = int(elapsed * 1000)
+    data = resp.json()
+    result = data.get("result", {})
+    task_obj = result.get("task", result) if isinstance(result, dict) else {}
+    state = task_obj.get("status", {}).get("state", "") if isinstance(task_obj, dict) else ""
+    terminal = state in ("completed", "TASK_STATE_COMPLETED", "failed", "TASK_STATE_FAILED")
+
+    if elapsed < 2.0 and not terminal:
+        ok = True
+        detail = f"returned in {elapsed:.1f}s with state={state}"
+    else:
+        ok = False
+        if elapsed >= 3.0:
+            detail = f"returnImmediately ignored by SDK — blocked {elapsed:.1f}s, state={state}"
+        else:
+            detail = f"returnImmediately ignored by SDK — got terminal state={state} in {elapsed:.1f}s"
+
+    record("jsonrpc/spec-return-immediately", "Spec Return Immediately", ok,
+           detail, ms)
+
+
 # -- REST Helpers -----------------------------------------------------
 
 async def rest_get(url: str) -> httpx.Response:
@@ -418,31 +567,169 @@ async def test_rest_error_task_not_found():
            f"status={resp.status_code}", ms)
 
 
+async def test_rest_spec_multi_turn():
+    """Multi-turn: 3-step conversation via REST binding."""
+    t0 = time.time()
+
+    # Step 1: start conversation
+    body1 = make_rest_message("multi-turn start conversation")
+    resp1 = await rest_post(f"{BASE_URL}/spec/v1/message:send", body1)
+    data1 = resp1.json()
+    task1 = data1.get("task") or data1.get("result", {}).get("task", {})
+    state1 = task1.get("status", {}).get("state", "")
+    task_id = task1.get("id", "")
+
+    if state1 not in ("input_required", "TASK_STATE_INPUT_REQUIRED") or not task_id:
+        ms = int((time.time() - t0) * 1000)
+        record("rest/spec-multi-turn", "REST Spec Multi-Turn", False,
+               f"step1: expected INPUT_REQUIRED got {state1}", ms)
+        return
+
+    # Step 2: follow-up with same taskId
+    body2 = make_rest_message("more data")
+    body2["message"]["taskId"] = task_id
+    resp2 = await rest_post(f"{BASE_URL}/spec/v1/message:send", body2)
+    data2 = resp2.json()
+    task2 = data2.get("task") or data2.get("result", {}).get("task", {})
+    state2 = task2.get("status", {}).get("state", "")
+
+    if state2 not in ("input_required", "TASK_STATE_INPUT_REQUIRED"):
+        ms = int((time.time() - t0) * 1000)
+        record("rest/spec-multi-turn", "REST Spec Multi-Turn", False,
+               f"step2: expected INPUT_REQUIRED got {state2}", ms)
+        return
+
+    # Step 3: complete the conversation
+    body3 = make_rest_message("done")
+    body3["message"]["taskId"] = task_id
+    resp3 = await rest_post(f"{BASE_URL}/spec/v1/message:send", body3)
+    data3 = resp3.json()
+    task3 = data3.get("task") or data3.get("result", {}).get("task", {})
+    state3 = task3.get("status", {}).get("state", "")
+
+    ms = int((time.time() - t0) * 1000)
+    ok = state3 in ("completed", "TASK_STATE_COMPLETED")
+    record("rest/spec-multi-turn", "REST Spec Multi-Turn", ok,
+           f"states=[{state1},{state2},{state3}], taskId={task_id}", ms)
+
+
+async def test_rest_spec_task_cancel():
+    """Cancel a streaming task via REST /v1/tasks/{id}:cancel."""
+    t0 = time.time()
+    task_id = None
+    canceled = False
+
+    async def do_cancel():
+        nonlocal task_id, canceled
+        body = make_rest_message("task-cancel")
+        async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
+            async with hc.stream("POST", f"{BASE_URL}/spec/v1/message:stream", json=body) as stream:
+                async for line in stream.aiter_lines():
+                    if line.startswith("data:"):
+                        event = json.loads(line[5:].strip())
+                        # Navigate various possible response structures
+                        tid = (event.get("id")
+                               or (event.get("result") or {}).get("id")
+                               or (event.get("task") or {}).get("id")
+                               or (event.get("result") or {}).get("task", {}).get("id"))
+                        if tid:
+                            task_id = tid
+                            break
+
+        if not task_id:
+            return
+
+        # Cancel the task
+        resp = await rest_post(f"{BASE_URL}/spec/v1/tasks/{task_id}:cancel", {})
+        data = resp.json()
+        state = (data.get("status", {}).get("state", "")
+                 or data.get("task", {}).get("status", {}).get("state", ""))
+        canceled = state in ("canceled", "TASK_STATE_CANCELED")
+
+    await asyncio.wait_for(do_cancel(), timeout=10.0)
+    ms = int((time.time() - t0) * 1000)
+    ok = task_id is not None and canceled
+    record("rest/spec-task-cancel", "REST Spec Task Cancel", ok,
+           f"taskId={task_id}, canceled={canceled}", ms)
+
+
+async def test_rest_spec_list_tasks():
+    """List tasks via REST GET /v1/tasks."""
+    t0 = time.time()
+    resp = await rest_get(f"{BASE_URL}/spec/v1/tasks")
+    ms = int((time.time() - t0) * 1000)
+    data = resp.json()
+    tasks = data if isinstance(data, list) else data.get("tasks", [])
+    count = len(tasks) if isinstance(tasks, list) else 0
+    ok = resp.status_code == 200 and count >= 1
+    record("rest/spec-list-tasks", "REST Spec ListTasks", ok,
+           f"status={resp.status_code}, taskCount={count}", ms)
+
+
+async def test_rest_spec_return_immediately():
+    """REST SendMessage with returnImmediately — expected to fail."""
+    t0 = time.time()
+
+    async def do_send():
+        body = make_rest_message("long-running test")
+        body["configuration"] = {"returnImmediately": True}
+        return await rest_post(f"{BASE_URL}/spec/v1/message:send", body)
+
+    resp = await asyncio.wait_for(do_send(), timeout=15.0)
+    elapsed = time.time() - t0
+    ms = int(elapsed * 1000)
+    data = resp.json()
+    task_obj = data.get("task") or data.get("result", {}).get("task", {})
+    state = task_obj.get("status", {}).get("state", "") if isinstance(task_obj, dict) else ""
+    terminal = state in ("completed", "TASK_STATE_COMPLETED", "failed", "TASK_STATE_FAILED")
+
+    if elapsed < 2.0 and not terminal:
+        ok = True
+        detail = f"returned in {elapsed:.1f}s with state={state}"
+    else:
+        ok = False
+        if elapsed >= 3.0:
+            detail = f"returnImmediately ignored by SDK — blocked {elapsed:.1f}s, state={state}"
+        else:
+            detail = f"returnImmediately ignored by SDK — got terminal state={state} in {elapsed:.1f}s"
+
+    record("rest/spec-return-immediately", "REST Spec Return Immediately", ok,
+           detail, ms)
+
+
 # -- Runner -----------------------------------------------------------
 
 ALL_TESTS = [
     # JSON-RPC (SDK) tests
-    ("jsonrpc/agent-card-echo",       test_agent_card_echo),
-    ("jsonrpc/agent-card-spec",       test_agent_card_spec),
-    ("jsonrpc/echo-send-message",     test_echo_send_message),
-    ("jsonrpc/spec-message-only",     test_spec_message_only),
-    ("jsonrpc/spec-task-lifecycle",   test_spec_task_lifecycle),
-    ("jsonrpc/spec-get-task",         test_spec_get_task),
-    ("jsonrpc/spec-task-failure",     test_spec_task_failure),
-    ("jsonrpc/spec-data-types",       test_spec_data_types),
-    ("jsonrpc/spec-streaming",        test_spec_streaming),
-    ("jsonrpc/error-task-not-found",  test_error_task_not_found),
+    ("jsonrpc/agent-card-echo",         test_agent_card_echo),
+    ("jsonrpc/agent-card-spec",         test_agent_card_spec),
+    ("jsonrpc/echo-send-message",       test_echo_send_message),
+    ("jsonrpc/spec-message-only",       test_spec_message_only),
+    ("jsonrpc/spec-task-lifecycle",     test_spec_task_lifecycle),
+    ("jsonrpc/spec-get-task",           test_spec_get_task),
+    ("jsonrpc/spec-task-failure",       test_spec_task_failure),
+    ("jsonrpc/spec-data-types",         test_spec_data_types),
+    ("jsonrpc/spec-streaming",          test_spec_streaming),
+    ("jsonrpc/error-task-not-found",    test_error_task_not_found),
+    ("jsonrpc/spec-multi-turn",         test_spec_multi_turn),
+    ("jsonrpc/spec-task-cancel",        test_spec_task_cancel),
+    ("jsonrpc/spec-list-tasks",         test_spec_list_tasks),
+    ("jsonrpc/spec-return-immediately", test_spec_return_immediately),
     # REST binding tests
-    ("rest/agent-card-echo",          test_rest_agent_card_echo),
-    ("rest/agent-card-spec",          test_rest_agent_card_spec),
-    ("rest/echo-send-message",        test_rest_echo_send_message),
-    ("rest/spec-message-only",        test_rest_spec_message_only),
-    ("rest/spec-task-lifecycle",      test_rest_spec_task_lifecycle),
-    ("rest/spec-get-task",            test_rest_spec_get_task),
-    ("rest/spec-task-failure",        test_rest_spec_task_failure),
-    ("rest/spec-data-types",          test_rest_spec_data_types),
-    ("rest/spec-streaming",           test_rest_spec_streaming),
-    ("rest/error-task-not-found",     test_rest_error_task_not_found),
+    ("rest/agent-card-echo",            test_rest_agent_card_echo),
+    ("rest/agent-card-spec",            test_rest_agent_card_spec),
+    ("rest/echo-send-message",          test_rest_echo_send_message),
+    ("rest/spec-message-only",          test_rest_spec_message_only),
+    ("rest/spec-task-lifecycle",        test_rest_spec_task_lifecycle),
+    ("rest/spec-get-task",              test_rest_spec_get_task),
+    ("rest/spec-task-failure",          test_rest_spec_task_failure),
+    ("rest/spec-data-types",            test_rest_spec_data_types),
+    ("rest/spec-streaming",             test_rest_spec_streaming),
+    ("rest/error-task-not-found",       test_rest_error_task_not_found),
+    ("rest/spec-multi-turn",            test_rest_spec_multi_turn),
+    ("rest/spec-task-cancel",           test_rest_spec_task_cancel),
+    ("rest/spec-list-tasks",            test_rest_spec_list_tasks),
+    ("rest/spec-return-immediately",    test_rest_spec_return_immediately),
 ]
 
 

@@ -317,6 +317,182 @@ func main() {
 		record("jsonrpc/error-task-not-found", "Task Not Found Error", false, "skipped — no spec client", 0)
 	}
 
+	// 11. spec-multi-turn (3-step multi-turn conversation)
+	if specClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			// Step 1: Start conversation
+			msg1 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("multi-turn start conversation"))
+			resp1, err := specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg1})
+			if err != nil {
+				return false, fmt.Sprintf("step1 error: %v", err)
+			}
+			task1, ok := resp1.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("step1: expected Task, got %T", resp1)
+			}
+			if task1.Status.State != a2a.TaskStateInputRequired {
+				return false, fmt.Sprintf("step1: expected INPUT_REQUIRED, got %s", task1.Status.State)
+			}
+			taskID := task1.ID
+
+			// Step 2: Follow-up with taskId
+			msg2 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("follow-up message"))
+			msg2.TaskID = taskID
+			resp2, err := specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg2})
+			if err != nil {
+				return false, fmt.Sprintf("step2 error: %v", err)
+			}
+			task2, ok := resp2.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("step2: expected Task, got %T", resp2)
+			}
+			if task2.Status.State != a2a.TaskStateInputRequired {
+				return false, fmt.Sprintf("step2: expected INPUT_REQUIRED, got %s", task2.Status.State)
+			}
+
+			// Step 3: Send "done" to complete
+			msg3 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("done"))
+			msg3.TaskID = taskID
+			resp3, err := specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg3})
+			if err != nil {
+				return false, fmt.Sprintf("step3 error: %v", err)
+			}
+			task3, ok := resp3.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("step3: expected Task, got %T", resp3)
+			}
+			if task3.Status.State != a2a.TaskStateCompleted {
+				return false, fmt.Sprintf("step3: expected COMPLETED, got %s", task3.Status.State)
+			}
+			return true, fmt.Sprintf("taskId=%s, 3 steps completed", taskID)
+		}()
+		record("jsonrpc/spec-multi-turn", "Multi-Turn Conversation", passed, detail, time.Since(start))
+	} else {
+		record("jsonrpc/spec-multi-turn", "Multi-Turn Conversation", false, "skipped — no spec client", 0)
+	}
+
+	// 12. spec-task-cancel (cancel a task via streaming)
+	if specClient != nil {
+		cancelCtx, cancelTimeout := context.WithTimeout(ctx, 10*time.Second)
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			defer cancelTimeout()
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-cancel"))
+			var streamTaskID a2a.TaskID
+			var lastState a2a.TaskState
+			cancelSent := false
+
+			for event, err := range specClient.SendStreamingMessage(cancelCtx, &a2a.SendMessageRequest{Message: msg}) {
+				if err != nil {
+					if cancelSent {
+						break
+					}
+					return false, fmt.Sprintf("stream error: %v", err)
+				}
+				switch v := event.(type) {
+				case *a2a.TaskStatusUpdateEvent:
+					if streamTaskID == "" {
+						streamTaskID = v.TaskID
+					}
+					lastState = v.Status.State
+				case *a2a.TaskArtifactUpdateEvent:
+					if streamTaskID == "" {
+						streamTaskID = v.TaskID
+					}
+				case *a2a.Task:
+					if streamTaskID == "" {
+						streamTaskID = a2a.TaskID(v.ID)
+					}
+					lastState = v.Status.State
+				}
+				if streamTaskID != "" && !cancelSent {
+					cancelSent = true
+					cancelBody := fmt.Sprintf(`{"jsonrpc":"2.0","id":1,"method":"CancelTask","params":{"id":"%s"}}`, streamTaskID)
+					restPost(baseURL+"/spec", cancelBody)
+				}
+			}
+
+			if streamTaskID == "" {
+				return false, "no task ID from stream"
+			}
+			if lastState == a2a.TaskStateCanceled {
+				return true, fmt.Sprintf("taskId=%s, state=CANCELED", streamTaskID)
+			}
+			// Fallback: check via GetTask
+			task, err := specClient.GetTask(ctx, &a2a.GetTaskRequest{ID: streamTaskID})
+			if err != nil {
+				return false, fmt.Sprintf("taskId=%s, lastStreamState=%s, getTask error: %v", streamTaskID, lastState, err)
+			}
+			p := task.Status.State == a2a.TaskStateCanceled
+			return p, fmt.Sprintf("taskId=%s, state=%s (via GetTask)", streamTaskID, task.Status.State)
+		}()
+		record("jsonrpc/spec-task-cancel", "Task Cancel", passed, detail, time.Since(start))
+	} else {
+		record("jsonrpc/spec-task-cancel", "Task Cancel", false, "skipped — no spec client", 0)
+	}
+
+	// 13. spec-list-tasks
+	{
+		start := time.Now()
+		reqBody := `{"jsonrpc":"2.0","id":1,"method":"ListTasks","params":{}}`
+		_, body, err := restPost(baseURL+"/spec", reqBody)
+		dur := time.Since(start)
+		if err != nil {
+			record("jsonrpc/spec-list-tasks", "List Tasks", false, fmt.Sprintf("error: %v", err), dur)
+		} else {
+			var rpcResp map[string]interface{}
+			json.Unmarshal([]byte(body), &rpcResp)
+			if rpcErr, ok := rpcResp["error"]; ok {
+				record("jsonrpc/spec-list-tasks", "List Tasks", false, fmt.Sprintf("rpc error: %v", rpcErr), dur)
+			} else if result, ok := rpcResp["result"].(map[string]interface{}); ok {
+				tasks, _ := result["tasks"].([]interface{})
+				passed := len(tasks) >= 1
+				record("jsonrpc/spec-list-tasks", "List Tasks", passed,
+					fmt.Sprintf("tasks=%d (need>=1)", len(tasks)), dur)
+			} else {
+				record("jsonrpc/spec-list-tasks", "List Tasks", false,
+					fmt.Sprintf("unexpected response: %s", truncate(body, 100)), dur)
+			}
+		}
+	}
+
+	// 14. spec-return-immediately (EXPECTED TO FAIL)
+	if specClient != nil {
+		riCtx, riCancel := context.WithTimeout(ctx, 15*time.Second)
+		start := time.Now()
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("long-running test"))
+		blocking := false
+		resp, err := specClient.SendMessage(riCtx, &a2a.SendMessageRequest{
+			Message: msg,
+			Config:  &a2a.SendMessageConfig{Blocking: &blocking},
+		})
+		dur := time.Since(start)
+		riCancel()
+		if err != nil {
+			record("jsonrpc/spec-return-immediately", "Return Immediately", false,
+				fmt.Sprintf("error: %v (returnImmediately ignored by SDK)", err), dur)
+		} else {
+			elapsed := dur.Seconds()
+			var state a2a.TaskState
+			if v, ok := resp.(*a2a.Task); ok {
+				state = v.Status.State
+			}
+			if elapsed > 3 || state == a2a.TaskStateCompleted {
+				record("jsonrpc/spec-return-immediately", "Return Immediately", false,
+					fmt.Sprintf("took %.1fs, state=%s — returnImmediately ignored by SDK", elapsed, state), dur)
+			} else if elapsed < 2 && state != a2a.TaskStateCompleted {
+				record("jsonrpc/spec-return-immediately", "Return Immediately", true,
+					fmt.Sprintf("took %.1fs, state=%s — returned promptly", elapsed, state), dur)
+			} else {
+				record("jsonrpc/spec-return-immediately", "Return Immediately", false,
+					fmt.Sprintf("took %.1fs, state=%s — inconclusive", elapsed, state), dur)
+			}
+		}
+	} else {
+		record("jsonrpc/spec-return-immediately", "Return Immediately", false, "skipped — no spec client", 0)
+	}
+
 	// ── HTTP+JSON REST Binding ──
 	fmt.Println("\n── HTTP+JSON REST Binding ──")
 
@@ -527,6 +703,237 @@ func main() {
 			passed := status == 404
 			record("rest/error-task-not-found", "REST Task Not Found", passed,
 				fmt.Sprintf("status=%d (expected 404)", status), dur)
+		}
+	}
+
+	// 11. rest/spec-multi-turn (3-step multi-turn conversation)
+	{
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			// Step 1: Start conversation
+			msgID1 := uuid.New().String()
+			reqBody1 := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"multi-turn start conversation"}]}}`, msgID1)
+			status1, body1, err := restPost(baseURL+"/spec/v1/message:send", reqBody1)
+			if err != nil {
+				return false, fmt.Sprintf("step1 error: %v", err)
+			}
+			if status1 != 200 {
+				return false, fmt.Sprintf("step1 status=%d", status1)
+			}
+			var parsed1 map[string]interface{}
+			json.Unmarshal([]byte(body1), &parsed1)
+			taskObj1, ok := parsed1["task"].(map[string]interface{})
+			if !ok {
+				return false, fmt.Sprintf("step1: no task in response: %s", truncate(body1, 100))
+			}
+			taskID, _ := taskObj1["id"].(string)
+			if taskID == "" {
+				return false, "step1: no task id"
+			}
+			statusObj1, _ := taskObj1["status"].(map[string]interface{})
+			state1, _ := statusObj1["state"].(string)
+			if state1 != "TASK_STATE_INPUT_REQUIRED" {
+				return false, fmt.Sprintf("step1: expected INPUT_REQUIRED, got %s", state1)
+			}
+
+			// Step 2: Follow-up with taskId
+			msgID2 := uuid.New().String()
+			reqBody2 := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","taskId":"%s","parts":[{"text":"follow-up message"}]}}`, msgID2, taskID)
+			status2, body2, err := restPost(baseURL+"/spec/v1/message:send", reqBody2)
+			if err != nil {
+				return false, fmt.Sprintf("step2 error: %v", err)
+			}
+			if status2 != 200 {
+				return false, fmt.Sprintf("step2 status=%d", status2)
+			}
+			var parsed2 map[string]interface{}
+			json.Unmarshal([]byte(body2), &parsed2)
+			taskObj2, ok := parsed2["task"].(map[string]interface{})
+			if !ok {
+				return false, fmt.Sprintf("step2: no task in response: %s", truncate(body2, 100))
+			}
+			statusObj2, _ := taskObj2["status"].(map[string]interface{})
+			state2, _ := statusObj2["state"].(string)
+			if state2 != "TASK_STATE_INPUT_REQUIRED" {
+				return false, fmt.Sprintf("step2: expected INPUT_REQUIRED, got %s", state2)
+			}
+
+			// Step 3: Send "done" to complete
+			msgID3 := uuid.New().String()
+			reqBody3 := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","taskId":"%s","parts":[{"text":"done"}]}}`, msgID3, taskID)
+			status3, body3, err := restPost(baseURL+"/spec/v1/message:send", reqBody3)
+			if err != nil {
+				return false, fmt.Sprintf("step3 error: %v", err)
+			}
+			if status3 != 200 {
+				return false, fmt.Sprintf("step3 status=%d", status3)
+			}
+			var parsed3 map[string]interface{}
+			json.Unmarshal([]byte(body3), &parsed3)
+			taskObj3, ok := parsed3["task"].(map[string]interface{})
+			if !ok {
+				return false, fmt.Sprintf("step3: no task in response: %s", truncate(body3, 100))
+			}
+			statusObj3, _ := taskObj3["status"].(map[string]interface{})
+			state3, _ := statusObj3["state"].(string)
+			if state3 != "TASK_STATE_COMPLETED" {
+				return false, fmt.Sprintf("step3: expected COMPLETED, got %s", state3)
+			}
+			return true, fmt.Sprintf("taskId=%s, 3 steps completed", taskID)
+		}()
+		record("rest/spec-multi-turn", "REST Multi-Turn Conversation", passed, detail, time.Since(start))
+	}
+
+	// 12. rest/spec-task-cancel (cancel a task via streaming)
+	{
+		cancelCtx, cancelTimeout := context.WithTimeout(ctx, 10*time.Second)
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			defer cancelTimeout()
+			msgID := uuid.New().String()
+			reqBody := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"task-cancel"}]}}`, msgID)
+
+			req, err := http.NewRequestWithContext(cancelCtx, "POST", baseURL+"/spec/v1/message:stream", bytes.NewBufferString(reqBody))
+			if err != nil {
+				return false, fmt.Sprintf("request error: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "text/event-stream")
+			req.Header.Set("A2A-Version", "1.0")
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return false, fmt.Sprintf("stream error: %v", err)
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode != 200 {
+				return false, fmt.Sprintf("stream status=%d", resp.StatusCode)
+			}
+
+			// Read SSE events to find task ID
+			scanner := bufio.NewScanner(resp.Body)
+			var streamTaskID string
+			for scanner.Scan() {
+				line := scanner.Text()
+				if !strings.HasPrefix(line, "data:") {
+					continue
+				}
+				data := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
+				var event map[string]interface{}
+				if err := json.Unmarshal([]byte(data), &event); err != nil {
+					continue
+				}
+				// REST SSE: first event is {"task":{"id":"...","status":...}}
+				if taskObj, ok := event["task"].(map[string]interface{}); ok {
+					if id, ok := taskObj["id"].(string); ok && id != "" {
+						streamTaskID = id
+						break
+					}
+				}
+				// Or from statusUpdate/artifactUpdate events
+				if su, ok := event["statusUpdate"].(map[string]interface{}); ok {
+					if id, ok := su["taskId"].(string); ok && id != "" {
+						streamTaskID = id
+						break
+					}
+				}
+			}
+			if streamTaskID == "" {
+				return false, "no task ID from stream events"
+			}
+
+			// Cancel the task
+			cancelStatus, cancelBody, err := restPost(baseURL+"/spec/v1/tasks/"+streamTaskID+":cancel", "{}")
+			if err != nil {
+				return false, fmt.Sprintf("cancel error: %v", err)
+			}
+			if cancelStatus != 200 {
+				return false, fmt.Sprintf("cancel status=%d, body=%s", cancelStatus, truncate(cancelBody, 100))
+			}
+
+			// Verify CANCELED state
+			var cancelResp map[string]interface{}
+			json.Unmarshal([]byte(cancelBody), &cancelResp)
+			if statusObj, ok := cancelResp["status"].(map[string]interface{}); ok {
+				state, _ := statusObj["state"].(string)
+				if state == "TASK_STATE_CANCELED" {
+					return true, fmt.Sprintf("taskId=%s, state=CANCELED", streamTaskID)
+				}
+				return false, fmt.Sprintf("taskId=%s, state=%s (expected CANCELED)", streamTaskID, state)
+			}
+			return false, fmt.Sprintf("taskId=%s, unexpected cancel response: %s", streamTaskID, truncate(cancelBody, 100))
+		}()
+		record("rest/spec-task-cancel", "REST Task Cancel", passed, detail, time.Since(start))
+	}
+
+	// 13. rest/spec-list-tasks
+	{
+		start := time.Now()
+		status, body, err := restGet(baseURL + "/spec/v1/tasks")
+		dur := time.Since(start)
+		if err != nil {
+			record("rest/spec-list-tasks", "REST List Tasks", false, fmt.Sprintf("error: %v", err), dur)
+		} else if status != 200 {
+			record("rest/spec-list-tasks", "REST List Tasks", false, fmt.Sprintf("status=%d", status), dur)
+		} else {
+			var parsed map[string]interface{}
+			json.Unmarshal([]byte(body), &parsed)
+			tasks, _ := parsed["tasks"].([]interface{})
+			passed := len(tasks) >= 1
+			record("rest/spec-list-tasks", "REST List Tasks", passed,
+				fmt.Sprintf("tasks=%d (need>=1)", len(tasks)), dur)
+		}
+	}
+
+	// 14. rest/spec-return-immediately (EXPECTED TO FAIL)
+	{
+		riCtx, riCancel := context.WithTimeout(ctx, 15*time.Second)
+		start := time.Now()
+		msgID := uuid.New().String()
+		reqBody := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"long-running test"}]},"configuration":{"blocking":false}}`, msgID)
+		req, err := http.NewRequestWithContext(riCtx, "POST", baseURL+"/spec/v1/message:send", bytes.NewBufferString(reqBody))
+		var riStatus int
+		var riBody string
+		if err == nil {
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("A2A-Version", "1.0")
+			riResp, rerr := http.DefaultClient.Do(req)
+			if rerr != nil {
+				err = rerr
+			} else {
+				defer riResp.Body.Close()
+				b, _ := io.ReadAll(riResp.Body)
+				riStatus = riResp.StatusCode
+				riBody = string(b)
+			}
+		}
+		dur := time.Since(start)
+		riCancel()
+		if err != nil {
+			record("rest/spec-return-immediately", "REST Return Immediately", false,
+				fmt.Sprintf("error: %v (returnImmediately ignored by SDK)", err), dur)
+		} else if riStatus != 200 {
+			record("rest/spec-return-immediately", "REST Return Immediately", false,
+				fmt.Sprintf("status=%d", riStatus), dur)
+		} else {
+			elapsed := dur.Seconds()
+			var state string
+			var parsed map[string]interface{}
+			json.Unmarshal([]byte(riBody), &parsed)
+			if taskObj, ok := parsed["task"].(map[string]interface{}); ok {
+				if statusObj, ok := taskObj["status"].(map[string]interface{}); ok {
+					state, _ = statusObj["state"].(string)
+				}
+			}
+			if elapsed > 3 || state == "TASK_STATE_COMPLETED" {
+				record("rest/spec-return-immediately", "REST Return Immediately", false,
+					fmt.Sprintf("took %.1fs, state=%s — returnImmediately ignored by SDK", elapsed, state), dur)
+			} else if elapsed < 2 && state != "TASK_STATE_COMPLETED" {
+				record("rest/spec-return-immediately", "REST Return Immediately", true,
+					fmt.Sprintf("took %.1fs, state=%s — returned promptly", elapsed, state), dur)
+			} else {
+				record("rest/spec-return-immediately", "REST Return Immediately", false,
+					fmt.Sprintf("took %.1fs, state=%s — inconclusive", elapsed, state), dur)
+			}
 		}
 	}
 

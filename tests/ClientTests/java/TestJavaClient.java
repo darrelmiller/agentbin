@@ -76,6 +76,12 @@ public class TestJavaClient {
         // 4. Error cases
         testErrorTaskNotFound(baseUrl);
 
+        // 5. Extended tests
+        testSpecMultiTurn(baseUrl);
+        testSpecTaskCancel(baseUrl);
+        testSpecListTasks(baseUrl);
+        testSpecReturnImmediately(baseUrl);
+
         // REST binding tests
         System.out.println("\n── HTTP+JSON REST Binding ──");
         testRestAgentCardEcho(baseUrl);
@@ -88,6 +94,11 @@ public class TestJavaClient {
         testRestSpecDataTypes(baseUrl);
         testRestSpecStreaming(baseUrl);
         testRestErrorTaskNotFound(baseUrl);
+
+        testRestSpecMultiTurn(baseUrl);
+        testRestSpecTaskCancel(baseUrl);
+        testRestSpecListTasks(baseUrl);
+        testRestSpecReturnImmediately(baseUrl);
 
         // Summary
         long passCount = results.stream().filter(r -> r.passed).count();
@@ -478,6 +489,290 @@ public class TestJavaClient {
         }
     }
 
+    /** 11. spec-multi-turn — 3-step multi-turn conversation */
+    static void testSpecMultiTurn(String baseUrl) {
+        String id = "jsonrpc/spec-multi-turn";
+        long start = System.nanoTime();
+        try {
+            // Step 1: Start conversation
+            String body1 = sendMessage(baseUrl + "/spec", "multi-turn start conversation");
+            if (body1 == null) {
+                record(id, "Spec Multi-Turn", false, "Step 1: null response", elapsed(start));
+                return;
+            }
+            if (hasJsonRpcError(body1)) {
+                record(id, "Spec Multi-Turn", false,
+                        "Step 1 error: " + extractJsonString(body1, "message"), elapsed(start));
+                return;
+            }
+            boolean step1InputRequired = body1.contains("TASK_STATE_INPUT_REQUIRED")
+                    || body1.contains("\"input_required\"");
+
+            // Extract taskId from step 1
+            String taskId = null;
+            int taskIdx = body1.indexOf("\"task\"");
+            if (taskIdx >= 0) {
+                String taskPortion = body1.substring(taskIdx);
+                taskId = extractJsonString(taskPortion, "id");
+            }
+            if (taskId == null) {
+                record(id, "Spec Multi-Turn", false, "Step 1: no taskId found", elapsed(start));
+                return;
+            }
+
+            // Step 2: Follow-up with taskId
+            String msgId2 = UUID.randomUUID().toString();
+            String rpcId2 = UUID.randomUUID().toString();
+            String jsonBody2 = """
+                    {
+                        "jsonrpc": "2.0",
+                        "method": "SendMessage",
+                        "id": "%s",
+                        "params": {
+                            "message": {
+                                "messageId": "%s",
+                                "role": "ROLE_USER",
+                                "parts": [{"text": "follow-up message"}],
+                                "taskId": "%s"
+                            }
+                        }
+                    }
+                    """.formatted(rpcId2, msgId2, taskId);
+
+            HttpResponse<String> resp2 = httpPost(baseUrl + "/spec", jsonBody2);
+            String body2 = resp2.body();
+            boolean step2InputRequired = body2.contains("TASK_STATE_INPUT_REQUIRED")
+                    || body2.contains("\"input_required\"");
+
+            // Step 3: Send "done" to complete
+            String msgId3 = UUID.randomUUID().toString();
+            String rpcId3 = UUID.randomUUID().toString();
+            String jsonBody3 = """
+                    {
+                        "jsonrpc": "2.0",
+                        "method": "SendMessage",
+                        "id": "%s",
+                        "params": {
+                            "message": {
+                                "messageId": "%s",
+                                "role": "ROLE_USER",
+                                "parts": [{"text": "done"}],
+                                "taskId": "%s"
+                            }
+                        }
+                    }
+                    """.formatted(rpcId3, msgId3, taskId);
+
+            HttpResponse<String> resp3 = httpPost(baseUrl + "/spec", jsonBody3);
+            long ms = elapsed(start);
+            String body3 = resp3.body();
+            boolean step3Completed = body3.contains("TASK_STATE_COMPLETED")
+                    || body3.contains("\"completed\"");
+
+            boolean passed = step1InputRequired && step2InputRequired && step3Completed;
+            record(id, "Spec Multi-Turn", passed,
+                    "step1=INPUT_REQUIRED:" + step1InputRequired
+                            + ", step2=INPUT_REQUIRED:" + step2InputRequired
+                            + ", step3=COMPLETED:" + step3Completed
+                            + ", taskId=" + truncate(taskId, 36), ms);
+        } catch (Exception e) {
+            record(id, "Spec Multi-Turn", false, exceptionDetail(e), elapsed(start));
+        }
+    }
+
+    /** 12. spec-task-cancel — Cancel a task via streaming */
+    static void testSpecTaskCancel(String baseUrl) {
+        String id = "jsonrpc/spec-task-cancel";
+        long start = System.nanoTime();
+        try {
+            // Start streaming to get taskId — use InputStream to read events as they arrive
+            String msgId = UUID.randomUUID().toString();
+            String rpcId = UUID.randomUUID().toString();
+            String jsonBody = """
+                    {
+                        "jsonrpc": "2.0",
+                        "method": "SendStreamingMessage",
+                        "id": "%s",
+                        "params": {
+                            "message": {
+                                "messageId": "%s",
+                                "role": "ROLE_USER",
+                                "parts": [{"text": "task-cancel"}]
+                            }
+                        }
+                    }
+                    """.formatted(rpcId, msgId);
+
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/spec"))
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "text/event-stream")
+                    .header("A2A-Version", A2A_VERSION)
+                    .timeout(Duration.ofSeconds(10))
+                    .build();
+
+            HttpResponse<java.io.InputStream> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofInputStream());
+
+            if (resp.statusCode() != 200) {
+                record(id, "Spec Task Cancel", false, "HTTP " + resp.statusCode(), elapsed(start));
+                return;
+            }
+
+            // Read SSE events line by line, extract taskId from first event
+            String taskId = null;
+            try (var reader = new java.io.BufferedReader(new java.io.InputStreamReader(resp.body()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.startsWith("data:")) continue;
+                    String data = line.substring(5).trim();
+                    int taskIdx = data.indexOf("\"task\"");
+                    if (taskIdx >= 0) {
+                        String taskPortion = data.substring(taskIdx);
+                        taskId = extractJsonString(taskPortion, "id");
+                    }
+                    if (taskId == null) {
+                        taskId = extractJsonString(data, "id");
+                    }
+                    if (taskId != null) break;
+                }
+            }
+
+            if (taskId == null) {
+                record(id, "Spec Task Cancel", false, "no taskId from streaming", elapsed(start));
+                return;
+            }
+
+            // Send CancelTask
+            String cancelRpcId = UUID.randomUUID().toString();
+            String cancelBody = """
+                    {
+                        "jsonrpc": "2.0",
+                        "method": "CancelTask",
+                        "id": "%s",
+                        "params": {
+                            "id": "%s"
+                        }
+                    }
+                    """.formatted(cancelRpcId, taskId);
+
+            HttpResponse<String> cancelResp = httpPost(baseUrl + "/spec", cancelBody);
+            long ms = elapsed(start);
+            String cancelResult = cancelResp.body();
+
+            boolean canceled = cancelResult.contains("TASK_STATE_CANCELED")
+                    || cancelResult.contains("\"canceled\"");
+
+            String state = extractTaskState(cancelResult);
+            record(id, "Spec Task Cancel", canceled,
+                    "taskId=" + truncate(taskId, 36) + ", state=" + state, ms);
+        } catch (Exception e) {
+            record(id, "Spec Task Cancel", false, exceptionDetail(e), elapsed(start));
+        }
+    }
+
+    /** 13. spec-list-tasks — List tasks */
+    static void testSpecListTasks(String baseUrl) {
+        String id = "jsonrpc/spec-list-tasks";
+        long start = System.nanoTime();
+        try {
+            String rpcId = UUID.randomUUID().toString();
+            String jsonBody = """
+                    {
+                        "jsonrpc": "2.0",
+                        "method": "ListTasks",
+                        "id": "%s",
+                        "params": {}
+                    }
+                    """.formatted(rpcId);
+
+            HttpResponse<String> resp = httpPost(baseUrl + "/spec", jsonBody);
+            long ms = elapsed(start);
+
+            if (resp.statusCode() != 200) {
+                record(id, "Spec List Tasks", false, "HTTP " + resp.statusCode(), ms);
+                return;
+            }
+
+            String body = resp.body();
+            if (hasJsonRpcError(body)) {
+                record(id, "Spec List Tasks", false,
+                        "JSON-RPC error: " + extractJsonString(body, "message"), ms);
+                return;
+            }
+
+            boolean hasResult = body.contains("\"result\"");
+            int taskCount = countOccurrences(body, "\"state\"");
+            boolean hasAtLeastOne = taskCount >= 1;
+
+            record(id, "Spec List Tasks", hasResult && hasAtLeastOne,
+                    "hasResult=" + hasResult + ", taskCount>=" + taskCount, ms);
+        } catch (Exception e) {
+            record(id, "Spec List Tasks", false, exceptionDetail(e), elapsed(start));
+        }
+    }
+
+    /** 14. spec-return-immediately — returnImmediately flag (expected to fail) */
+    static void testSpecReturnImmediately(String baseUrl) {
+        String id = "jsonrpc/spec-return-immediately";
+        long start = System.nanoTime();
+        try {
+            String msgId = UUID.randomUUID().toString();
+            String rpcId = UUID.randomUUID().toString();
+            String jsonBody = """
+                    {
+                        "jsonrpc": "2.0",
+                        "method": "SendMessage",
+                        "id": "%s",
+                        "params": {
+                            "message": {
+                                "messageId": "%s",
+                                "role": "ROLE_USER",
+                                "parts": [{"text": "long-running test"}]
+                            },
+                            "configuration": {
+                                "returnImmediately": true
+                            }
+                        }
+                    }
+                    """.formatted(rpcId, msgId);
+
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/spec"))
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .header("Content-Type", "application/json")
+                    .header("A2A-Version", A2A_VERSION)
+                    .timeout(Duration.ofSeconds(15))
+                    .build();
+
+            HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            long ms = elapsed(start);
+
+            String body = resp.body();
+            String state = extractTaskState(body);
+            boolean isTerminal = state != null
+                    && (state.contains("COMPLETED") || state.contains("completed"));
+            boolean fastEnough = ms < 2000;
+            boolean tooSlow = ms > 3000;
+
+            // Pass if <2s with non-terminal state. FAIL if >3s or COMPLETED.
+            boolean passed = fastEnough && !isTerminal;
+
+            String detail;
+            if (tooSlow) {
+                detail = "returnImmediately ignored by SDK, took " + ms + "ms";
+            } else if (isTerminal) {
+                detail = "returnImmediately ignored by SDK, state=" + state;
+            } else {
+                detail = "state=" + state + ", time=" + ms + "ms";
+            }
+
+            record(id, "Spec Return Immediately", passed, detail, ms);
+        } catch (Exception e) {
+            record(id, "Spec Return Immediately", false, exceptionDetail(e), elapsed(start));
+        }
+    }
+
     // ─────────────────── REST binding test implementations ───────────────────
 
     /** REST helper: build a bare JSON message body (no JSON-RPC wrapper). */
@@ -796,6 +1091,243 @@ public class TestJavaClient {
                     ms);
         } catch (Exception e) {
             record(id, "REST Error Task Not Found", false, exceptionDetail(e), elapsed(start));
+        }
+    }
+
+    /** REST 11. rest/spec-multi-turn — 3-step multi-turn conversation via REST */
+    static void testRestSpecMultiTurn(String baseUrl) {
+        String id = "rest/spec-multi-turn";
+        long start = System.nanoTime();
+        try {
+            // Step 1: Start conversation
+            String jsonBody1 = makeRestMessageBody("multi-turn start conversation");
+            HttpResponse<String> resp1 = httpPost(baseUrl + "/spec/v1/message:send", jsonBody1);
+
+            if (resp1.statusCode() != 200) {
+                record(id, "REST Spec Multi-Turn", false,
+                        "Step 1: HTTP " + resp1.statusCode(), elapsed(start));
+                return;
+            }
+            String body1 = resp1.body();
+            boolean step1InputRequired = body1.contains("TASK_STATE_INPUT_REQUIRED")
+                    || body1.contains("\"input_required\"");
+
+            // Extract taskId
+            String taskId = null;
+            int taskIdx = body1.indexOf("\"task\"");
+            if (taskIdx >= 0) {
+                String taskPortion = body1.substring(taskIdx);
+                taskId = extractJsonString(taskPortion, "id");
+            }
+            if (taskId == null) {
+                record(id, "REST Spec Multi-Turn", false,
+                        "Step 1: no taskId found", elapsed(start));
+                return;
+            }
+
+            // Step 2: Follow-up with taskId
+            String msgId2 = UUID.randomUUID().toString();
+            String jsonBody2 = """
+                    {
+                        "message": {
+                            "messageId": "%s",
+                            "role": "ROLE_USER",
+                            "parts": [{"text": "follow-up message"}],
+                            "taskId": "%s"
+                        }
+                    }
+                    """.formatted(msgId2, taskId);
+            HttpResponse<String> resp2 = httpPost(baseUrl + "/spec/v1/message:send", jsonBody2);
+            String body2 = resp2.body();
+            boolean step2InputRequired = body2.contains("TASK_STATE_INPUT_REQUIRED")
+                    || body2.contains("\"input_required\"");
+
+            // Step 3: Send "done" to complete
+            String msgId3 = UUID.randomUUID().toString();
+            String jsonBody3 = """
+                    {
+                        "message": {
+                            "messageId": "%s",
+                            "role": "ROLE_USER",
+                            "parts": [{"text": "done"}],
+                            "taskId": "%s"
+                        }
+                    }
+                    """.formatted(msgId3, taskId);
+            HttpResponse<String> resp3 = httpPost(baseUrl + "/spec/v1/message:send", jsonBody3);
+            long ms = elapsed(start);
+            String body3 = resp3.body();
+            boolean step3Completed = body3.contains("TASK_STATE_COMPLETED")
+                    || body3.contains("\"completed\"");
+
+            boolean passed = step1InputRequired && step2InputRequired && step3Completed;
+            record(id, "REST Spec Multi-Turn", passed,
+                    "step1=INPUT_REQUIRED:" + step1InputRequired
+                            + ", step2=INPUT_REQUIRED:" + step2InputRequired
+                            + ", step3=COMPLETED:" + step3Completed
+                            + ", taskId=" + truncate(taskId, 36), ms);
+        } catch (Exception e) {
+            record(id, "REST Spec Multi-Turn", false, exceptionDetail(e), elapsed(start));
+        }
+    }
+
+    /** REST 12. rest/spec-task-cancel — Cancel a task via REST streaming */
+    static void testRestSpecTaskCancel(String baseUrl) {
+        String id = "rest/spec-task-cancel";
+        long start = System.nanoTime();
+        try {
+            // Start streaming to get taskId — use InputStream to read events as they arrive
+            String jsonBody = makeRestMessageBody("task-cancel");
+
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/spec/v1/message:stream"))
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "text/event-stream")
+                    .header("A2A-Version", A2A_VERSION)
+                    .timeout(Duration.ofSeconds(10))
+                    .build();
+
+            HttpResponse<java.io.InputStream> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofInputStream());
+
+            if (resp.statusCode() != 200) {
+                record(id, "REST Spec Task Cancel", false,
+                        "HTTP " + resp.statusCode(), elapsed(start));
+                return;
+            }
+
+            // Read SSE events line by line, extract taskId from first event
+            String taskId = null;
+            try (var reader = new java.io.BufferedReader(new java.io.InputStreamReader(resp.body()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.startsWith("data:")) continue;
+                    String data = line.substring(5).trim();
+                    int taskIdx = data.indexOf("\"task\"");
+                    if (taskIdx >= 0) {
+                        String taskPortion = data.substring(taskIdx);
+                        taskId = extractJsonString(taskPortion, "id");
+                    }
+                    if (taskId == null) {
+                        // Also check statusUpdate.taskId
+                        int suIdx = data.indexOf("\"taskId\"");
+                        if (suIdx >= 0) {
+                            taskId = extractJsonString(data.substring(suIdx - 1), "taskId");
+                        }
+                    }
+                    if (taskId != null) break;
+                }
+            }
+
+            if (taskId == null) {
+                record(id, "REST Spec Task Cancel", false,
+                        "no taskId from streaming", elapsed(start));
+                return;
+            }
+
+            // Send cancel via REST: POST /v1/tasks/{id}:cancel
+            String cancelUrl = baseUrl + "/spec/v1/tasks/" + taskId + ":cancel";
+            HttpRequest cancelReq = HttpRequest.newBuilder()
+                    .uri(URI.create(cancelUrl))
+                    .POST(HttpRequest.BodyPublishers.ofString("{}"))
+                    .header("Content-Type", "application/json")
+                    .header("A2A-Version", A2A_VERSION)
+                    .timeout(Duration.ofSeconds(10))
+                    .build();
+
+            HttpResponse<String> cancelResp = httpClient.send(cancelReq,
+                    HttpResponse.BodyHandlers.ofString());
+            long ms = elapsed(start);
+            String cancelResult = cancelResp.body();
+
+            boolean canceled = cancelResult.contains("TASK_STATE_CANCELED")
+                    || cancelResult.contains("\"canceled\"");
+
+            String state = extractTaskState(cancelResult);
+            record(id, "REST Spec Task Cancel", canceled,
+                    "taskId=" + truncate(taskId, 36) + ", state=" + state, ms);
+        } catch (Exception e) {
+            record(id, "REST Spec Task Cancel", false, exceptionDetail(e), elapsed(start));
+        }
+    }
+
+    /** REST 13. rest/spec-list-tasks — List tasks via REST */
+    static void testRestSpecListTasks(String baseUrl) {
+        String id = "rest/spec-list-tasks";
+        long start = System.nanoTime();
+        try {
+            HttpResponse<String> resp = httpGet(baseUrl + "/spec/v1/tasks");
+            long ms = elapsed(start);
+
+            if (resp.statusCode() != 200) {
+                record(id, "REST Spec List Tasks", false, "HTTP " + resp.statusCode(), ms);
+                return;
+            }
+
+            String body = resp.body();
+            boolean isArray = body.trim().startsWith("[");
+            int taskCount = countOccurrences(body, "\"state\"");
+            boolean hasAtLeastOne = taskCount >= 1;
+
+            record(id, "REST Spec List Tasks", hasAtLeastOne,
+                    "isArray=" + isArray + ", taskCount>=" + taskCount, ms);
+        } catch (Exception e) {
+            record(id, "REST Spec List Tasks", false, exceptionDetail(e), elapsed(start));
+        }
+    }
+
+    /** REST 14. rest/spec-return-immediately — returnImmediately flag via REST (expected to fail) */
+    static void testRestSpecReturnImmediately(String baseUrl) {
+        String id = "rest/spec-return-immediately";
+        long start = System.nanoTime();
+        try {
+            String msgId = UUID.randomUUID().toString();
+            String jsonBody = """
+                    {
+                        "message": {
+                            "messageId": "%s",
+                            "role": "ROLE_USER",
+                            "parts": [{"text": "long-running test"}]
+                        },
+                        "configuration": {
+                            "returnImmediately": true
+                        }
+                    }
+                    """.formatted(msgId);
+
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/spec/v1/message:send"))
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .header("Content-Type", "application/json")
+                    .header("A2A-Version", A2A_VERSION)
+                    .timeout(Duration.ofSeconds(15))
+                    .build();
+
+            HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            long ms = elapsed(start);
+
+            String body = resp.body();
+            String state = extractTaskState(body);
+            boolean isTerminal = state != null
+                    && (state.contains("COMPLETED") || state.contains("completed"));
+            boolean fastEnough = ms < 2000;
+            boolean tooSlow = ms > 3000;
+
+            // Pass if <2s with non-terminal state. FAIL if >3s or COMPLETED.
+            boolean passed = fastEnough && !isTerminal;
+
+            String detail;
+            if (tooSlow) {
+                detail = "returnImmediately ignored by SDK, took " + ms + "ms";
+            } else if (isTerminal) {
+                detail = "returnImmediately ignored by SDK, state=" + state;
+            } else {
+                detail = "state=" + state + ", time=" + ms + "ms";
+            }
+
+            record(id, "REST Spec Return Immediately", passed, detail, ms);
+        } catch (Exception e) {
+            record(id, "REST Spec Return Immediately", false, exceptionDetail(e), elapsed(start));
         }
     }
 
