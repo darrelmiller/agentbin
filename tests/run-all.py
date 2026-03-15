@@ -98,8 +98,10 @@ def run_client(client_id: str, base_url: str) -> dict | None:
     print(f"{'='*60}\n")
 
     try:
+        # shell=True needed on Windows for .cmd/.bat wrappers (e.g. mvn.cmd)
+        use_shell = sys.platform == "win32"
         result = subprocess.run(
-            cmd, cwd=str(cwd), capture_output=False, timeout=300
+            cmd, cwd=str(cwd), capture_output=False, timeout=300, shell=use_shell
         )
         results_file = cwd / "results.json"
         if results_file.exists():
