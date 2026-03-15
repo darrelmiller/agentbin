@@ -54,9 +54,14 @@
   <div id="overview" class="tab-content active">
     <div class="section">
       <h2>What is AgentBin?</h2>
-      <p>AgentBin is a publicly accessible, unauthenticated service hosting A2A v1.0 agents.
-         It serves as a <strong>test bed</strong> for client implementers to validate their A2A integrations
-         against a live endpoint that exercises all interaction patterns defined in the specification.</p>
+      <p>AgentBin is a publicly accessible, unauthenticated service hosting <strong>A2A v1.0 agents built with .NET</strong>.
+         It serves as a <strong>cross-language interoperability test bed</strong> — the purpose is to let client implementers
+         in <em>other</em> languages (Go, Python, Java, TypeScript, etc.) validate their A2A SDK against a live .NET-based
+         server that exercises all interaction patterns defined in the A2A v1.0 specification.</p>
+      <p style="margin-top:0.5rem;">The agents are implemented using the
+         <a href="https://github.com/a2aproject/a2a-dotnet" style="color:var(--accent)">a2a-dotnet</a> NuGet packages and
+         hosted on Azure Container Apps. The <a href="#" data-tab="dashboard" style="color:var(--accent)">compatibility dashboard</a>
+         shows live test results from .NET, Go, Python, and Java SDK clients calling these agents.</p>
     </div>
 
     <div class="section">
