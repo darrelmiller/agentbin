@@ -131,6 +131,83 @@ def load_existing_results() -> dict[str, dict]:
     return all_results
 
 
+# Known failure annotations: (client_pattern, test_id_pattern) -> explanation
+# client_pattern: exact client id or "*" for all clients
+# test_id_pattern: exact test id or a substring match
+KNOWN_FAILURES: dict[tuple[str, str], str] = {
+    # .NET server doesn't implement returnImmediately — all SDKs block for the full task duration
+    ("*", "spec-return-immediately"):
+        "Known: .NET A2A server does not implement returnImmediately. "
+        "The SDK blocks until the task completes instead of returning early.",
+
+    # Java SDK protobuf agent card deserialization
+    ("java", "agent-card-echo"):
+        "Known: Java SDK uses protobuf internally to parse agent cards. "
+        "The .NET server emits null for repeated fields (extensions, inputModes, outputModes) "
+        "which protobuf JSON parsing rejects.",
+    ("java", "agent-card-spec"):
+        "Known: Java SDK uses protobuf internally to parse agent cards. "
+        "The .NET server emits null for repeated fields which protobuf JSON parsing rejects.",
+
+    # Java SDK JSONRPC — Task ID null after protobuf deserialization
+    ("java", "jsonrpc/spec-task-lifecycle"):
+        "Known: Java SDK protobuf-to-spec conversion produces Task with null 'id' "
+        "when deserializing SSE streaming responses from the .NET server.",
+    ("java", "jsonrpc/spec-get-task"):
+        "Known: Skipped because task-lifecycle fails (no task ID to query).",
+    ("java", "jsonrpc/spec-task-failure"):
+        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
+    ("java", "jsonrpc/spec-data-types"):
+        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
+    ("java", "jsonrpc/spec-streaming"):
+        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
+    ("java", "jsonrpc/spec-multi-turn"):
+        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
+    ("java", "jsonrpc/spec-task-cancel"):
+        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
+    ("java", "jsonrpc/spec-list-tasks"):
+        "Known: Java SDK JSONRPC listTasks returns 0 results — "
+        "likely protobuf deserialization issue with task list response.",
+    ("java", "jsonrpc/spec-return-immediately"):
+        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
+
+    # Java SDK REST — non-streaming returns SUBMITTED (not final state)
+    ("java", "rest/spec-task-lifecycle"):
+        "Known: Java SDK REST non-streaming sendMessage returns immediately with "
+        "TASK_STATE_SUBMITTED instead of waiting for the final completed state. "
+        "Needs polling via getTask or use streaming.",
+    ("java", "rest/spec-task-failure"):
+        "Known: Java SDK REST non-streaming returns TASK_STATE_SUBMITTED — "
+        "doesn't wait for FAILED state. Same root cause as task-lifecycle.",
+    ("java", "rest/spec-data-types"):
+        "Known: Java SDK REST non-streaming returns SUBMITTED with no artifacts. "
+        "The response arrives before the agent finishes processing.",
+    ("java", "rest/spec-multi-turn"):
+        "Known: Java SDK REST non-streaming returns TASK_STATE_SUBMITTED "
+        "instead of TASK_STATE_INPUT_REQUIRED. Agent hasn't finished processing.",
+    ("java", "rest/spec-list-tasks"):
+        "Known: Java SDK listTasks fails with Task 'id' null — "
+        "protobuf deserialization issue when parsing task list.",
+}
+
+
+def _get_known_failure(client_id: str, test_id: str) -> str | None:
+    """Look up a known failure annotation for a (client, test) pair."""
+    # Try exact match first
+    if (client_id, test_id) in KNOWN_FAILURES:
+        return KNOWN_FAILURES[(client_id, test_id)]
+    # Try wildcard client
+    if ("*", test_id) in KNOWN_FAILURES:
+        return KNOWN_FAILURES[("*", test_id)]
+    # Try matching just the base test id (without binding prefix)
+    base_id = test_id.split("/")[-1] if "/" in test_id else test_id
+    if (client_id, base_id) in KNOWN_FAILURES:
+        return KNOWN_FAILURES[(client_id, base_id)]
+    if ("*", base_id) in KNOWN_FAILURES:
+        return KNOWN_FAILURES[("*", base_id)]
+    return None
+
+
 def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
@@ -180,7 +257,12 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
                         cells += f'<td class="pass" title="{_esc(tip)}">&#10004;</td>'
                     else:
                         detail = r.get("detail", r.get("Detail", ""))
-                        cells += f'<td class="fail" title="{_esc(detail)}">&#10008;</td>'
+                        known = _get_known_failure(cid, full_id)
+                        if known:
+                            tip = f"{detail}\n\n⚠ {known}"
+                            cells += f'<td class="fail known" title="{_esc(tip)}">&#10008;</td>'
+                        else:
+                            cells += f'<td class="fail" title="{_esc(detail)}">&#10008;</td>'
                 rows_html += f"<tr>{cells}</tr>\n"
 
     # Header columns
@@ -239,6 +321,7 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
                  color: var(--muted); letter-spacing: 0.04em; padding: 3px 10px; }}
   .pass {{ color: #3fb950; cursor: help; font-weight: bold; }}
   .fail {{ color: #f85149; cursor: help; font-weight: bold; }}
+  .fail.known {{ color: #d29922; }}
   .skip {{ color: var(--muted); font-size: 0.75rem; }}
   tr:hover td:not(.cat-row td):not(.binding-row td) {{ background: rgba(255,255,255,0.03); }}
   .footer {{ color: var(--muted); font-size: 0.7rem; margin-top: 0.8rem; }}
