@@ -5,6 +5,12 @@
 @baseUrl = https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io
 # @baseUrl = http://localhost:5000
 
+# Derived variables (resolved from named request responses)
+@taskCancelTaskIdV10 = {{taskCancelStartV10.response.body.$.result.id}}
+@multiTurnTaskIdV10 = {{multiTurnStartV10.response.body.$.result.id}}
+@longRunningTaskIdV10 = {{longRunningStartV10.response.body.$.result.id}}
+@multiTurnTaskIdV03 = {{multiTurnStartV03.response.body.$.result.id}}
+
 ### ═══════════════════════════════════════════════════════════════
 ### HEALTH CHECK
 ### ═══════════════════════════════════════════════════════════════
@@ -15,6 +21,8 @@ GET {{baseUrl}}/health
 ### AGENT CARDS — v1.0
 ### ═══════════════════════════════════════════════════════════════
 
+// These are "intentional" violations of the .well-known specification in the interim of getting a proper solution to AI Card discovery with AI Catalog
+
 ### Echo Agent Card (v1.0)
 GET {{baseUrl}}/echo/.well-known/agent-card.json
 A2A-Version: 1.0
@@ -23,9 +31,6 @@ A2A-Version: 1.0
 GET {{baseUrl}}/spec/.well-known/agent-card.json
 A2A-Version: 1.0
 
-### Root listing (v1.0)
-GET {{baseUrl}}/.well-known/agent-card.json
-A2A-Version: 1.0
 
 ### ═══════════════════════════════════════════════════════════════
 ### AGENT CARDS — v0.3 (no A2A-Version header)
@@ -136,6 +141,7 @@ A2A-Version: 1.0
 ### ═══════════════════════════════════════════════════════════════
 
 ### Task Cancel — Step 1: Start task
+# @name taskCancelStartV10
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -148,12 +154,13 @@ A2A-Version: 1.0
     "message": {
       "messageId": "msg-cancel-1",
       "role": "ROLE_USER",
-      "parts": [{ "text": "task-cancel start" }]
+      "parts": [{ "text": "task-cancel start" }],
+      "returnImmediately": true
     }
   }
 }
 
-### Task Cancel — Step 2: Cancel it (replace TASK_ID_HERE with id from above)
+### Task Cancel — Step 2: Cancel it (uses task id from step 1)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -163,7 +170,7 @@ A2A-Version: 1.0
   "method": "CancelTask",
   "id": "task-cancel-do",
   "params": {
-    "id": "TASK_ID_HERE"
+    "id": "{{taskCancelTaskIdV10}}"
   }
 }
 
@@ -174,6 +181,7 @@ A2A-Version: 1.0
 ### ═══════════════════════════════════════════════════════════════
 
 ### Multi-Turn — Step 1: Start
+# @name multiTurnStartV10
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -191,7 +199,7 @@ A2A-Version: 1.0
   }
 }
 
-### Multi-Turn — Step 2: Reply (replace TASK_ID_HERE with id from above)
+### Multi-Turn — Step 2: Reply (uses task id from step 1)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -206,11 +214,11 @@ A2A-Version: 1.0
       "role": "ROLE_USER",
       "parts": [{ "text": "here is more input" }]
     },
-    "taskId": "TASK_ID_HERE"
+    "taskId": "{{multiTurnTaskIdV10}}"
   }
 }
 
-### Multi-Turn — Step 3: Complete (replace TASK_ID_HERE)
+### Multi-Turn — Step 3: Complete (uses task id from step 1)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -225,7 +233,7 @@ A2A-Version: 1.0
       "role": "ROLE_USER",
       "parts": [{ "text": "done" }]
     },
-    "taskId": "TASK_ID_HERE"
+    "taskId": "{{multiTurnTaskIdV10}}"
   }
 }
 
@@ -258,6 +266,7 @@ A2A-Version: 1.0
 ### ═══════════════════════════════════════════════════════════════
 
 ### Long Running — Start (v1.0)
+# @name longRunningStartV10
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -275,7 +284,7 @@ A2A-Version: 1.0
   }
 }
 
-### Long Running — Poll (replace TASK_ID_HERE with id from above)
+### Long Running — Poll (uses task id from start request)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 A2A-Version: 1.0
@@ -285,7 +294,7 @@ A2A-Version: 1.0
   "method": "GetTask",
   "id": "long-poll",
   "params": {
-    "id": "TASK_ID_HERE"
+    "id": "{{longRunningTaskIdV10}}"
   }
 }
 
@@ -471,6 +480,7 @@ Content-Type: application/json
 ### ═══════════════════════════════════════════════════════════════
 
 ### Multi-Turn Start (v0.3)
+# @name multiTurnStartV03
 POST {{baseUrl}}/spec
 Content-Type: application/json
 
@@ -487,7 +497,7 @@ Content-Type: application/json
   }
 }
 
-### Multi-Turn Reply (v0.3 — replace TASK_ID_HERE)
+### Multi-Turn Reply (v0.3 — uses task id from Multi-Turn Start)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 
@@ -501,7 +511,7 @@ Content-Type: application/json
       "role": "user",
       "parts": [{ "kind": "text", "text": "done" }]
     },
-    "taskId": "TASK_ID_HERE"
+    "taskId": "{{multiTurnTaskIdV03}}"
   }
 }
 
@@ -509,7 +519,7 @@ Content-Type: application/json
 ### v0.3 — GetTask / CancelTask
 ### ═══════════════════════════════════════════════════════════════
 
-### Get Task (v0.3 — replace TASK_ID_HERE)
+### Get Task (v0.3 — uses task id from Multi-Turn Start)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 
@@ -518,11 +528,11 @@ Content-Type: application/json
   "method": "tasks/get",
   "id": "get-v03",
   "params": {
-    "id": "TASK_ID_HERE"
+    "id": "{{multiTurnTaskIdV03}}"
   }
 }
 
-### Cancel Task (v0.3 — replace TASK_ID_HERE)
+### Cancel Task (v0.3 — uses task id from Multi-Turn Start)
 POST {{baseUrl}}/spec
 Content-Type: application/json
 
@@ -531,6 +541,6 @@ Content-Type: application/json
   "method": "tasks/cancel",
   "id": "cancel-v03",
   "params": {
-    "id": "TASK_ID_HERE"
+    "id": "{{multiTurnTaskIdV03}}"
   }
 }

@@ -21,3 +21,11 @@ TestA2ARaw.java
 # OS
 Thumbs.db
 .DS_Store
+
+# Generated test artifacts
+tests/dashboard.html
+tests/ClientTests/*/results.json
+
+# Go binaries
+tests/ClientTests/go/agentbin-test.exe
+tests/ClientTests/go/agentbin-test
