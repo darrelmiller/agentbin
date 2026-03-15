@@ -259,6 +259,100 @@ scenarios:
             result.status.state: TASK_STATE_COMPLETED
             result.artifacts: {type: array, countGte: 1}
 
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: spec-task-lifecycle-return-immediately
+    name: Spec Agent — Task Lifecycle (returnImmediately)
+    description: >
+      Same task-lifecycle skill, but with returnImmediately:true.
+      Agent MUST return immediately with a task in a non-terminal state
+      (SUBMITTED or WORKING). Client then polls with GetTask until the
+      task reaches COMPLETED. This tests the async polling pattern.
+    agent: spec
+    tags: [spec, task-lifecycle, task, return-immediately, v1.0]
+    preconditions:
+      - Agent supports returnImmediately (SendMessageConfiguration)
+    steps:
+      - id: send
+        description: >
+          Send task-lifecycle with returnImmediately:true.
+          Agent returns task immediately — state may be SUBMITTED or WORKING.
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: SendMessage
+            id: "{{$uuid}}"
+            params:
+              message:
+                messageId: "{{$uuid}}"
+                role: ROLE_USER
+                parts:
+                  - text: "task-lifecycle process this data"
+              configuration:
+                returnImmediately: true
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.task: {exists: true}
+            result.task.id: {type: string}
+            result.task.status.state: {oneOf: [TASK_STATE_SUBMITTED, TASK_STATE_WORKING]}
+        capture:
+          taskId: result.task.id
+
+      - id: poll
+        description: >
+          Poll with GetTask until the task reaches COMPLETED.
+          Each poll should return a valid task with the same ID.
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: GetTask
+            id: "{{$uuid}}"
+            params:
+              id: "{{send.taskId}}"
+        expect:
+          status: 200
+          body:
+            jsonrpc: "2.0"
+            result.id: "{{send.taskId}}"
+            result.status.state: {type: string}
+        repeat:
+          until: result.status.state == TASK_STATE_COMPLETED
+          maxAttempts: 10
+          delayMs: 1000
+
+      - id: verify
+        description: Confirm final state has artifacts
+        request:
+          method: POST
+          path: "{{baseUrl}}/spec"
+          headers:
+            Content-Type: application/json
+            A2A-Version: "1.0"
+          body:
+            jsonrpc: "2.0"
+            method: GetTask
+            id: "{{$uuid}}"
+            params:
+              id: "{{send.taskId}}"
+        expect:
+          status: 200
+          body:
+            result.id: "{{send.taskId}}"
+            result.status.state: TASK_STATE_COMPLETED
+            result.artifacts: {type: array, countGte: 1}
+            result.artifacts[0].parts: {type: array, countGte: 1}
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # SPEC AGENT — TASK FAILURE SKILL
 # ═══════════════════════════════════════════════════════════════════════════════
