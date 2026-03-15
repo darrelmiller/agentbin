@@ -1,0 +1,69 @@
+---
+title: AgentBin — A2A v1.0 Test Bed Service
+---
+
+# AgentBin — A2A v1.0 Test Bed Service
+
+AgentBin is a publicly accessible, unauthenticated service that hosts A2A v1.0 agents designed as a **test bed for A2A client interactions**. Client implementers can validate their A2A integrations against live endpoints.
+
+## Agents
+
+### Echo Agent (`/echo`)
+
+A minimal message-only agent. Echoes back whatever you send. Use it to verify basic A2A connectivity.
+
+- **Endpoint**: `POST /echo` (JSON-RPC)
+- **Agent Card**: `GET /echo/.well-known/agent-card.json`
+- **Capabilities**: No streaming, no push notifications
+
+### Spec Agent (`/spec`)
+
+A multi-skill agent that exercises all A2A v1.0 interaction patterns. Send a message starting with a skill keyword to trigger the corresponding test scenario.
+
+- **Endpoint**: `POST /spec` (JSON-RPC)
+- **Agent Card**: `GET /spec/.well-known/agent-card.json`
+- **Capabilities**: Streaming enabled
+
+| Skill | Keyword | What it tests |
+|---|---|---|
+| Message Only | `message-only` | Stateless message response (no task created) |
+| Task Lifecycle | `task-lifecycle` | Full task: submitted → working → completed with artifact |
+| Task Failure | `task-failure` | Task that transitions to failed state with error |
+| Task Cancel | `task-cancel` | Task that waits in working state to be canceled |
+| Multi-Turn | `multi-turn` | Input-required state, conversation continuation |
+| Streaming | `streaming` | SSE streaming with multiple artifact chunks |
+| Long Running | `long-running` | Periodic updates over ~10 seconds |
+| Data Types | `data-types` | Mixed content: text, JSON, file (SVG), multi-part |
+
+**Example** (JSON-RPC):
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "message/send",
+  "id": "1",
+  "params": {
+    "message": {
+      "messageId": "msg-001",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "task-lifecycle hello world" }]
+    }
+  }
+}
+```
+
+## Running Locally
+
+```bash
+cd src/AgentBin
+dotnet run
+```
+
+The service starts on `http://localhost:8080` by default. Set the `BASE_URL` environment variable to override.
+
+## Health Check
+
+```
+GET /health
+```
+
+Returns `{ "Status": "Healthy", "Timestamp": "..." }`.
