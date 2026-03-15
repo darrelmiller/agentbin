@@ -26,7 +26,9 @@ BASE_URL = "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io"
 TESTS_DIR = Path(__file__).parent
 CLIENTS_DIR = TESTS_DIR / "ClientTests"
 
-STANDARD_TESTS = [
+BINDINGS = ["jsonrpc", "rest"]
+
+BASE_TESTS = [
     ("agent-card-echo", "Echo Agent Card", "Discovery"),
     ("agent-card-spec", "Spec Agent Card", "Discovery"),
     ("echo-send-message", "Echo Send Message", "Echo Agent"),
@@ -37,6 +39,13 @@ STANDARD_TESTS = [
     ("spec-data-types", "Data Types", "Spec Agent"),
     ("spec-streaming", "Streaming", "Spec Agent"),
     ("error-task-not-found", "Task Not Found Error", "Error Handling"),
+]
+
+# Full test IDs include binding prefix
+STANDARD_TESTS = [
+    (f"{binding}/{test_id}", test_name, cat)
+    for binding in BINDINGS
+    for test_id, test_name, cat in BASE_TESTS
 ]
 
 CLIENTS = {
@@ -131,30 +140,35 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
         f = len(results_list) - p
         totals[cid] = (p, f)
 
-    # Group tests by category
-    categories: dict[str, list[tuple[str, str]]] = {}
-    for test_id, test_name, cat in STANDARD_TESTS:
-        categories.setdefault(cat, []).append((test_id, test_name))
-
-    # Build table rows
+    # Build table rows grouped by binding then category
     rows_html = ""
-    for cat, tests in categories.items():
-        rows_html += f'<tr class="cat-row"><td colspan="{1 + len(ordered_clients)}">{cat}</td></tr>\n'
-        for test_id, test_name in tests:
-            cells = f'<td class="test-name">{test_name}<br><code>{test_id}</code></td>'
-            for cid in ordered_clients:
-                r = matrix.get(cid, {}).get(test_id)
-                if r is None:
-                    cells += '<td class="skip" title="Not implemented">—</td>'
-                elif r.get("passed") or r.get("Passed"):
-                    detail = r.get("detail", r.get("Detail", ""))
-                    dur = r.get("durationMs") or r.get("DurationMs") or ""
-                    tip = f"{detail}\n({dur}ms)" if dur else detail
-                    cells += f'<td class="pass" title="{_esc(tip)}">✅</td>'
-                else:
-                    detail = r.get("detail", r.get("Detail", ""))
-                    cells += f'<td class="fail" title="{_esc(detail)}">❌</td>'
-            rows_html += f"<tr>{cells}</tr>\n"
+    for binding in BINDINGS:
+        binding_label = "JSON-RPC" if binding == "jsonrpc" else "HTTP+JSON (REST)"
+        rows_html += f'<tr class="binding-row"><td colspan="{1 + len(ordered_clients)}">&#9656; {binding_label}</td></tr>\n'
+
+        # Group base tests by category
+        categories: dict[str, list[tuple[str, str]]] = {}
+        for test_id, test_name, cat in BASE_TESTS:
+            categories.setdefault(cat, []).append((test_id, test_name))
+
+        for cat, tests in categories.items():
+            rows_html += f'<tr class="cat-row"><td colspan="{1 + len(ordered_clients)}">{cat}</td></tr>\n'
+            for test_id, test_name in tests:
+                full_id = f"{binding}/{test_id}"
+                cells = f'<td class="test-name">{test_name}<br><code>{full_id}</code></td>'
+                for cid in ordered_clients:
+                    r = matrix.get(cid, {}).get(full_id)
+                    if r is None:
+                        cells += '<td class="skip" title="Not implemented">—</td>'
+                    elif r.get("passed") or r.get("Passed"):
+                        detail = r.get("detail", r.get("Detail", ""))
+                        dur = r.get("durationMs") or r.get("DurationMs") or ""
+                        tip = f"{detail}\n({dur}ms)" if dur else detail
+                        cells += f'<td class="pass" title="{_esc(tip)}">&#10003;</td>'
+                    else:
+                        detail = r.get("detail", r.get("Detail", ""))
+                        cells += f'<td class="fail" title="{_esc(detail)}">&#10007;</td>'
+                rows_html += f"<tr>{cells}</tr>\n"
 
     # Header columns
     header_cells = "<th>Test</th>"

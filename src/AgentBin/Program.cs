@@ -25,6 +25,10 @@ app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = Dat
 // Map SpecAgent (uses DI-registered handler)
 app.MapA2A("/spec");
 
+// Map SpecAgent REST binding (HTTP+JSON)
+var specHandler = app.Services.GetRequiredService<IA2ARequestHandler>();
+app.MapHttpA2A(specHandler, specCard, "/spec");
+
 // Map EchoAgent manually (second agent — can't use AddA2AAgent twice)
 var echoCard = EchoAgent.GetAgentCard($"{baseUrl}/echo");
 var echoServer = new A2AServer(
@@ -33,6 +37,7 @@ var echoServer = new A2AServer(
     new ChannelEventNotifier(),
     app.Services.GetRequiredService<ILogger<A2AServer>>());
 app.MapA2A(echoServer, "/echo");
+app.MapHttpA2A(echoServer, echoCard, "/echo");
 
 // Echo agent card — MapA2A(server, path) doesn't register the card endpoint
 app.MapGet("/echo/.well-known/agent-card.json", () => Results.Ok(echoCard));

@@ -25,6 +25,7 @@ BASE_URL = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_BASE
 RESULTS: list[dict] = []
 # Stash the task ID from spec-task-lifecycle so spec-get-task can reuse it
 _lifecycle_task_id: str | None = None
+_rest_lifecycle_task_id: str | None = None
 
 
 def record(test_id: str, name: str, passed: bool, detail: str, duration_ms: int):
@@ -97,7 +98,7 @@ async def test_agent_card_echo():
         card = await resolver.get_agent_card()
     ms = int((time.time() - t0) * 1000)
     ok = card.name == "Echo Agent" and len(card.skills) > 0
-    record("agent-card-echo", "Echo Agent Card", ok,
+    record("jsonrpc/agent-card-echo", "Echo Agent Card", ok,
            f"name={card.name}, skills={len(card.skills)}", ms)
 
 
@@ -109,7 +110,7 @@ async def test_agent_card_spec():
     ms = int((time.time() - t0) * 1000)
     skill_ids = [s.id for s in card.skills]
     ok = "Spec" in card.name and len(card.skills) > 0
-    record("agent-card-spec", "Spec Agent Card", ok,
+    record("jsonrpc/agent-card-spec", "Spec Agent Card", ok,
            f"name={card.name}, skills={skill_ids}", ms)
 
 
@@ -124,7 +125,7 @@ async def test_echo_send_message():
                 if p.text:
                     reply = p.text
     ok = reply.startswith("Echo:")
-    record("echo-send-message", "Echo Send Message", ok,
+    record("jsonrpc/echo-send-message", "Echo Send Message", ok,
            f"reply={reply!r}", ms)
 
 
@@ -141,7 +142,7 @@ async def test_spec_message_only():
                 if p.text:
                     reply = p.text
     ok = got_message and len(reply) > 0
-    record("spec-message-only", "Spec Message Only", ok,
+    record("jsonrpc/spec-message-only", "Spec Message Only", ok,
            f"gotMessage={got_message}, text={reply!r:.60}", ms)
 
 
@@ -155,7 +156,7 @@ async def test_spec_task_lifecycle():
     if task:
         _lifecycle_task_id = task.id
     ok = state == "TASK_STATE_COMPLETED" and has_artifact
-    record("spec-task-lifecycle", "Spec Task Lifecycle", ok,
+    record("jsonrpc/spec-task-lifecycle", "Spec Task Lifecycle", ok,
            f"state={state}, artifacts={has_artifact}, taskId={_lifecycle_task_id}", ms)
 
 
@@ -176,7 +177,7 @@ async def test_spec_get_task():
     ok = resp.status_code == 200 and got_id == task_id and state in (
         "completed", "TASK_STATE_COMPLETED",
     )
-    record("spec-get-task", "Spec GetTask", ok,
+    record("jsonrpc/spec-get-task", "Spec GetTask", ok,
            f"taskId={got_id}, state={state}", ms)
 
 
@@ -186,7 +187,7 @@ async def test_spec_task_failure():
     ms = int((time.time() - t0) * 1000)
     state = task_state_name(task)
     ok = state == "TASK_STATE_FAILED"
-    record("spec-task-failure", "Spec Task Failure", ok,
+    record("jsonrpc/spec-task-failure", "Spec Task Failure", ok,
            f"state={state}", ms)
 
 
@@ -212,7 +213,7 @@ async def test_spec_data_types():
                 if p.url or p.raw:
                     part_kinds.add("file")
     ok = len(part_kinds) >= 2
-    record("spec-data-types", "Spec Data Types", ok,
+    record("jsonrpc/spec-data-types", "Spec Data Types", ok,
            f"kinds={sorted(part_kinds)}", ms)
 
 
@@ -234,7 +235,7 @@ async def test_spec_streaming():
             for p in sr.message.parts:
                 if p.text:
                     final_text = p.text
-    record("spec-streaming", "Spec Streaming", ok,
+    record("jsonrpc/spec-streaming", "Spec Streaming", ok,
            f"events={len(events)}, text={final_text!r:.50}", ms)
 
 
@@ -251,23 +252,197 @@ async def test_error_task_not_found():
     error_code = data.get("error", {}).get("code", "")
     error_msg = data.get("error", {}).get("message", "")
     ok = has_error
-    record("error-task-not-found", "Error Task Not Found", ok,
+    record("jsonrpc/error-task-not-found", "Error Task Not Found", ok,
            f"hasError={has_error}, code={error_code}, msg={error_msg!r:.40}", ms)
+
+
+# -- REST Helpers -----------------------------------------------------
+
+async def rest_get(url: str) -> httpx.Response:
+    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0), headers=A2A_HEADERS) as hc:
+        return await hc.get(url)
+
+
+async def rest_post(url: str, body: dict) -> httpx.Response:
+    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0), headers=A2A_HEADERS) as hc:
+        return await hc.post(url, json=body)
+
+
+def make_rest_message(text: str) -> dict:
+    return {
+        "message": {
+            "messageId": str(uuid4()),
+            "role": "ROLE_USER",
+            "parts": [{"text": text}],
+        }
+    }
+
+
+# -- REST Tests -------------------------------------------------------
+
+async def test_rest_agent_card_echo():
+    t0 = time.time()
+    resp = await rest_get(f"{BASE_URL}/echo/v1/card")
+    ms = int((time.time() - t0) * 1000)
+    data = resp.json()
+    ok = resp.status_code == 200 and data.get("name") == "Echo Agent"
+    record("rest/agent-card-echo", "REST Echo Agent Card", ok,
+           f"status={resp.status_code}, name={data.get('name')}", ms)
+
+
+async def test_rest_agent_card_spec():
+    t0 = time.time()
+    resp = await rest_get(f"{BASE_URL}/spec/v1/card")
+    ms = int((time.time() - t0) * 1000)
+    data = resp.json()
+    ok = resp.status_code == 200 and "Spec" in (data.get("name") or "")
+    record("rest/agent-card-spec", "REST Spec Agent Card", ok,
+           f"status={resp.status_code}, name={data.get('name')}", ms)
+
+
+async def test_rest_echo_send_message():
+    t0 = time.time()
+    body = make_rest_message("Hello from REST!")
+    resp = await rest_post(f"{BASE_URL}/echo/v1/message:send", body)
+    ms = int((time.time() - t0) * 1000)
+    data = resp.json()
+    reply = ""
+    msg = data.get("message") or {}
+    for p in msg.get("parts", []):
+        if "text" in p:
+            reply = p["text"]
+    ok = resp.status_code == 200 and reply.startswith("Echo:")
+    record("rest/echo-send-message", "REST Echo Send Message", ok,
+           f"status={resp.status_code}, reply={reply!r}", ms)
+
+
+async def test_rest_spec_message_only():
+    t0 = time.time()
+    body = make_rest_message("message-only hello world")
+    resp = await rest_post(f"{BASE_URL}/spec/v1/message:send", body)
+    ms = int((time.time() - t0) * 1000)
+    data = resp.json()
+    got_message = "message" in data
+    reply = ""
+    if got_message:
+        for p in data["message"].get("parts", []):
+            if "text" in p:
+                reply = p["text"]
+    ok = resp.status_code == 200 and got_message and len(reply) > 0
+    record("rest/spec-message-only", "REST Spec Message Only", ok,
+           f"status={resp.status_code}, gotMessage={got_message}, text={reply!r:.60}", ms)
+
+
+async def test_rest_spec_task_lifecycle():
+    global _rest_lifecycle_task_id
+    t0 = time.time()
+    body = make_rest_message("task-lifecycle process this")
+    resp = await rest_post(f"{BASE_URL}/spec/v1/message:send", body)
+    ms = int((time.time() - t0) * 1000)
+    data = resp.json()
+    task = data.get("task") or data.get("result", {}).get("task", {})
+    state = task.get("status", {}).get("state", "")
+    has_artifact = bool(task.get("artifacts"))
+    task_id = task.get("id", "")
+    if task_id:
+        _rest_lifecycle_task_id = task_id
+    ok = resp.status_code == 200 and state in ("completed", "TASK_STATE_COMPLETED") and has_artifact
+    record("rest/spec-task-lifecycle", "REST Spec Task Lifecycle", ok,
+           f"state={state}, artifacts={has_artifact}, taskId={task_id}", ms)
+
+
+async def test_rest_spec_get_task():
+    t0 = time.time()
+    task_id = _rest_lifecycle_task_id or str(uuid4())
+    resp = await rest_get(f"{BASE_URL}/spec/v1/tasks/{task_id}")
+    ms = int((time.time() - t0) * 1000)
+    data = resp.json()
+    got_id = data.get("id", "")
+    state = data.get("status", {}).get("state", "")
+    ok = resp.status_code == 200 and got_id == task_id and state in (
+        "completed", "TASK_STATE_COMPLETED",
+    )
+    record("rest/spec-get-task", "REST Spec GetTask", ok,
+           f"status={resp.status_code}, taskId={got_id}, state={state}", ms)
+
+
+async def test_rest_spec_task_failure():
+    t0 = time.time()
+    body = make_rest_message("task-failure trigger error")
+    resp = await rest_post(f"{BASE_URL}/spec/v1/message:send", body)
+    ms = int((time.time() - t0) * 1000)
+    data = resp.json()
+    task = data.get("task") or data.get("result", {}).get("task", {})
+    state = task.get("status", {}).get("state", "")
+    ok = resp.status_code == 200 and state in ("failed", "TASK_STATE_FAILED")
+    record("rest/spec-task-failure", "REST Spec Task Failure", ok,
+           f"state={state}", ms)
+
+
+async def test_rest_spec_data_types():
+    t0 = time.time()
+    body = make_rest_message("data-types show all")
+    resp = await rest_post(f"{BASE_URL}/spec/v1/message:send", body)
+    ms = int((time.time() - t0) * 1000)
+    raw = resp.text
+    has_text = "text" in raw
+    has_data = "data" in raw
+    has_media = "mediaType" in raw
+    ok = resp.status_code == 200 and has_text and has_data and has_media
+    record("rest/spec-data-types", "REST Spec Data Types", ok,
+           f"hasText={has_text}, hasData={has_data}, hasMediaType={has_media}", ms)
+
+
+async def test_rest_spec_streaming():
+    t0 = time.time()
+    body = make_rest_message("streaming generate output")
+    data_events = 0
+    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0), headers=A2A_HEADERS) as hc:
+        async with hc.stream("POST", f"{BASE_URL}/spec/v1/message:stream", json=body) as stream:
+            async for line in stream.aiter_lines():
+                if line.startswith("data:"):
+                    data_events += 1
+    ms = int((time.time() - t0) * 1000)
+    ok = data_events >= 3
+    record("rest/spec-streaming", "REST Spec Streaming", ok,
+           f"dataEvents={data_events}", ms)
+
+
+async def test_rest_error_task_not_found():
+    t0 = time.time()
+    fake_id = "00000000-0000-0000-0000-000000000000"
+    resp = await rest_get(f"{BASE_URL}/spec/v1/tasks/{fake_id}")
+    ms = int((time.time() - t0) * 1000)
+    ok = resp.status_code == 404
+    record("rest/error-task-not-found", "REST Error Task Not Found", ok,
+           f"status={resp.status_code}", ms)
 
 
 # -- Runner -----------------------------------------------------------
 
 ALL_TESTS = [
-    ("agent-card-echo",       test_agent_card_echo),
-    ("agent-card-spec",       test_agent_card_spec),
-    ("echo-send-message",     test_echo_send_message),
-    ("spec-message-only",     test_spec_message_only),
-    ("spec-task-lifecycle",   test_spec_task_lifecycle),
-    ("spec-get-task",         test_spec_get_task),
-    ("spec-task-failure",     test_spec_task_failure),
-    ("spec-data-types",       test_spec_data_types),
-    ("spec-streaming",        test_spec_streaming),
-    ("error-task-not-found",  test_error_task_not_found),
+    # JSON-RPC (SDK) tests
+    ("jsonrpc/agent-card-echo",       test_agent_card_echo),
+    ("jsonrpc/agent-card-spec",       test_agent_card_spec),
+    ("jsonrpc/echo-send-message",     test_echo_send_message),
+    ("jsonrpc/spec-message-only",     test_spec_message_only),
+    ("jsonrpc/spec-task-lifecycle",   test_spec_task_lifecycle),
+    ("jsonrpc/spec-get-task",         test_spec_get_task),
+    ("jsonrpc/spec-task-failure",     test_spec_task_failure),
+    ("jsonrpc/spec-data-types",       test_spec_data_types),
+    ("jsonrpc/spec-streaming",        test_spec_streaming),
+    ("jsonrpc/error-task-not-found",  test_error_task_not_found),
+    # REST binding tests
+    ("rest/agent-card-echo",          test_rest_agent_card_echo),
+    ("rest/agent-card-spec",          test_rest_agent_card_spec),
+    ("rest/echo-send-message",        test_rest_echo_send_message),
+    ("rest/spec-message-only",        test_rest_spec_message_only),
+    ("rest/spec-task-lifecycle",      test_rest_spec_task_lifecycle),
+    ("rest/spec-get-task",            test_rest_spec_get_task),
+    ("rest/spec-task-failure",        test_rest_spec_task_failure),
+    ("rest/spec-data-types",          test_rest_spec_data_types),
+    ("rest/spec-streaming",           test_rest_spec_streaming),
+    ("rest/error-task-not-found",     test_rest_error_task_not_found),
 ]
 
 
