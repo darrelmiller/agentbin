@@ -148,7 +148,7 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
     rows_html = ""
     for binding in BINDINGS:
         binding_label = "JSON-RPC" if binding == "jsonrpc" else "HTTP+JSON (REST)"
-        rows_html += f'<tr class="binding-row"><td colspan="{1 + len(ordered_clients)}">&#9656; {binding_label}</td></tr>\n'
+        rows_html += f'<tr class="binding-row"><td colspan="{1 + len(ordered_clients)}">{binding_label}</td></tr>\n'
 
         # Group base tests by category
         categories: dict[str, list[tuple[str, str]]] = {}
@@ -159,19 +159,19 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
             rows_html += f'<tr class="cat-row"><td colspan="{1 + len(ordered_clients)}">{cat}</td></tr>\n'
             for test_id, test_name in tests:
                 full_id = f"{binding}/{test_id}"
-                cells = f'<td class="test-name">{test_name}<br><code>{full_id}</code></td>'
+                cells = f'<td class="test-name" title="{full_id}">{test_name}</td>'
                 for cid in ordered_clients:
                     r = matrix.get(cid, {}).get(full_id)
                     if r is None:
-                        cells += '<td class="skip" title="Not implemented">—</td>'
+                        cells += '<td class="skip" title="Not implemented">&mdash;</td>'
                     elif r.get("passed") or r.get("Passed"):
                         detail = r.get("detail", r.get("Detail", ""))
                         dur = r.get("durationMs") or r.get("DurationMs") or ""
                         tip = f"{detail}\n({dur}ms)" if dur else detail
-                        cells += f'<td class="pass" title="{_esc(tip)}">&#10003;</td>'
+                        cells += f'<td class="pass" title="{_esc(tip)}">&#10004;</td>'
                     else:
                         detail = r.get("detail", r.get("Detail", ""))
-                        cells += f'<td class="fail" title="{_esc(detail)}">&#10007;</td>'
+                        cells += f'<td class="fail" title="{_esc(detail)}">&#10008;</td>'
                 rows_html += f"<tr>{cells}</tr>\n"
 
     # Header columns
@@ -179,13 +179,11 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
     for cid in ordered_clients:
         info = CLIENTS[cid]
         sdk = all_results[cid].get("sdk", "")
-        proto = all_results[cid].get("protocolVersion", "")
         p, f = totals[cid]
-        color = "#4caf50" if f == 0 else "#f44336"
+        color = "#3fb950" if f == 0 else "#f85149"
         header_cells += (
-            f'<th>{info["icon"]} {info["name"]}<br>'
+            f'<th>{info["name"]}<br>'
             f'<small>{sdk}</small><br>'
-            f'<small>Protocol v{proto}</small><br>'
             f'<span style="color:{color};font-weight:bold">{p}/{p+f}</span></th>'
         )
 
@@ -205,52 +203,54 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
   :root {{ --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; }}
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-         background: var(--bg); color: var(--text); padding: 2rem; }}
-  h1 {{ font-size: 1.6rem; margin-bottom: 0.3rem; }}
-  .subtitle {{ color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem; }}
-  .summary {{ display: flex; gap: 2rem; margin-bottom: 1.5rem; flex-wrap: wrap; }}
-  .summary-card {{ background: var(--card); border: 1px solid var(--border); border-radius: 8px;
-                   padding: 1rem 1.5rem; min-width: 150px; }}
-  .summary-card .label {{ color: var(--muted); font-size: 0.8rem; text-transform: uppercase; }}
-  .summary-card .value {{ font-size: 1.8rem; font-weight: 700; }}
-  .bar {{ height: 6px; border-radius: 3px; background: #f44336; margin-top: 0.5rem; overflow: hidden; }}
-  .bar-fill {{ height: 100%; background: #4caf50; border-radius: 3px; }}
-  table {{ width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px;
-           overflow: hidden; border: 1px solid var(--border); }}
-  th {{ background: #21262d; padding: 12px 16px; text-align: center; font-size: 0.85rem;
-       border-bottom: 2px solid var(--border); vertical-align: top; }}
+         background: var(--bg); color: var(--text); padding: 1.5rem; }}
+  h1 {{ font-size: 1.4rem; margin-bottom: 0.2rem; }}
+  .subtitle {{ color: var(--muted); margin-bottom: 1rem; font-size: 0.8rem; }}
+  .summary {{ display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }}
+  .summary-card {{ background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+                   padding: 0.6rem 1rem; min-width: 100px; }}
+  .summary-card .label {{ color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.03em; }}
+  .summary-card .value {{ font-size: 1.4rem; font-weight: 700; }}
+  .bar {{ height: 4px; border-radius: 2px; background: #f85149; margin-top: 0.3rem; overflow: hidden; }}
+  .bar-fill {{ height: 100%; background: #3fb950; border-radius: 2px; }}
+  table {{ width: 100%; border-collapse: collapse; background: var(--card); border-radius: 6px;
+           overflow: hidden; border: 1px solid var(--border); font-size: 0.8rem; }}
+  th {{ background: #21262d; padding: 6px 10px; text-align: center; font-size: 0.78rem;
+       border-bottom: 2px solid var(--border); vertical-align: top; white-space: nowrap; }}
   th:first-child {{ text-align: left; }}
-  td {{ padding: 8px 16px; border-bottom: 1px solid var(--border); text-align: center;
-       font-size: 1.2rem; vertical-align: middle; }}
-  td:first-child {{ text-align: left; font-size: 0.85rem; }}
-  td code {{ color: var(--muted); font-size: 0.75rem; }}
-  .cat-row td {{ background: #21262d; font-weight: 600; font-size: 0.8rem; text-transform: uppercase;
-                 color: var(--muted); letter-spacing: 0.05em; padding: 6px 16px; }}
-  .pass {{ cursor: help; }}
-  .fail {{ cursor: help; }}
-  .skip {{ color: var(--muted); font-size: 0.8rem; }}
-  tr:hover td:not(.cat-row td) {{ background: rgba(255,255,255,0.03); }}
-  .footer {{ color: var(--muted); font-size: 0.75rem; margin-top: 1rem; }}
+  td {{ padding: 4px 10px; border-bottom: 1px solid var(--border); text-align: center;
+       font-size: 0.95rem; vertical-align: middle; line-height: 1.3; }}
+  .test-name {{ text-align: left; font-size: 0.78rem; white-space: nowrap; }}
+  .binding-row td {{ background: #1c2128; font-weight: 700; font-size: 0.75rem; text-transform: uppercase;
+                     color: var(--text); letter-spacing: 0.06em; padding: 5px 10px;
+                     border-top: 2px solid var(--border); }}
+  .cat-row td {{ background: #21262d; font-weight: 600; font-size: 0.72rem; text-transform: uppercase;
+                 color: var(--muted); letter-spacing: 0.04em; padding: 3px 10px; }}
+  .pass {{ color: #3fb950; cursor: help; font-weight: bold; }}
+  .fail {{ color: #f85149; cursor: help; font-weight: bold; }}
+  .skip {{ color: var(--muted); font-size: 0.75rem; }}
+  tr:hover td:not(.cat-row td):not(.binding-row td) {{ background: rgba(255,255,255,0.03); }}
+  .footer {{ color: var(--muted); font-size: 0.7rem; margin-top: 0.8rem; }}
   small {{ color: var(--muted); }}
 </style>
 </head>
 <body>
-<h1>🔌 AgentBin A2A Compatibility Dashboard</h1>
-<p class="subtitle">Generated {timestamp} • Target: <code>{base_url}</code></p>
+<h1>AgentBin A2A Compatibility Dashboard</h1>
+<p class="subtitle">Generated {timestamp} &bull; Target: <code>{base_url}</code></p>
 
 <div class="summary">
   <div class="summary-card">
-    <div class="label">Total Tests</div>
+    <div class="label">Tests</div>
     <div class="value">{total_all}</div>
   </div>
   <div class="summary-card">
     <div class="label">Passing</div>
-    <div class="value" style="color:#4caf50">{total_pass}</div>
+    <div class="value" style="color:#3fb950">{total_pass}</div>
     <div class="bar"><div class="bar-fill" style="width:{pct:.0f}%"></div></div>
   </div>
   <div class="summary-card">
     <div class="label">Failing</div>
-    <div class="value" style="color:{'#f44336' if total_fail else '#4caf50'}">{total_fail}</div>
+    <div class="value" style="color:{'#f85149' if total_fail else '#3fb950'}">{total_fail}</div>
   </div>
   <div class="summary-card">
     <div class="label">Clients</div>
@@ -266,8 +266,8 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
 </table>
 
 <p class="footer">
-  Hover over cells for details. Tests defined in <code>tests/acceptance.yaml</code>.
-  Clients: {', '.join(f'{CLIENTS[c]["name"]}' for c in ordered_clients)}.
+  Hover over cells for details &bull;
+  Clients: {', '.join(f'{CLIENTS[c]["name"]}' for c in ordered_clients)}
 </p>
 </body>
 </html>"""
