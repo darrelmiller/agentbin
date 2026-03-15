@@ -245,7 +245,7 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
             rows_html += f'<tr class="cat-row"><td colspan="{1 + len(ordered_clients)}">{cat}</td></tr>\n'
             for test_id, test_name in tests:
                 full_id = f"{binding}/{test_id}"
-                cells = f'<td class="test-name" title="{full_id}">{test_name}</td>'
+                cells = f'<td class="test-name" title="{full_id}"><a href="tests.html#{test_id}" target="_parent" style="color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted,#8b949e)">{test_name}</a></td>'
                 for cid in ordered_clients:
                     r = matrix.get(cid, {}).get(full_id)
                     if r is None:

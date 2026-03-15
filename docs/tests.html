@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentBin — Test Descriptions</title>
+<style>
+  :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+         background: var(--bg); color: var(--text); padding: 2rem; max-width: 960px; margin: 0 auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1 { font-size: 1.6rem; margin-bottom: 0.3rem; }
+  .subtitle { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.85rem; }
+  .back { margin-bottom: 1.5rem; display: inline-block; font-size: 0.85rem; }
+
+  /* Table of contents */
+  .toc { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+         padding: 1rem 1.5rem; margin-bottom: 2rem; }
+  .toc h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+  .toc-group { margin-bottom: 0.5rem; }
+  .toc-group-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;
+                     color: var(--muted); font-weight: 600; margin-bottom: 0.2rem; }
+  .toc-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; }
+  .toc-list li { font-size: 0.82rem; }
+  .toc-list a { color: var(--accent); }
+
+  /* Scenario cards */
+  .scenario { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+              padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+  .scenario h2 { font-size: 1.1rem; margin-bottom: 0.15rem; }
+  .scenario .test-id { font-family: monospace; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .scenario .description { color: var(--text); line-height: 1.6; margin-bottom: 0.75rem; font-size: 0.9rem; }
+  .meta { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; font-size: 0.8rem; color: var(--muted); }
+  .meta strong { color: var(--text); }
+  .tag { display: inline-block; background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.25);
+         border-radius: 12px; padding: 0.1em 0.5em; font-size: 0.72rem; color: var(--accent); margin-right: 0.25rem; }
+  .verifies { margin-top: 0.5rem; }
+  .verifies h3 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.3rem; }
+  .verifies ul { padding-left: 1.25rem; color: var(--muted); font-size: 0.82rem; line-height: 1.7; }
+  .verifies code { background: var(--bg); padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.8em; }
+  .binding-note { font-size: 0.8rem; color: var(--muted); font-style: italic; margin-top: 0.5rem; }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.75rem; padding: 1.5rem 0 0.5rem; }
+</style>
+</head>
+<body>
+
+<a class="back" href="index.html">&larr; Back to AgentBin</a>
+<h1>A2A Acceptance Test Descriptions</h1>
+<p class="subtitle">
+  Each test is run against both the <strong>JSON-RPC</strong> and <strong>HTTP+JSON (REST)</strong> bindings.
+  Full test specifications are in
+  <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml">acceptance.yaml</a>.
+</p>
+
+<!-- Table of Contents -->
+<div class="toc">
+  <h2>Tests</h2>
+  <div class="toc-group">
+    <div class="toc-group-title">Discovery</div>
+    <ul class="toc-list">
+      <li><a href="#agent-card-echo">Echo Agent Card</a></li>
+      <li><a href="#agent-card-spec">Spec Agent Card</a></li>
+    </ul>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-title">Echo Agent</div>
+    <ul class="toc-list">
+      <li><a href="#echo-send-message">Echo Send Message</a></li>
+    </ul>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-title">Spec Agent</div>
+    <ul class="toc-list">
+      <li><a href="#spec-message-only">Message Only</a></li>
+      <li><a href="#spec-task-lifecycle">Task Lifecycle</a></li>
+      <li><a href="#spec-get-task">GetTask</a></li>
+      <li><a href="#spec-task-failure">Task Failure</a></li>
+      <li><a href="#spec-data-types">Data Types</a></li>
+      <li><a href="#spec-streaming">Streaming</a></li>
+      <li><a href="#spec-multi-turn">Multi-Turn</a></li>
+      <li><a href="#spec-task-cancel">Task Cancel</a></li>
+      <li><a href="#spec-list-tasks">ListTasks</a></li>
+      <li><a href="#spec-return-immediately">Return Immediately</a></li>
+    </ul>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-title">Error Handling</div>
+    <ul class="toc-list">
+      <li><a href="#error-task-not-found">Task Not Found Error</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ Discovery ═══ -->
+
+<div class="scenario" id="agent-card-echo">
+  <h2>Echo Agent Card</h2>
+  <div class="test-id">agent-card-echo &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L49">acceptance.yaml</a></div>
+  <div class="description">
+    Fetch the Echo agent card via <code>GET /echo/.well-known/agent-card.json</code> with the
+    <code>A2A-Version: 1.0</code> header. Verify it conforms to the v1.0 AgentCard schema.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Echo</span>
+    <span><span class="tag">discovery</span><span class="tag">agent-card</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response contains required fields: <code>name</code>, <code>description</code>, <code>version</code>, <code>supportedInterfaces</code>, <code>capabilities</code>, <code>skills</code></li>
+      <li><code>supportedInterfaces[0]</code> has a valid URL, <code>protocolBinding</code> = <code>JSONRPC</code>, <code>protocolVersion</code> = <code>1.0</code></li>
+      <li><code>skills</code> array contains at least 1 entry</li>
+      <li><code>defaultInputModes</code> and <code>defaultOutputModes</code> are present</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="agent-card-spec">
+  <h2>Spec Agent Card</h2>
+  <div class="test-id">agent-card-spec &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L81">acceptance.yaml</a></div>
+  <div class="description">
+    Fetch the Spec agent card. Verify it advertises streaming capability and all 8 skills.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">discovery</span><span class="tag">agent-card</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li><code>capabilities.streaming</code> is <code>true</code></li>
+      <li>Exactly 8 skills are listed, each with <code>id</code>, <code>name</code>, and <code>description</code></li>
+      <li><code>protocolVersion</code> = <code>1.0</code></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ Echo Agent ═══ -->
+
+<div class="scenario" id="echo-send-message">
+  <h2>Echo Send Message</h2>
+  <div class="test-id">echo-send-message &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L112">acceptance.yaml</a></div>
+  <div class="description">
+    Send a text message to the Echo agent. The agent MUST respond with a direct <code>Message</code>
+    (not a <code>Task</code>) containing the echoed text. This is the simplest possible A2A interaction.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Echo</span>
+    <span><span class="tag">echo</span><span class="tag">message</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response contains <code>result.message</code> (not <code>result.task</code>)</li>
+      <li>Message role is <code>ROLE_AGENT</code></li>
+      <li>Response text contains the original input echoed back</li>
+      <li>Response includes valid <code>messageId</code> and <code>parts</code> array</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ Spec Agent ═══ -->
+
+<div class="scenario" id="spec-message-only">
+  <h2>Message Only</h2>
+  <div class="test-id">spec-message-only &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L156">acceptance.yaml</a></div>
+  <div class="description">
+    Send a message prefixed with "message-only". The agent MUST respond with a direct <code>Message</code>
+    (not a <code>Task</code>). Tests the simplest spec agent interaction pattern where no task state machine is involved.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">spec</span><span class="tag">message-only</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response contains <code>result.message</code> but NOT <code>result.task</code></li>
+      <li>Message role is <code>ROLE_AGENT</code></li>
+      <li>Response text acknowledges the "message-only" keyword</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec-task-lifecycle">
+  <h2>Task Lifecycle</h2>
+  <div class="test-id">spec-task-lifecycle &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L198">acceptance.yaml</a></div>
+  <div class="description">
+    Send a "task-lifecycle" message. The agent creates a task that transitions through
+    <code>SUBMITTED → WORKING → COMPLETED</code> and returns the final task with at least one artifact.
+    Because <code>returnImmediately</code> defaults to <code>false</code>, the response blocks until the task reaches a terminal state.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">spec</span><span class="tag">task-lifecycle</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response contains <code>result.task</code> with state <code>TASK_STATE_COMPLETED</code></li>
+      <li>Task has at least one artifact with parts</li>
+      <li>Task ID is valid and can be used for subsequent <code>GetTask</code> calls</li>
+      <li>Full blocking task lifecycle works end-to-end</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec-get-task">
+  <h2>GetTask</h2>
+  <div class="test-id">spec-get-task &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L1051">acceptance.yaml</a></div>
+  <div class="description">
+    Create a task via the task-lifecycle skill, then retrieve it using <code>GetTask</code> with the task ID.
+    Tests that task state is persisted and can be queried after creation. Also exercises <code>historyLength</code>
+    control — <code>historyLength=0</code> should omit history.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">get-task</span><span class="tag">history</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li><code>GetTask</code> returns the same task ID in <code>TASK_STATE_COMPLETED</code> state</li>
+      <li>With <code>historyLength=0</code>, history is absent or empty</li>
+      <li>Without <code>historyLength</code>, default history behavior applies</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec-task-failure">
+  <h2>Task Failure</h2>
+  <div class="test-id">spec-task-failure &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L361">acceptance.yaml</a></div>
+  <div class="description">
+    Send a "task-failure" message. The agent creates a task that transitions to <code>TASK_STATE_FAILED</code>
+    with an error message in <code>status.message</code>. Tests proper error state handling.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">spec</span><span class="tag">task-failure</span><span class="tag">error</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response contains task in <code>TASK_STATE_FAILED</code> state</li>
+      <li><code>status.message</code> exists with role <code>ROLE_AGENT</code></li>
+      <li>Error message parts contain descriptive text</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec-data-types">
+  <h2>Data Types</h2>
+  <div class="test-id">spec-data-types &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L759">acceptance.yaml</a></div>
+  <div class="description">
+    Send a "data-types" message. The agent returns a completed task with multiple artifacts containing
+    different Part types: <code>text</code>, <code>data</code> (structured JSON), and <code>file</code>
+    (binary content with <code>mediaType</code>). Tests that all part types serialize and deserialize correctly across languages.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">spec</span><span class="tag">data-types</span><span class="tag">parts</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Task reaches <code>TASK_STATE_COMPLETED</code></li>
+      <li>At least one artifact has a <strong>text</strong> Part (with <code>text</code> field)</li>
+      <li>At least one artifact has a <strong>data</strong> Part (with <code>data</code> as a JSON object)</li>
+      <li>At least one artifact has a <strong>file</strong> Part (with <code>mediaType</code> and content)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec-streaming">
+  <h2>Streaming</h2>
+  <div class="test-id">spec-streaming &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L602">acceptance.yaml</a></div>
+  <div class="description">
+    Send a streaming request via <code>SendStreamingMessage</code>. The agent responds with
+    <code>text/event-stream</code> containing JSON-RPC wrapped SSE events: status updates,
+    artifact updates, and a final task in terminal state. Tests the full SSE streaming lifecycle.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">spec</span><span class="tag">streaming</span><span class="tag">sse</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response content-type is <code>text/event-stream</code> with multiple SSE <code>data:</code> lines</li>
+      <li>Each event is JSON-RPC wrapped with a StreamResponse payload</li>
+      <li>At least 3 events are received</li>
+      <li>At least one event contains an <code>artifactUpdate</code> with parts</li>
+      <li>Final event contains task in terminal state (<code>COMPLETED</code> or <code>FAILED</code>)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec-multi-turn">
+  <h2>Multi-Turn</h2>
+  <div class="test-id">spec-multi-turn &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L494">acceptance.yaml</a></div>
+  <div class="description">
+    Start a multi-turn conversation. The agent returns a task in <code>INPUT_REQUIRED</code> state.
+    The client sends follow-up messages referencing the <code>taskId</code>. Sending "done" completes the task.
+    Tests the stateful multi-turn conversation pattern with task context preservation.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">spec</span><span class="tag">multi-turn</span><span class="tag">input-required</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li><strong>Turn 1:</strong> "multi-turn start" → task in <code>TASK_STATE_INPUT_REQUIRED</code>, returns <code>taskId</code> and <code>contextId</code></li>
+      <li><strong>Turn 2:</strong> Follow-up with same <code>taskId</code> → task remains <code>INPUT_REQUIRED</code></li>
+      <li><strong>Turn 3:</strong> Send "done" → task transitions to <code>TASK_STATE_COMPLETED</code></li>
+      <li>Task ID stays consistent across all turns</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec-task-cancel">
+  <h2>Task Cancel (via streaming)</h2>
+  <div class="test-id">spec-task-cancel &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L404">acceptance.yaml</a></div>
+  <div class="description">
+    Start a cancellable task using <code>returnImmediately: true</code> so the agent returns immediately
+    with a <code>WORKING</code> task. Then cancel it with <code>CancelTask</code>. Tests the task
+    cancellation lifecycle.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">spec</span><span class="tag">task-cancel</span><span class="tag">cancel</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Initial send with <code>returnImmediately: true</code> returns task in <code>SUBMITTED</code> or <code>WORKING</code></li>
+      <li><code>CancelTask</code> with captured task ID succeeds</li>
+      <li>Cancelled task state is <code>TASK_STATE_CANCELED</code></li>
+      <li>Follow-up <code>GetTask</code> confirms task remains <code>CANCELED</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec-list-tasks">
+  <h2>ListTasks</h2>
+  <div class="test-id">spec-list-tasks</div>
+  <div class="description">
+    After creating one or more tasks, call <code>ListTasks</code> to retrieve them. Tests that the server
+    correctly tracks and returns previously created tasks. The response should contain at least one task
+    from the current session.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">spec</span><span class="tag">list-tasks</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li><code>ListTasks</code> returns a list with at least 1 task</li>
+      <li>Each returned task has a valid <code>id</code> and <code>status.state</code></li>
+      <li>Tasks created earlier in the test run are present</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec-return-immediately">
+  <h2>Return Immediately</h2>
+  <div class="test-id">spec-return-immediately &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L263">acceptance.yaml</a></div>
+  <div class="description">
+    Same as task-lifecycle, but with <code>returnImmediately: true</code>. The agent MUST return
+    immediately with a task in a non-terminal state (<code>SUBMITTED</code> or <code>WORKING</code>).
+    The client then polls with <code>GetTask</code> until the task reaches <code>COMPLETED</code>.
+    Tests the async polling pattern.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">spec</span><span class="tag">return-immediately</span><span class="tag">polling</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response returns quickly (not blocking for task completion)</li>
+      <li>Initial task state is <code>SUBMITTED</code> or <code>WORKING</code> (non-terminal)</li>
+      <li>Polling with <code>GetTask</code> eventually reaches <code>TASK_STATE_COMPLETED</code></li>
+      <li>Final task has artifacts</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ Error Handling ═══ -->
+
+<div class="scenario" id="error-task-not-found">
+  <h2>Task Not Found Error</h2>
+  <div class="test-id">error-task-not-found &middot;
+    <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml#L874">acceptance.yaml</a></div>
+  <div class="description">
+    Call <code>GetTask</code> with a non-existent task ID. The agent MUST return a JSON-RPC error with
+    code <code>-32001</code> (TaskNotFoundError). Tests proper error handling for missing resources.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">error</span><span class="tag">task-not-found</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response contains <code>error</code> (not <code>result</code>)</li>
+      <li><code>error.code</code> is <code>-32001</code> (TaskNotFoundError)</li>
+      <li><code>error.message</code> is a descriptive string</li>
+      <li>For REST: HTTP status is <code>404</code></li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <a href="index.html">AgentBin Home</a> &middot;
+  <a href="https://github.com/darrelmiller/agentbin/blob/main/tests/acceptance.yaml">acceptance.yaml</a> &middot;
+  <a href="https://github.com/darrelmiller/agentbin">GitHub</a>
+</footer>
+
+</body>
+</html>
