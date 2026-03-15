@@ -6,6 +6,16 @@ using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS — allow any origin (public test bed for browser-based A2A clients)
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .WithExposedHeaders("A2A-Version"));
+});
+
 // Determine base URL from environment or default
 var baseUrl = builder.Configuration["BASE_URL"] ?? "http://localhost:5000";
 
@@ -18,6 +28,7 @@ var app = builder.Build();
 // v0.3 translation middleware — must be before MapA2A endpoints.
 // Intercepts POST requests without A2A-Version header and translates v0.3 ↔ v1.0.
 app.UseMiddleware<V03TranslationMiddleware>();
+app.UseCors();
 
 // Health check
 app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTimeOffset.UtcNow }));
