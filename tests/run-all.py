@@ -58,24 +58,28 @@ CLIENTS = {
         "dir": "dotnet",
         "cmd": ["dotnet", "run", "--"],
         "icon": "&#9726;",
+        "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/dotnet/Program.cs",
     },
     "go": {
         "name": "Go",
         "dir": "go",
         "cmd": ["go", "run", "."],
         "icon": "&#9671;",
+        "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/go/main.go",
     },
     "python": {
         "name": "Python",
         "dir": "python",
         "cmd": [sys.executable, "test_python_client.py"],
         "icon": "&#9673;",
+        "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/python/test_python_client.py",
     },
     "java": {
         "name": "Java",
         "dir": "java",
-        "cmd": ["java", "TestJavaClient.java"],
+        "cmd_fn": lambda url: ["mvn", "-q", "compile", "exec:java", f"-Dexec.args={url}"],
         "icon": "&#9672;",
+        "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/java/src/main/java/agentbin/TestJavaClient.java",
     },
 }
 
@@ -83,7 +87,10 @@ CLIENTS = {
 def run_client(client_id: str, base_url: str) -> dict | None:
     info = CLIENTS[client_id]
     cwd = CLIENTS_DIR / info["dir"]
-    cmd = info["cmd"] + [base_url]
+    if "cmd_fn" in info:
+        cmd = info["cmd_fn"](base_url)
+    else:
+        cmd = info["cmd"] + [base_url]
     print(f"\n{'='*60}")
     print(f"  Running {info['icon']} {info['name']} client tests...")
     print(f"  cwd: {cwd}")
@@ -92,7 +99,7 @@ def run_client(client_id: str, base_url: str) -> dict | None:
 
     try:
         result = subprocess.run(
-            cmd, cwd=str(cwd), capture_output=False, timeout=120
+            cmd, cwd=str(cwd), capture_output=False, timeout=300
         )
         results_file = cwd / "results.json"
         if results_file.exists():
@@ -181,8 +188,10 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
         sdk = all_results[cid].get("sdk", "")
         p, f = totals[cid]
         color = "#3fb950" if f == 0 else "#f85149"
+        source_link = info.get("source", "")
+        src_html = f' <a href="{source_link}" target="_blank" title="View test source" style="color:#58a6ff;text-decoration:none">&#128279;</a>' if source_link else ""
         header_cells += (
-            f'<th>{info["name"]}<br>'
+            f'<th>{info["name"]}{src_html}<br>'
             f'<small>{sdk}</small><br>'
             f'<span style="color:{color};font-weight:bold">{p}/{p+f}</span></th>'
         )

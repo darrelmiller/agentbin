@@ -32,3 +32,5 @@ tests/ClientTests/go/agentbin-test
 
 *.class
 __pycache__/
+tests/ClientTests/java/target/
+tests/ClientTests/java/results.json
