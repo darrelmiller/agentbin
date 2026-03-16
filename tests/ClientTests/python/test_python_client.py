@@ -1,5 +1,5 @@
 """
-A2A Python SDK (v0.3.25) standardized integration tests against AgentBin.
+A2A Python SDK integration tests against AgentBin.
 
 Outputs human-readable console results AND a results.json file.
 Usage: python test_python_client.py [baseUrl]
@@ -15,9 +15,12 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import httpx
+from importlib.metadata import version as pkg_version
 from a2a.client import A2ACardResolver, ClientFactory, ClientConfig
 from a2a.client.helpers import create_text_message_object
 from a2a.types import a2a_pb2 as pb2
+
+_SDK_VERSION = pkg_version("a2a-sdk")
 
 DEFAULT_BASE = "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io"
 BASE_URL = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_BASE
@@ -735,7 +738,7 @@ ALL_TESTS = [
 
 async def main():
     print(f"\n{'='*64}")
-    print(f"  A2A Python SDK Integration Tests  (a2a-sdk 0.3.25)")
+    print(f"  A2A Python SDK Integration Tests  (a2a-sdk {_SDK_VERSION})")
     print(f"  Target: {BASE_URL}")
     print(f"{'='*64}\n")
 
@@ -757,8 +760,8 @@ async def main():
     # Write results.json alongside this script
     output = {
         "client": "python",
-        "sdk": "a2a-sdk 0.3.25",
-        "protocolVersion": "0.3",
+        "sdk": f"a2a-sdk {_SDK_VERSION}",
+        "protocolVersion": "1.0",
         "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "baseUrl": BASE_URL,
         "results": RESULTS,
