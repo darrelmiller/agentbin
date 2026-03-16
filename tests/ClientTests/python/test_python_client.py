@@ -76,7 +76,8 @@ async def sdk_send(url: str, text: str, *, streaming: bool = False):
         events = []
         final_task = None
         msg = create_text_message_object(role="ROLE_USER", content=text)
-        async for stream_response, task in client.send_message(msg):
+        req = pb2.SendMessageRequest(message=msg)
+        async for stream_response, task in client.send_message(req):
             events.append((stream_response, task))
             if task:
                 final_task = task
@@ -270,7 +271,7 @@ async def test_spec_multi_turn():
         # Step 1: start conversation
         msg1 = create_text_message_object(role="ROLE_USER", content="multi-turn start conversation")
         task1 = None
-        async for _, task in client.send_message(msg1):
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg1)):
             if task:
                 task1 = task
 
@@ -286,7 +287,7 @@ async def test_spec_multi_turn():
         msg2 = create_text_message_object(role="ROLE_USER", content="more data")
         msg2.task_id = task_id
         task2 = None
-        async for _, task in client.send_message(msg2):
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
             if task:
                 task2 = task
 
@@ -301,7 +302,7 @@ async def test_spec_multi_turn():
         msg3 = create_text_message_object(role="ROLE_USER", content="done")
         msg3.task_id = task_id
         task3 = None
-        async for _, task in client.send_message(msg3):
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg3)):
             if task:
                 task3 = task
 
@@ -329,7 +330,7 @@ async def test_spec_task_cancel():
             msg = create_text_message_object(role="ROLE_USER", content="task-cancel")
 
             # Read first event to get taskId
-            async for _, task in client.send_message(msg):
+            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
                 if task:
                     task_id = task.id
                     break
