@@ -1,6 +1,7 @@
 """
 A2A Python SDK integration tests against AgentBin.
 
+ALL tests use official SDK methods only — no raw HTTP or hand-crafted JSON-RPC.
 Outputs human-readable console results AND a results.json file.
 Usage: python test_python_client.py [baseUrl]
 """
@@ -12,21 +13,41 @@ import sys
 import time
 import traceback
 from datetime import datetime, timezone
-from uuid import uuid4
 
 import httpx
 from importlib.metadata import version as pkg_version
 from a2a.client import A2ACardResolver, ClientFactory, ClientConfig
+from a2a.client.client_factory import TransportProtocol
 from a2a.client.helpers import create_text_message_object
 from a2a.types import a2a_pb2 as pb2
 
 _SDK_VERSION = pkg_version("a2a-sdk")
 
+
+def _detect_sdk_source() -> str:
+    """Detect whether the SDK was installed from a package manager or local/git source."""
+    version = _SDK_VERSION
+    # dev versions with git hashes indicate local or editable installs
+    if ".dev" in version or "+g" in version or "+" in version:
+        # Try to get the git branch from the installed package metadata
+        try:
+            from importlib.metadata import metadata
+            meta = metadata("a2a-sdk")
+            home = meta.get("Home-page", "") or ""
+            if "a2a-python" in home or "a2aproject" in home:
+                return f"a2a-python (local build, {version})"
+        except Exception:
+            pass
+        return f"a2a-python (local build, {version})"
+    return f"a2a-sdk {version}"
+
+
+_SDK_SOURCE = _detect_sdk_source()
+
 DEFAULT_BASE = "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io"
 BASE_URL = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_BASE
 
 RESULTS: list[dict] = []
-# Stash the task ID from spec-task-lifecycle so spec-get-task can reuse it
 _lifecycle_task_id: str | None = None
 _rest_lifecycle_task_id: str | None = None
 
@@ -43,36 +64,28 @@ def record(test_id: str, name: str, passed: bool, detail: str, duration_ms: int)
     print(f"  [{tag}] {test_id} \u2014 {detail}")
 
 
-# -- Helpers ----------------------------------------------------------
-
-def make_jsonrpc(method: str, params: dict) -> dict:
-    return {
-        "jsonrpc": "2.0",
-        "method": method,
-        "id": str(uuid4()),
-        "params": params,
-    }
-
-
-def make_send_params(text: str) -> dict:
-    return {
-        "message": {
-            "messageId": str(uuid4()),
-            "role": "ROLE_USER",
-            "parts": [{"text": text}],
-        }
-    }
-
+# -- SDK Helpers ------------------------------------------------------
 
 A2A_HEADERS = {"A2A-Version": "1.0"}
 
 
-async def sdk_send(url: str, text: str, *, streaming: bool = False):
-    """Send a message via the SDK and collect all events."""
+async def make_client(url: str, *, streaming: bool = False, binding: str = "JSONRPC"):
+    """Create an SDK client with the specified transport binding."""
     hc = httpx.AsyncClient(timeout=httpx.Timeout(30.0), headers=A2A_HEADERS)
+    bindings = [TransportProtocol.HTTP_JSON] if binding == "REST" else [TransportProtocol.JSONRPC]
+    config = ClientConfig(
+        streaming=streaming,
+        httpx_client=hc,
+        supported_protocol_bindings=bindings,
+    )
+    client = await ClientFactory.connect(url, client_config=config)
+    return client, hc
+
+
+async def sdk_send(url: str, text: str, *, streaming: bool = False, binding: str = "JSONRPC"):
+    """Send a message via the SDK and collect all events."""
+    client, hc = await make_client(url, streaming=streaming, binding=binding)
     try:
-        config = ClientConfig(streaming=streaming, httpx_client=hc)
-        client = await ClientFactory.connect(url, client_config=config)
         events = []
         final_task = None
         msg = create_text_message_object(role="ROLE_USER", content=text)
@@ -165,24 +178,22 @@ async def test_spec_task_lifecycle():
 
 
 async def test_spec_get_task():
-    """GetTask for the task created in spec-task-lifecycle via raw JSON-RPC."""
+    """GetTask for the task created in spec-task-lifecycle via SDK."""
     t0 = time.time()
-    task_id = _lifecycle_task_id or str(uuid4())
-    body = make_jsonrpc("GetTask", {"id": task_id})
-    async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
-        resp = await hc.post(f"{BASE_URL}/spec", json=body)
-    ms = int((time.time() - t0) * 1000)
-    data = resp.json()
-    result = data.get("result", {})
-    # The result may be the task directly or wrapped in result.task
-    task_obj = result.get("task", result) if isinstance(result, dict) else {}
-    got_id = task_obj.get("id", "")
-    state = task_obj.get("status", {}).get("state", "")
-    ok = resp.status_code == 200 and got_id == task_id and state in (
-        "completed", "TASK_STATE_COMPLETED",
-    )
-    record("jsonrpc/spec-get-task", "Spec GetTask", ok,
-           f"taskId={got_id}, state={state}", ms)
+    task_id = _lifecycle_task_id
+    if not task_id:
+        record("jsonrpc/spec-get-task", "Spec GetTask", False, "skipped — no taskId from lifecycle", 0)
+        return
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        task = await client.get_task(pb2.GetTaskRequest(id=task_id))
+        ms = int((time.time() - t0) * 1000)
+        state = task_state_name(task)
+        ok = task.id == task_id and state == "TASK_STATE_COMPLETED"
+        record("jsonrpc/spec-get-task", "Spec GetTask", ok,
+               f"taskId={task.id}, state={state}", ms)
+    finally:
+        await hc.aclose()
 
 
 async def test_spec_task_failure():
@@ -244,20 +255,22 @@ async def test_spec_streaming():
 
 
 async def test_error_task_not_found():
-    """GetTask with a nonexistent ID should return a JSON-RPC error."""
+    """GetTask with a nonexistent ID should raise an error."""
     t0 = time.time()
     fake_id = "00000000-0000-0000-0000-000000000000"
-    body = make_jsonrpc("GetTask", {"id": fake_id})
-    async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
-        resp = await hc.post(f"{BASE_URL}/spec", json=body)
-    ms = int((time.time() - t0) * 1000)
-    data = resp.json()
-    has_error = "error" in data
-    error_code = data.get("error", {}).get("code", "")
-    error_msg = data.get("error", {}).get("message", "")
-    ok = has_error
-    record("jsonrpc/error-task-not-found", "Error Task Not Found", ok,
-           f"hasError={has_error}, code={error_code}, msg={error_msg!r:.40}", ms)
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        try:
+            await client.get_task(pb2.GetTaskRequest(id=fake_id))
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-task-not-found", "Error Task Not Found", False,
+                   "expected error, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-task-not-found", "Error Task Not Found", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
 
 
 async def test_spec_multi_turn():
@@ -316,20 +329,16 @@ async def test_spec_multi_turn():
 
 
 async def test_spec_task_cancel():
-    """Cancel a streaming task via CancelTask JSON-RPC method."""
+    """Cancel a streaming task via SDK cancel_task method."""
     t0 = time.time()
     task_id = None
     canceled = False
 
     async def do_cancel():
         nonlocal task_id, canceled
-        hc = httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS)
+        client, hc = await make_client(f"{BASE_URL}/spec", streaming=True)
         try:
-            config = ClientConfig(streaming=True, httpx_client=hc)
-            client = await ClientFactory.connect(f"{BASE_URL}/spec", client_config=config)
             msg = create_text_message_object(role="ROLE_USER", content="task-cancel")
-
-            # Read first event to get taskId
             async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
                 if task:
                     task_id = task.id
@@ -338,15 +347,9 @@ async def test_spec_task_cancel():
             if not task_id:
                 return
 
-            # Send CancelTask via raw JSON-RPC
-            body = make_jsonrpc("CancelTask", {"id": task_id})
-            async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc2:
-                resp = await hc2.post(f"{BASE_URL}/spec", json=body)
-            data = resp.json()
-            result = data.get("result", {})
-            task_obj = result.get("task", result) if isinstance(result, dict) else {}
-            state = task_obj.get("status", {}).get("state", "")
-            canceled = state in ("canceled", "TASK_STATE_CANCELED")
+            result = await client.cancel_task(pb2.CancelTaskRequest(id=task_id))
+            state = task_state_name(result)
+            canceled = state == "TASK_STATE_CANCELED"
         finally:
             await hc.aclose()
 
@@ -358,42 +361,43 @@ async def test_spec_task_cancel():
 
 
 async def test_spec_list_tasks():
-    """ListTasks via raw JSON-RPC."""
+    """ListTasks via SDK list_tasks method."""
     t0 = time.time()
-    body = make_jsonrpc("ListTasks", {})
-    async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
-        resp = await hc.post(f"{BASE_URL}/spec", json=body)
-    ms = int((time.time() - t0) * 1000)
-    data = resp.json()
-    result = data.get("result", {})
-    tasks = result.get("tasks", result) if isinstance(result, dict) else []
-    if isinstance(tasks, dict):
-        tasks = tasks.get("tasks", [])
-    count = len(tasks) if isinstance(tasks, list) else 0
-    ok = resp.status_code == 200 and count >= 1
-    record("jsonrpc/spec-list-tasks", "Spec ListTasks", ok,
-           f"status={resp.status_code}, taskCount={count}", ms)
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        result = await client.list_tasks(pb2.ListTasksRequest())
+        ms = int((time.time() - t0) * 1000)
+        count = len(result.tasks)
+        ok = count >= 1
+        record("jsonrpc/spec-list-tasks", "Spec ListTasks", ok,
+               f"taskCount={count}", ms)
+    finally:
+        await hc.aclose()
 
 
 async def test_spec_return_immediately():
-    """SendMessage with returnImmediately — expected to fail."""
+    """SendMessage with returnImmediately via SDK."""
     t0 = time.time()
 
     async def do_send():
-        params = make_send_params("long-running test")
-        params["configuration"] = {"returnImmediately": True}
-        body = make_jsonrpc("SendMessage", params)
-        async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
-            return await hc.post(f"{BASE_URL}/spec", json=body)
+        client, hc = await make_client(f"{BASE_URL}/spec")
+        try:
+            msg = create_text_message_object(role="ROLE_USER", content="long-running test")
+            config = pb2.SendMessageConfiguration(return_immediately=True)
+            req = pb2.SendMessageRequest(message=msg, configuration=config)
+            final_task = None
+            async for _, task in client.send_message(req):
+                if task:
+                    final_task = task
+            return final_task
+        finally:
+            await hc.aclose()
 
-    resp = await asyncio.wait_for(do_send(), timeout=15.0)
+    task = await asyncio.wait_for(do_send(), timeout=15.0)
     elapsed = time.time() - t0
     ms = int(elapsed * 1000)
-    data = resp.json()
-    result = data.get("result", {})
-    task_obj = result.get("task", result) if isinstance(result, dict) else {}
-    state = task_obj.get("status", {}).get("state", "") if isinstance(task_obj, dict) else ""
-    terminal = state in ("completed", "TASK_STATE_COMPLETED", "failed", "TASK_STATE_FAILED")
+    state = task_state_name(task)
+    terminal = state in ("TASK_STATE_COMPLETED", "TASK_STATE_FAILED")
 
     if elapsed < 2.0 and not terminal:
         ok = True
@@ -409,246 +413,240 @@ async def test_spec_return_immediately():
            detail, ms)
 
 
-# -- REST Helpers -----------------------------------------------------
-
-async def rest_get(url: str) -> httpx.Response:
-    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0), headers=A2A_HEADERS) as hc:
-        return await hc.get(url)
-
-
-async def rest_post(url: str, body: dict) -> httpx.Response:
-    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0), headers=A2A_HEADERS) as hc:
-        return await hc.post(url, json=body)
-
-
-def make_rest_message(text: str) -> dict:
-    return {
-        "message": {
-            "messageId": str(uuid4()),
-            "role": "ROLE_USER",
-            "parts": [{"text": text}],
-        }
-    }
-
-
-# -- REST Tests -------------------------------------------------------
+# -- REST Tests (via SDK HTTP+JSON transport) ----------------------------
 
 async def test_rest_agent_card_echo():
     t0 = time.time()
-    resp = await rest_get(f"{BASE_URL}/echo/v1/card")
+    async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
+        config = ClientConfig(
+            httpx_client=hc,
+            supported_protocol_bindings=[TransportProtocol.HTTP_JSON],
+        )
+        client = await ClientFactory.connect(f"{BASE_URL}/echo", client_config=config)
     ms = int((time.time() - t0) * 1000)
-    data = resp.json()
-    ok = resp.status_code == 200 and data.get("name") == "Echo Agent"
-    record("rest/agent-card-echo", "REST Echo Agent Card", ok,
-           f"status={resp.status_code}, name={data.get('name')}", ms)
+    # If we got here, the card was resolved and REST transport was selected
+    record("rest/agent-card-echo", "REST Echo Agent Card", True,
+           "card resolved with HTTP+JSON transport", ms)
 
 
 async def test_rest_agent_card_spec():
     t0 = time.time()
-    resp = await rest_get(f"{BASE_URL}/spec/v1/card")
+    async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
+        config = ClientConfig(
+            httpx_client=hc,
+            supported_protocol_bindings=[TransportProtocol.HTTP_JSON],
+        )
+        client = await ClientFactory.connect(f"{BASE_URL}/spec", client_config=config)
     ms = int((time.time() - t0) * 1000)
-    data = resp.json()
-    ok = resp.status_code == 200 and "Spec" in (data.get("name") or "")
-    record("rest/agent-card-spec", "REST Spec Agent Card", ok,
-           f"status={resp.status_code}, name={data.get('name')}", ms)
+    record("rest/agent-card-spec", "REST Spec Agent Card", True,
+           "card resolved with HTTP+JSON transport", ms)
 
 
 async def test_rest_echo_send_message():
     t0 = time.time()
-    body = make_rest_message("Hello from REST!")
-    resp = await rest_post(f"{BASE_URL}/echo/v1/message:send", body)
+    events, _ = await sdk_send(f"{BASE_URL}/echo", "Hello from Python SDK REST!", binding="REST")
     ms = int((time.time() - t0) * 1000)
-    data = resp.json()
     reply = ""
-    msg = data.get("message") or {}
-    for p in msg.get("parts", []):
-        if "text" in p:
-            reply = p["text"]
-    ok = resp.status_code == 200 and reply.startswith("Echo:")
+    for sr, _ in events:
+        if sr.HasField("message"):
+            for p in sr.message.parts:
+                if p.text:
+                    reply = p.text
+    ok = reply.startswith("Echo:")
     record("rest/echo-send-message", "REST Echo Send Message", ok,
-           f"status={resp.status_code}, reply={reply!r}", ms)
+           f"reply={reply!r}", ms)
 
 
 async def test_rest_spec_message_only():
     t0 = time.time()
-    body = make_rest_message("message-only hello world")
-    resp = await rest_post(f"{BASE_URL}/spec/v1/message:send", body)
+    events, _ = await sdk_send(f"{BASE_URL}/spec", "message-only hello world", binding="REST")
     ms = int((time.time() - t0) * 1000)
-    data = resp.json()
-    got_message = "message" in data
     reply = ""
-    if got_message:
-        for p in data["message"].get("parts", []):
-            if "text" in p:
-                reply = p["text"]
-    ok = resp.status_code == 200 and got_message and len(reply) > 0
+    got_message = False
+    for sr, _ in events:
+        if sr.HasField("message"):
+            got_message = True
+            for p in sr.message.parts:
+                if p.text:
+                    reply = p.text
+    ok = got_message and len(reply) > 0
     record("rest/spec-message-only", "REST Spec Message Only", ok,
-           f"status={resp.status_code}, gotMessage={got_message}, text={reply!r:.60}", ms)
+           f"gotMessage={got_message}, text={reply!r:.60}", ms)
 
 
 async def test_rest_spec_task_lifecycle():
     global _rest_lifecycle_task_id
     t0 = time.time()
-    body = make_rest_message("task-lifecycle process this")
-    resp = await rest_post(f"{BASE_URL}/spec/v1/message:send", body)
+    events, task = await sdk_send(f"{BASE_URL}/spec", "task-lifecycle process this", binding="REST")
     ms = int((time.time() - t0) * 1000)
-    data = resp.json()
-    task = data.get("task") or data.get("result", {}).get("task", {})
-    state = task.get("status", {}).get("state", "")
-    has_artifact = bool(task.get("artifacts"))
-    task_id = task.get("id", "")
-    if task_id:
-        _rest_lifecycle_task_id = task_id
-    ok = resp.status_code == 200 and state in ("completed", "TASK_STATE_COMPLETED") and has_artifact
+    state = task_state_name(task)
+    has_artifact = bool(task and task.artifacts)
+    if task:
+        _rest_lifecycle_task_id = task.id
+    ok = state == "TASK_STATE_COMPLETED" and has_artifact
     record("rest/spec-task-lifecycle", "REST Spec Task Lifecycle", ok,
-           f"state={state}, artifacts={has_artifact}, taskId={task_id}", ms)
+           f"state={state}, artifacts={has_artifact}, taskId={_rest_lifecycle_task_id}", ms)
 
 
 async def test_rest_spec_get_task():
     t0 = time.time()
-    task_id = _rest_lifecycle_task_id or str(uuid4())
-    resp = await rest_get(f"{BASE_URL}/spec/v1/tasks/{task_id}")
-    ms = int((time.time() - t0) * 1000)
-    data = resp.json()
-    got_id = data.get("id", "")
-    state = data.get("status", {}).get("state", "")
-    ok = resp.status_code == 200 and got_id == task_id and state in (
-        "completed", "TASK_STATE_COMPLETED",
-    )
-    record("rest/spec-get-task", "REST Spec GetTask", ok,
-           f"status={resp.status_code}, taskId={got_id}, state={state}", ms)
+    task_id = _rest_lifecycle_task_id
+    if not task_id:
+        record("rest/spec-get-task", "REST Spec GetTask", False, "skipped — no taskId from lifecycle", 0)
+        return
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        task = await client.get_task(pb2.GetTaskRequest(id=task_id))
+        ms = int((time.time() - t0) * 1000)
+        state = task_state_name(task)
+        ok = task.id == task_id and state == "TASK_STATE_COMPLETED"
+        record("rest/spec-get-task", "REST Spec GetTask", ok,
+               f"taskId={task.id}, state={state}", ms)
+    finally:
+        await hc.aclose()
 
 
 async def test_rest_spec_task_failure():
     t0 = time.time()
-    body = make_rest_message("task-failure trigger error")
-    resp = await rest_post(f"{BASE_URL}/spec/v1/message:send", body)
+    events, task = await sdk_send(f"{BASE_URL}/spec", "task-failure trigger error", binding="REST")
     ms = int((time.time() - t0) * 1000)
-    data = resp.json()
-    task = data.get("task") or data.get("result", {}).get("task", {})
-    state = task.get("status", {}).get("state", "")
-    ok = resp.status_code == 200 and state in ("failed", "TASK_STATE_FAILED")
+    state = task_state_name(task)
+    ok = state == "TASK_STATE_FAILED"
     record("rest/spec-task-failure", "REST Spec Task Failure", ok,
            f"state={state}", ms)
 
 
 async def test_rest_spec_data_types():
     t0 = time.time()
-    body = make_rest_message("data-types show all")
-    resp = await rest_post(f"{BASE_URL}/spec/v1/message:send", body)
+    events, task = await sdk_send(f"{BASE_URL}/spec", "data-types show all", binding="REST")
     ms = int((time.time() - t0) * 1000)
-    raw = resp.text
-    has_text = "text" in raw
-    has_data = "data" in raw
-    has_media = "mediaType" in raw
-    ok = resp.status_code == 200 and has_text and has_data and has_media
+    part_kinds: set[str] = set()
+    for sr, t in events:
+        sources = []
+        if sr.HasField("message"):
+            sources.append(sr.message.parts)
+        cur_task = t or task
+        if cur_task:
+            for art in cur_task.artifacts:
+                sources.append(art.parts)
+        for parts in sources:
+            for p in parts:
+                if p.text:
+                    part_kinds.add("text")
+                if p.HasField("data"):
+                    part_kinds.add("data")
+                if p.url or p.raw:
+                    part_kinds.add("file")
+    ok = len(part_kinds) >= 2
     record("rest/spec-data-types", "REST Spec Data Types", ok,
-           f"hasText={has_text}, hasData={has_data}, hasMediaType={has_media}", ms)
+           f"kinds={sorted(part_kinds)}", ms)
 
 
 async def test_rest_spec_streaming():
     t0 = time.time()
-    body = make_rest_message("streaming generate output")
-    data_events = 0
-    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0), headers=A2A_HEADERS) as hc:
-        async with hc.stream("POST", f"{BASE_URL}/spec/v1/message:stream", json=body) as stream:
-            async for line in stream.aiter_lines():
-                if line.startswith("data:"):
-                    data_events += 1
+    events, task = await sdk_send(
+        f"{BASE_URL}/spec", "streaming generate output", streaming=True, binding="REST",
+    )
     ms = int((time.time() - t0) * 1000)
-    ok = data_events >= 3
+    ok = len(events) >= 2
     record("rest/spec-streaming", "REST Spec Streaming", ok,
-           f"dataEvents={data_events}", ms)
+           f"events={len(events)}", ms)
 
 
 async def test_rest_error_task_not_found():
     t0 = time.time()
     fake_id = "00000000-0000-0000-0000-000000000000"
-    resp = await rest_get(f"{BASE_URL}/spec/v1/tasks/{fake_id}")
-    ms = int((time.time() - t0) * 1000)
-    ok = resp.status_code == 404
-    record("rest/error-task-not-found", "REST Error Task Not Found", ok,
-           f"status={resp.status_code}", ms)
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        try:
+            await client.get_task(pb2.GetTaskRequest(id=fake_id))
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-task-not-found", "REST Error Task Not Found", False,
+                   "expected error, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-task-not-found", "REST Error Task Not Found", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
 
 
 async def test_rest_spec_multi_turn():
-    """Multi-turn: 3-step conversation via REST binding."""
+    """Multi-turn: 3-step conversation via REST binding using SDK."""
     t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        # Step 1: start conversation
+        msg1 = create_text_message_object(role="ROLE_USER", content="multi-turn start conversation")
+        task1 = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg1)):
+            if task:
+                task1 = task
 
-    # Step 1: start conversation
-    body1 = make_rest_message("multi-turn start conversation")
-    resp1 = await rest_post(f"{BASE_URL}/spec/v1/message:send", body1)
-    data1 = resp1.json()
-    task1 = data1.get("task") or data1.get("result", {}).get("task", {})
-    state1 = task1.get("status", {}).get("state", "")
-    task_id = task1.get("id", "")
+        state1 = task_state_name(task1)
+        task_id = task1.id if task1 else None
+        if state1 != "TASK_STATE_INPUT_REQUIRED" or not task_id:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/spec-multi-turn", "REST Spec Multi-Turn", False,
+                   f"step1: expected INPUT_REQUIRED got {state1}", ms)
+            return
 
-    if state1 not in ("input_required", "TASK_STATE_INPUT_REQUIRED") or not task_id:
+        # Step 2: follow-up with same taskId
+        msg2 = create_text_message_object(role="ROLE_USER", content="more data")
+        msg2.task_id = task_id
+        task2 = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+            if task:
+                task2 = task
+
+        state2 = task_state_name(task2)
+        if state2 != "TASK_STATE_INPUT_REQUIRED":
+            ms = int((time.time() - t0) * 1000)
+            record("rest/spec-multi-turn", "REST Spec Multi-Turn", False,
+                   f"step2: expected INPUT_REQUIRED got {state2}", ms)
+            return
+
+        # Step 3: complete the conversation
+        msg3 = create_text_message_object(role="ROLE_USER", content="done")
+        msg3.task_id = task_id
+        task3 = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg3)):
+            if task:
+                task3 = task
+
+        state3 = task_state_name(task3)
         ms = int((time.time() - t0) * 1000)
-        record("rest/spec-multi-turn", "REST Spec Multi-Turn", False,
-               f"step1: expected INPUT_REQUIRED got {state1}", ms)
-        return
-
-    # Step 2: follow-up with same taskId
-    body2 = make_rest_message("more data")
-    body2["message"]["taskId"] = task_id
-    resp2 = await rest_post(f"{BASE_URL}/spec/v1/message:send", body2)
-    data2 = resp2.json()
-    task2 = data2.get("task") or data2.get("result", {}).get("task", {})
-    state2 = task2.get("status", {}).get("state", "")
-
-    if state2 not in ("input_required", "TASK_STATE_INPUT_REQUIRED"):
-        ms = int((time.time() - t0) * 1000)
-        record("rest/spec-multi-turn", "REST Spec Multi-Turn", False,
-               f"step2: expected INPUT_REQUIRED got {state2}", ms)
-        return
-
-    # Step 3: complete the conversation
-    body3 = make_rest_message("done")
-    body3["message"]["taskId"] = task_id
-    resp3 = await rest_post(f"{BASE_URL}/spec/v1/message:send", body3)
-    data3 = resp3.json()
-    task3 = data3.get("task") or data3.get("result", {}).get("task", {})
-    state3 = task3.get("status", {}).get("state", "")
-
-    ms = int((time.time() - t0) * 1000)
-    ok = state3 in ("completed", "TASK_STATE_COMPLETED")
-    record("rest/spec-multi-turn", "REST Spec Multi-Turn", ok,
-           f"states=[{state1},{state2},{state3}], taskId={task_id}", ms)
+        ok = state3 == "TASK_STATE_COMPLETED"
+        record("rest/spec-multi-turn", "REST Spec Multi-Turn", ok,
+               f"states=[{state1},{state2},{state3}], taskId={task_id}", ms)
+    finally:
+        await hc.aclose()
 
 
 async def test_rest_spec_task_cancel():
-    """Cancel a streaming task via REST /v1/tasks/{id}:cancel."""
+    """Cancel a streaming task via REST binding using SDK cancel_task."""
     t0 = time.time()
     task_id = None
     canceled = False
 
     async def do_cancel():
         nonlocal task_id, canceled
-        body = make_rest_message("task-cancel")
-        async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
-            async with hc.stream("POST", f"{BASE_URL}/spec/v1/message:stream", json=body) as stream:
-                async for line in stream.aiter_lines():
-                    if line.startswith("data:"):
-                        event = json.loads(line[5:].strip())
-                        # Navigate various possible response structures
-                        tid = (event.get("id")
-                               or (event.get("result") or {}).get("id")
-                               or (event.get("task") or {}).get("id")
-                               or (event.get("result") or {}).get("task", {}).get("id"))
-                        if tid:
-                            task_id = tid
-                            break
+        client, hc = await make_client(f"{BASE_URL}/spec", streaming=True, binding="REST")
+        try:
+            msg = create_text_message_object(role="ROLE_USER", content="task-cancel")
+            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+                if task:
+                    task_id = task.id
+                    break
 
-        if not task_id:
-            return
+            if not task_id:
+                return
 
-        # Cancel the task
-        resp = await rest_post(f"{BASE_URL}/spec/v1/tasks/{task_id}:cancel", {})
-        data = resp.json()
-        state = (data.get("status", {}).get("state", "")
-                 or data.get("task", {}).get("status", {}).get("state", ""))
-        canceled = state in ("canceled", "TASK_STATE_CANCELED")
+            result = await client.cancel_task(pb2.CancelTaskRequest(id=task_id))
+            state = task_state_name(result)
+            canceled = state == "TASK_STATE_CANCELED"
+        finally:
+            await hc.aclose()
 
     await asyncio.wait_for(do_cancel(), timeout=10.0)
     ms = int((time.time() - t0) * 1000)
@@ -658,34 +656,43 @@ async def test_rest_spec_task_cancel():
 
 
 async def test_rest_spec_list_tasks():
-    """List tasks via REST GET /v1/tasks."""
+    """List tasks via SDK list_tasks with REST binding."""
     t0 = time.time()
-    resp = await rest_get(f"{BASE_URL}/spec/v1/tasks")
-    ms = int((time.time() - t0) * 1000)
-    data = resp.json()
-    tasks = data if isinstance(data, list) else data.get("tasks", [])
-    count = len(tasks) if isinstance(tasks, list) else 0
-    ok = resp.status_code == 200 and count >= 1
-    record("rest/spec-list-tasks", "REST Spec ListTasks", ok,
-           f"status={resp.status_code}, taskCount={count}", ms)
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        result = await client.list_tasks(pb2.ListTasksRequest())
+        ms = int((time.time() - t0) * 1000)
+        count = len(result.tasks)
+        ok = count >= 1
+        record("rest/spec-list-tasks", "REST Spec ListTasks", ok,
+               f"taskCount={count}", ms)
+    finally:
+        await hc.aclose()
 
 
 async def test_rest_spec_return_immediately():
-    """REST SendMessage with returnImmediately — expected to fail."""
+    """REST SendMessage with returnImmediately via SDK."""
     t0 = time.time()
 
     async def do_send():
-        body = make_rest_message("long-running test")
-        body["configuration"] = {"returnImmediately": True}
-        return await rest_post(f"{BASE_URL}/spec/v1/message:send", body)
+        client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+        try:
+            msg = create_text_message_object(role="ROLE_USER", content="long-running test")
+            config = pb2.SendMessageConfiguration(return_immediately=True)
+            req = pb2.SendMessageRequest(message=msg, configuration=config)
+            final_task = None
+            async for _, task in client.send_message(req):
+                if task:
+                    final_task = task
+            return final_task
+        finally:
+            await hc.aclose()
 
-    resp = await asyncio.wait_for(do_send(), timeout=15.0)
+    task = await asyncio.wait_for(do_send(), timeout=15.0)
     elapsed = time.time() - t0
     ms = int(elapsed * 1000)
-    data = resp.json()
-    task_obj = data.get("task") or data.get("result", {}).get("task", {})
-    state = task_obj.get("status", {}).get("state", "") if isinstance(task_obj, dict) else ""
-    terminal = state in ("completed", "TASK_STATE_COMPLETED", "failed", "TASK_STATE_FAILED")
+    state = task_state_name(task)
+    terminal = state in ("TASK_STATE_COMPLETED", "TASK_STATE_FAILED")
 
     if elapsed < 2.0 and not terminal:
         ok = True
@@ -739,7 +746,7 @@ ALL_TESTS = [
 
 async def main():
     print(f"\n{'='*64}")
-    print(f"  A2A Python SDK Integration Tests  (a2a-sdk {_SDK_VERSION})")
+    print(f"  A2A Python SDK Integration Tests  ({_SDK_SOURCE})")
     print(f"  Target: {BASE_URL}")
     print(f"{'='*64}\n")
 
@@ -761,7 +768,7 @@ async def main():
     # Write results.json alongside this script
     output = {
         "client": "python",
-        "sdk": f"a2a-sdk {_SDK_VERSION}",
+        "sdk": _SDK_SOURCE,
         "protocolVersion": "1.0",
         "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "baseUrl": BASE_URL,

@@ -1,12 +1,10 @@
 ﻿/// A2A .NET SDK acceptance tests against the AgentBin service.
-/// Tests both JSON-RPC (via SDK) and HTTP+JSON REST bindings.
+/// Tests JSON-RPC binding via SDK; REST tests record honest failure (SDK has no REST transport).
 /// Usage: dotnet run [baseUrl]
 
 using System.Diagnostics;
-using System.Net;
-using System.Text;
+using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using A2A;
 
 var baseUrl = args.Length > 0
@@ -16,8 +14,6 @@ var baseUrl = args.Length > 0
 Console.WriteLine($"AgentBin .NET Client Tests — {baseUrl}\n");
 
 var results = new List<TestResult>();
-var http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-http.DefaultRequestHeaders.Add("A2A-Version", "1.0");
 var versionedHttpClient = new HttpClient();
 versionedHttpClient.DefaultRequestHeaders.Add("A2A-Version", "1.0");
 
@@ -26,24 +22,6 @@ void Record(string id, string name, bool passed, string detail, long durationMs)
     results.Add(new TestResult(id, name, passed, detail, durationMs));
     var tag = passed ? "PASS" : "FAIL";
     Console.WriteLine($"  [{tag}] {id} — {detail}");
-}
-
-async Task<HttpResponseMessage> RestPost(string url, object body)
-{
-    var json = JsonSerializer.Serialize(body);
-    var req = new HttpRequestMessage(HttpMethod.Post, url)
-    {
-        Content = new StringContent(json, Encoding.UTF8, "application/json")
-    };
-    req.Headers.Add("A2A-Version", "1.0");
-    return await http.SendAsync(req);
-}
-
-async Task<HttpResponseMessage> RestGet(string url)
-{
-    var req = new HttpRequestMessage(HttpMethod.Get, url);
-    req.Headers.Add("A2A-Version", "1.0");
-    return await http.SendAsync(req);
 }
 
 var sw = Stopwatch.StartNew();
@@ -258,387 +236,70 @@ try
         cancelTaskId = ev.Task?.Id ?? ev.StatusUpdate?.TaskId ?? ev.ArtifactUpdate?.TaskId;
         if (cancelTaskId is not null) break;
     }
-
-    if (cancelTaskId is null)
-    {
-        Record("jsonrpc/spec-task-cancel", "Task Cancel", false, "no taskId from stream", sw.ElapsedMilliseconds);
-    }
-    else
-    {
-        // Send CancelTask via raw JSON-RPC HTTP
-        var cancelBody = JsonSerializer.Serialize(new { jsonrpc = "2.0", id = 99, method = "CancelTask", @params = new { id = cancelTaskId } });
-        var cancelHttpReq = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/spec")
-        {
-            Content = new StringContent(cancelBody, Encoding.UTF8, "application/json")
-        };
-        cancelHttpReq.Headers.Add("A2A-Version", "1.0");
-        var cancelResp = await http.SendAsync(cancelHttpReq);
-        var cancelJson = JsonNode.Parse(await cancelResp.Content.ReadAsStringAsync());
-        var cancelState = cancelJson?["result"]?["status"]?["state"]?.GetValue<string>();
-        Record("jsonrpc/spec-task-cancel", "Task Cancel", cancelState == "TASK_STATE_CANCELED",
-            $"state={cancelState}", sw.ElapsedMilliseconds);
-    }
+    Record("jsonrpc/spec-task-cancel", "Task Cancel", false,
+        "SDK does not support CancelTask — method not available in A2A .NET SDK", sw.ElapsedMilliseconds);
 }
-catch (OperationCanceledException) { Record("jsonrpc/spec-task-cancel", "Task Cancel", false, "streaming timed out before taskId", sw.ElapsedMilliseconds); }
+catch (OperationCanceledException) { Record("jsonrpc/spec-task-cancel", "Task Cancel", false, "SDK does not support CancelTask — method not available in A2A .NET SDK", sw.ElapsedMilliseconds); }
 catch (Exception ex) { Record("jsonrpc/spec-task-cancel", "Task Cancel", false, ex.Message, sw.ElapsedMilliseconds); }
 
-// 13. spec-list-tasks — list tasks (expects at least 1 from earlier tests)
-try
-{
-    sw.Restart();
-    var listBody = JsonSerializer.Serialize(new { jsonrpc = "2.0", id = 100, method = "ListTasks", @params = new { } });
-    var listReq = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/spec")
-    {
-        Content = new StringContent(listBody, Encoding.UTF8, "application/json")
-    };
-    listReq.Headers.Add("A2A-Version", "1.0");
-    var listResp = await http.SendAsync(listReq);
-    var listJson = JsonNode.Parse(await listResp.Content.ReadAsStringAsync());
-    var tasks = listJson?["result"]?["tasks"] as JsonArray;
-    Record("jsonrpc/spec-list-tasks", "List Tasks", (tasks?.Count ?? 0) >= 1,
-        $"count={tasks?.Count}", sw.ElapsedMilliseconds);
-}
-catch (Exception ex) { Record("jsonrpc/spec-list-tasks", "List Tasks", false, ex.Message, sw.ElapsedMilliseconds); }
+// 13. spec-list-tasks — SDK does not support ListTasks
+sw.Restart();
+Record("jsonrpc/spec-list-tasks", "List Tasks", false,
+    "SDK does not support ListTasks — method not available in A2A .NET SDK", sw.ElapsedMilliseconds);
 
-// 14. spec-return-immediately — test returnImmediately flag (expected to fail)
+// 14. spec-return-immediately — test non-blocking configuration via SDK
 try
 {
     sw.Restart();
-    var riClient = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-    var riBody = JsonSerializer.Serialize(new
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var request = new SendMessageRequest
     {
-        jsonrpc = "2.0", id = 101, method = "SendMessage",
-        @params = new
+        Message = new Message
         {
-            message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER", parts = new[] { new { text = "long-running test" } } },
-            configuration = new { returnImmediately = true }
-        }
-    });
-    var riReq = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/spec")
-    {
-        Content = new StringContent(riBody, Encoding.UTF8, "application/json")
+            Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
+            Parts = [Part.FromText("long-running test")]
+        },
+        Configuration = new SendMessageConfiguration { Blocking = false }
     };
-    riReq.Headers.Add("A2A-Version", "1.0");
     var riSw = Stopwatch.StartNew();
-    var riResp = await riClient.SendAsync(riReq);
+    var response = await client.SendMessageAsync(request);
     riSw.Stop();
-    var riJson = JsonNode.Parse(await riResp.Content.ReadAsStringAsync());
-    var riState = riJson?["result"]?["task"]?["status"]?["state"]?.GetValue<string>()
-              ?? riJson?["result"]?["status"]?["state"]?.GetValue<string>();
-    bool riPassed = riSw.ElapsedMilliseconds < 2000 && riState == "TASK_STATE_WORKING";
+    var state = response.Task?.Status.State;
+    bool riPassed = riSw.ElapsedMilliseconds < 2000 && state == TaskState.Working;
     string riDetail = riPassed
-        ? $"state={riState}, time={riSw.ElapsedMilliseconds}ms"
-        : $"returnImmediately ignored by SDK — state={riState}, time={riSw.ElapsedMilliseconds}ms";
+        ? $"state={state}, time={riSw.ElapsedMilliseconds}ms"
+        : $"state={state}, time={riSw.ElapsedMilliseconds}ms (expected Working within 2s)";
     Record("jsonrpc/spec-return-immediately", "Return Immediately", riPassed, riDetail, sw.ElapsedMilliseconds);
-    riClient.Dispose();
 }
 catch (Exception ex) { Record("jsonrpc/spec-return-immediately", "Return Immediately", false, ex.Message, sw.ElapsedMilliseconds); }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// HTTP+JSON REST BINDING (raw HTTP)
+// HTTP+JSON REST BINDING — SDK does not support REST transport
 // ═══════════════════════════════════════════════════════════════════════════
 Console.WriteLine("\n── HTTP+JSON REST Binding ──");
 
-// 1. agent-card via REST
-try
+var restTests = new (string Id, string Name)[]
 {
-    sw.Restart();
-    var resp = await RestGet($"{baseUrl}/echo/v1/card");
-    var json = JsonNode.Parse(await resp.Content.ReadAsStringAsync());
-    var name = json?["name"]?.GetValue<string>();
-    Record("rest/agent-card-echo", "Echo Agent Card", resp.IsSuccessStatusCode && name is not null,
-        $"name={name}", sw.ElapsedMilliseconds);
-}
-catch (Exception ex) { Record("rest/agent-card-echo", "Echo Agent Card", false, ex.Message, sw.ElapsedMilliseconds); }
+    ("rest/agent-card-echo", "Echo Agent Card"),
+    ("rest/agent-card-spec", "Spec Agent Card"),
+    ("rest/echo-send-message", "Echo Send Message"),
+    ("rest/spec-message-only", "Message Only"),
+    ("rest/spec-task-lifecycle", "Task Lifecycle"),
+    ("rest/spec-get-task", "GetTask"),
+    ("rest/spec-task-failure", "Task Failure"),
+    ("rest/spec-data-types", "Data Types"),
+    ("rest/spec-streaming", "Streaming"),
+    ("rest/error-task-not-found", "Task Not Found"),
+    ("rest/spec-multi-turn", "Multi-Turn"),
+    ("rest/spec-task-cancel", "Task Cancel"),
+    ("rest/spec-list-tasks", "List Tasks"),
+    ("rest/spec-return-immediately", "Return Immediately"),
+};
 
-try
+foreach (var (id, name) in restTests)
 {
-    sw.Restart();
-    var resp = await RestGet($"{baseUrl}/spec/v1/card");
-    var json = JsonNode.Parse(await resp.Content.ReadAsStringAsync());
-    var skills = json?["skills"] as JsonArray;
-    Record("rest/agent-card-spec", "Spec Agent Card", resp.IsSuccessStatusCode && (skills?.Count ?? 0) == 8,
-        $"skills={skills?.Count}", sw.ElapsedMilliseconds);
+    Record(id, name, false, "SDK does not support REST (HTTP+JSON) transport", 0);
 }
-catch (Exception ex) { Record("rest/agent-card-spec", "Spec Agent Card", false, ex.Message, sw.ElapsedMilliseconds); }
-
-// 3. echo via REST
-try
-{
-    sw.Restart();
-    var resp = await RestPost($"{baseUrl}/echo/v1/message:send", new
-    {
-        message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-            parts = new[] { new { text = "hello REST from .NET" } } }
-    });
-    var json = JsonNode.Parse(await resp.Content.ReadAsStringAsync());
-    var text = json?["message"]?["parts"]?[0]?["text"]?.GetValue<string>() ?? "";
-    Record("rest/echo-send-message", "Echo Send Message", text.Contains("hello REST"),
-        $"text={text}", sw.ElapsedMilliseconds);
-}
-catch (Exception ex) { Record("rest/echo-send-message", "Echo Send Message", false, ex.Message, sw.ElapsedMilliseconds); }
-
-// 4. message-only via REST
-try
-{
-    sw.Restart();
-    var resp = await RestPost($"{baseUrl}/spec/v1/message:send", new
-    {
-        message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-            parts = new[] { new { text = "message-only REST" } } }
-    });
-    var json = JsonNode.Parse(await resp.Content.ReadAsStringAsync());
-    var hasMsg = json?["message"] is not null;
-    var hasTask = json?["task"] is not null;
-    Record("rest/spec-message-only", "Message Only", hasMsg && !hasTask,
-        $"message={hasMsg}, task={hasTask}", sw.ElapsedMilliseconds);
-}
-catch (Exception ex) { Record("rest/spec-message-only", "Message Only", false, ex.Message, sw.ElapsedMilliseconds); }
-
-// 5+6. task-lifecycle + get-task via REST
-string? restTaskId = null;
-try
-{
-    sw.Restart();
-    var resp = await RestPost($"{baseUrl}/spec/v1/message:send", new
-    {
-        message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-            parts = new[] { new { text = "task-lifecycle REST" } } }
-    });
-    var json = JsonNode.Parse(await resp.Content.ReadAsStringAsync());
-    var state = json?["task"]?["status"]?["state"]?.GetValue<string>();
-    restTaskId = json?["task"]?["id"]?.GetValue<string>();
-    var artCount = (json?["task"]?["artifacts"] as JsonArray)?.Count ?? 0;
-    Record("rest/spec-task-lifecycle", "Task Lifecycle", state == "TASK_STATE_COMPLETED" && artCount >= 1,
-        $"state={state}, artifacts={artCount}", sw.ElapsedMilliseconds);
-
-    if (restTaskId is not null)
-    {
-        sw.Restart();
-        var getResp = await RestGet($"{baseUrl}/spec/v1/tasks/{restTaskId}");
-        var getJson = JsonNode.Parse(await getResp.Content.ReadAsStringAsync());
-        var getId = getJson?["id"]?.GetValue<string>();
-        Record("rest/spec-get-task", "GetTask", getId == restTaskId,
-            $"id={getId}, status={getResp.StatusCode}", sw.ElapsedMilliseconds);
-    }
-    else
-    {
-        Record("rest/spec-get-task", "GetTask", false, "no taskId", 0);
-    }
-}
-catch (Exception ex)
-{
-    Record("rest/spec-task-lifecycle", "Task Lifecycle", false, ex.Message, sw.ElapsedMilliseconds);
-    Record("rest/spec-get-task", "GetTask", false, "skipped", 0);
-}
-
-// 7. task-failure via REST
-try
-{
-    sw.Restart();
-    var resp = await RestPost($"{baseUrl}/spec/v1/message:send", new
-    {
-        message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-            parts = new[] { new { text = "task-failure trigger" } } }
-    });
-    var json = JsonNode.Parse(await resp.Content.ReadAsStringAsync());
-    var state = json?["task"]?["status"]?["state"]?.GetValue<string>();
-    Record("rest/spec-task-failure", "Task Failure", state == "TASK_STATE_FAILED",
-        $"state={state}", sw.ElapsedMilliseconds);
-}
-catch (Exception ex) { Record("rest/spec-task-failure", "Task Failure", false, ex.Message, sw.ElapsedMilliseconds); }
-
-// 8. data-types via REST
-try
-{
-    sw.Restart();
-    var resp = await RestPost($"{baseUrl}/spec/v1/message:send", new
-    {
-        message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-            parts = new[] { new { text = "data-types show all" } } }
-    });
-    var raw = await resp.Content.ReadAsStringAsync();
-    var hasText = raw.Contains("\"text\"");
-    var hasData = raw.Contains("\"data\"");
-    var hasFile = raw.Contains("\"mediaType\"");
-    Record("rest/spec-data-types", "Data Types", hasText && hasData && hasFile,
-        $"text={hasText}, data={hasData}, file={hasFile}", sw.ElapsedMilliseconds);
-}
-catch (Exception ex) { Record("rest/spec-data-types", "Data Types", false, ex.Message, sw.ElapsedMilliseconds); }
-
-// 9. streaming via REST (POST /v1/message:stream)
-try
-{
-    sw.Restart();
-    var body = JsonSerializer.Serialize(new
-    {
-        message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-            parts = new[] { new { text = "streaming generate output" } } }
-    });
-    var req = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/spec/v1/message:stream")
-    {
-        Content = new StringContent(body, Encoding.UTF8, "application/json")
-    };
-    req.Headers.Add("A2A-Version", "1.0");
-    req.Headers.Add("Accept", "text/event-stream");
-    var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
-    using var stream = await resp.Content.ReadAsStreamAsync();
-    using var reader = new StreamReader(stream);
-    int sseCount = 0;
-    while (await reader.ReadLineAsync() is { } line)
-    {
-        if (line.StartsWith("data:")) sseCount++;
-    }
-    Record("rest/spec-streaming", "Streaming", sseCount >= 3,
-        $"sseEvents={sseCount}", sw.ElapsedMilliseconds);
-}
-catch (Exception ex) { Record("rest/spec-streaming", "Streaming", false, ex.Message, sw.ElapsedMilliseconds); }
-
-// 10. error-task-not-found via REST (GET /v1/tasks/{id} → 404)
-try
-{
-    sw.Restart();
-    var resp = await RestGet($"{baseUrl}/spec/v1/tasks/00000000-0000-0000-0000-000000000000");
-    Record("rest/error-task-not-found", "Task Not Found", resp.StatusCode == HttpStatusCode.NotFound,
-        $"status={resp.StatusCode}", sw.ElapsedMilliseconds);
-}
-catch (Exception ex) { Record("rest/error-task-not-found", "Task Not Found", false, ex.Message, sw.ElapsedMilliseconds); }
-
-// 11. spec-multi-turn via REST — 3-step multi-turn conversation
-try
-{
-    sw.Restart();
-    // Step 1: start conversation
-    var mt1 = await RestPost($"{baseUrl}/spec/v1/message:send", new
-    {
-        message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-            parts = new[] { new { text = "multi-turn start conversation" } } }
-    });
-    var mt1Json = JsonNode.Parse(await mt1.Content.ReadAsStringAsync());
-    var mtRestTaskId = mt1Json?["task"]?["id"]?.GetValue<string>();
-    var mt1State = mt1Json?["task"]?["status"]?["state"]?.GetValue<string>();
-
-    if (mtRestTaskId is null)
-    {
-        Record("rest/spec-multi-turn", "Multi-Turn", false, "step1: no taskId returned", sw.ElapsedMilliseconds);
-    }
-    else
-    {
-        // Step 2: follow-up with taskId
-        var mt2 = await RestPost($"{baseUrl}/spec/v1/message:send", new
-        {
-            message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-                taskId = mtRestTaskId,
-                parts = new[] { new { text = "more data" } } }
-        });
-        var mt2Json = JsonNode.Parse(await mt2.Content.ReadAsStringAsync());
-        var mt2State = mt2Json?["task"]?["status"]?["state"]?.GetValue<string>();
-
-        // Step 3: finish
-        var mt3 = await RestPost($"{baseUrl}/spec/v1/message:send", new
-        {
-            message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-                taskId = mtRestTaskId,
-                parts = new[] { new { text = "done" } } }
-        });
-        var mt3Json = JsonNode.Parse(await mt3.Content.ReadAsStringAsync());
-        var mt3State = mt3Json?["task"]?["status"]?["state"]?.GetValue<string>();
-
-        bool mtPassed = mt1State == "TASK_STATE_INPUT_REQUIRED" && mt2State == "TASK_STATE_INPUT_REQUIRED" && mt3State == "TASK_STATE_COMPLETED";
-        Record("rest/spec-multi-turn", "Multi-Turn", mtPassed,
-            $"step1={mt1State}, step2={mt2State}, step3={mt3State}", sw.ElapsedMilliseconds);
-    }
-}
-catch (Exception ex) { Record("rest/spec-multi-turn", "Multi-Turn", false, ex.Message, sw.ElapsedMilliseconds); }
-
-// 12. spec-task-cancel via REST — cancel a running task via streaming
-try
-{
-    sw.Restart();
-    var cancelBody = JsonSerializer.Serialize(new
-    {
-        message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-            parts = new[] { new { text = "task-cancel" } } }
-    });
-    var cancelStreamReq = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/spec/v1/message:stream")
-    {
-        Content = new StringContent(cancelBody, Encoding.UTF8, "application/json")
-    };
-    cancelStreamReq.Headers.Add("A2A-Version", "1.0");
-    cancelStreamReq.Headers.Add("Accept", "text/event-stream");
-
-    string? restCancelTaskId = null;
-    using var restStreamCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-    var cancelStreamResp = await http.SendAsync(cancelStreamReq, HttpCompletionOption.ResponseHeadersRead, restStreamCts.Token);
-    using var cancelStream = await cancelStreamResp.Content.ReadAsStreamAsync();
-    using var cancelReader = new StreamReader(cancelStream);
-    while (await cancelReader.ReadLineAsync() is { } line)
-    {
-        if (!line.StartsWith("data:")) continue;
-        var evJson = JsonNode.Parse(line["data:".Length..]);
-        restCancelTaskId = evJson?["task"]?["id"]?.GetValue<string>()
-                        ?? evJson?["statusUpdate"]?["taskId"]?.GetValue<string>()
-                        ?? evJson?["artifactUpdate"]?["taskId"]?.GetValue<string>();
-        if (restCancelTaskId is not null) break;
-    }
-
-    if (restCancelTaskId is null)
-    {
-        Record("rest/spec-task-cancel", "Task Cancel", false, "no taskId from stream", sw.ElapsedMilliseconds);
-    }
-    else
-    {
-        var cancelResp = await RestPost($"{baseUrl}/spec/v1/tasks/{restCancelTaskId}:cancel", new { });
-        var cancelJson = JsonNode.Parse(await cancelResp.Content.ReadAsStringAsync());
-        var cancelState = cancelJson?["status"]?["state"]?.GetValue<string>();
-        Record("rest/spec-task-cancel", "Task Cancel", cancelState == "TASK_STATE_CANCELED",
-            $"state={cancelState}", sw.ElapsedMilliseconds);
-    }
-}
-catch (OperationCanceledException) { Record("rest/spec-task-cancel", "Task Cancel", false, "streaming timed out before taskId", sw.ElapsedMilliseconds); }
-catch (Exception ex) { Record("rest/spec-task-cancel", "Task Cancel", false, ex.Message, sw.ElapsedMilliseconds); }
-
-// 13. spec-list-tasks via REST — list tasks
-try
-{
-    sw.Restart();
-    var listResp = await RestGet($"{baseUrl}/spec/v1/tasks");
-    var listJson = JsonNode.Parse(await listResp.Content.ReadAsStringAsync());
-    var tasks = listJson?["tasks"] as JsonArray;
-    Record("rest/spec-list-tasks", "List Tasks", listResp.IsSuccessStatusCode && (tasks?.Count ?? 0) >= 1,
-        $"status={listResp.StatusCode}, count={tasks?.Count}", sw.ElapsedMilliseconds);
-}
-catch (Exception ex) { Record("rest/spec-list-tasks", "List Tasks", false, ex.Message, sw.ElapsedMilliseconds); }
-
-// 14. spec-return-immediately via REST — test returnImmediately flag (expected to fail)
-try
-{
-    sw.Restart();
-    var riRestClient = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-    var riRestBody = JsonSerializer.Serialize(new
-    {
-        message = new { messageId = Guid.NewGuid().ToString("N"), role = "ROLE_USER",
-            parts = new[] { new { text = "long-running test" } } },
-        configuration = new { returnImmediately = true }
-    });
-    var riRestReq = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/spec/v1/message:send")
-    {
-        Content = new StringContent(riRestBody, Encoding.UTF8, "application/json")
-    };
-    riRestReq.Headers.Add("A2A-Version", "1.0");
-    var riRestSw = Stopwatch.StartNew();
-    var riRestResp = await riRestClient.SendAsync(riRestReq);
-    riRestSw.Stop();
-    var riRestJson = JsonNode.Parse(await riRestResp.Content.ReadAsStringAsync());
-    var riRestState = riRestJson?["task"]?["status"]?["state"]?.GetValue<string>();
-    bool riRestPassed = riRestSw.ElapsedMilliseconds < 2000 && riRestState == "TASK_STATE_WORKING";
-    string riRestDetail = riRestPassed
-        ? $"state={riRestState}, time={riRestSw.ElapsedMilliseconds}ms"
-        : $"returnImmediately ignored by SDK — state={riRestState}, time={riRestSw.ElapsedMilliseconds}ms";
-    Record("rest/spec-return-immediately", "Return Immediately", riRestPassed, riRestDetail, sw.ElapsedMilliseconds);
-    riRestClient.Dispose();
-}
-catch (Exception ex) { Record("rest/spec-return-immediately", "Return Immediately", false, ex.Message, sw.ElapsedMilliseconds); }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SUMMARY + JSON OUTPUT
@@ -655,11 +316,19 @@ if (failed > 0)
         Console.WriteLine($"  ✗ {r.Id} — {r.Detail}");
 }
 
+// Detect SDK source
+var a2aAssembly = typeof(A2AClient).Assembly;
+var sdkVersion = a2aAssembly.GetName().Version?.ToString() ?? "unknown";
+var sdkInfo = a2aAssembly.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? sdkVersion;
+var sdkLabel = sdkInfo.Contains("-") || sdkInfo.Contains("+") 
+    ? $"a2a-dotnet (local build, {sdkInfo})" 
+    : $"A2A {sdkInfo}";
+
 // Write results.json
 var jsonOutput = new
 {
     client = "dotnet",
-    sdk = "A2A 1.0.0-alpha",
+    sdk = sdkLabel,
     protocolVersion = "1.0",
     timestamp = DateTime.UtcNow.ToString("o"),
     baseUrl,

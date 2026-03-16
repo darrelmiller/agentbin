@@ -422,6 +422,12 @@ public sealed class SpecAgent : IAgentHandler
                     Url = agentUrl,
                     ProtocolBinding = "JSONRPC",
                     ProtocolVersion = "1.0",
+                },
+                new AgentInterface
+                {
+                    Url = agentUrl + "/v1",
+                    ProtocolBinding = "HTTP+JSON",
+                    ProtocolVersion = "1.0",
                 }
             ],
             DefaultInputModes = ["text/plain"],

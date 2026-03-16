@@ -140,6 +140,17 @@ KNOWN_FAILURES: dict[tuple[str, str], str] = {
         "Known: .NET A2A server does not implement returnImmediately. "
         "The SDK blocks until the task completes instead of returning early.",
 
+    # .NET SDK missing methods — CancelTask, ListTasks, and REST transport
+    ("dotnet", "jsonrpc/spec-task-cancel"):
+        "Known: .NET A2A SDK does not expose CancelTaskAsync. "
+        "Method not yet available in the SDK.",
+    ("dotnet", "jsonrpc/spec-list-tasks"):
+        "Known: .NET A2A SDK does not expose ListTasksAsync. "
+        "Method not yet available in the SDK.",
+    ("dotnet", "rest/"):
+        "Known: .NET A2A SDK does not support REST (HTTP+JSON) transport. "
+        "Only JSON-RPC binding is available.",
+
     # Java SDK protobuf agent card deserialization
     ("java", "agent-card-echo"):
         "Known: Java SDK uses protobuf internally to parse agent cards. "
@@ -205,6 +216,10 @@ def _get_known_failure(client_id: str, test_id: str) -> str | None:
         return KNOWN_FAILURES[(client_id, base_id)]
     if ("*", base_id) in KNOWN_FAILURES:
         return KNOWN_FAILURES[("*", base_id)]
+    # Try prefix matching (e.g., "rest/" matches all REST tests)
+    for (cid, pattern), explanation in KNOWN_FAILURES.items():
+        if cid in (client_id, "*") and pattern.endswith("/") and test_id.startswith(pattern):
+            return explanation
     return None
 
 

@@ -1,13 +1,9 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,7 +12,6 @@ import (
 	"github.com/a2aproject/a2a-go/a2a"
 	"github.com/a2aproject/a2a-go/a2aclient"
 	"github.com/a2aproject/a2a-go/a2aclient/agentcard"
-	"github.com/google/uuid"
 )
 
 const defaultBaseURL = "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io"
@@ -41,6 +36,47 @@ type TestReport struct {
 }
 
 var results []TestResult
+
+func detectSDKSource() string {
+	// Check if go.mod has a replace directive for a2a-go (local build)
+	goMod, err := os.ReadFile("go.mod")
+	if err != nil {
+		return "a2a-go"
+	}
+	for _, line := range strings.Split(string(goMod), "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "replace") && strings.Contains(line, "a2a-go") {
+			parts := strings.Split(line, "=>")
+			if len(parts) == 2 {
+				localPath := strings.TrimSpace(parts[1])
+				// Try to get git branch from the local path
+				gitDir := filepath.Join(localPath, ".git")
+				if head, err := os.ReadFile(filepath.Join(gitDir, "HEAD")); err == nil {
+					ref := strings.TrimSpace(string(head))
+					if strings.HasPrefix(ref, "ref: refs/heads/") {
+						branch := strings.TrimPrefix(ref, "ref: refs/heads/")
+						return fmt.Sprintf("a2a-go@%s (local)", branch)
+					}
+				}
+				return fmt.Sprintf("a2a-go (local: %s)", localPath)
+			}
+		}
+	}
+	// Check go.sum for the version
+	goSum, err := os.ReadFile("go.sum")
+	if err != nil {
+		return "a2a-go"
+	}
+	for _, line := range strings.Split(string(goSum), "\n") {
+		if strings.Contains(line, "a2a-go") && !strings.Contains(line, "/go.mod") {
+			parts := strings.Fields(line)
+			if len(parts) >= 2 {
+				return "a2a-go " + parts[1]
+			}
+		}
+	}
+	return "a2a-go"
+}
 
 func record(id, name string, passed bool, detail string, dur time.Duration) {
 	results = append(results, TestResult{
@@ -408,8 +444,7 @@ func main() {
 				}
 				if streamTaskID != "" && !cancelSent {
 					cancelSent = true
-					cancelBody := fmt.Sprintf(`{"jsonrpc":"2.0","id":1,"method":"CancelTask","params":{"id":"%s"}}`, streamTaskID)
-					restPost(baseURL+"/spec", cancelBody)
+					specClient.CancelTask(ctx, &a2a.CancelTaskRequest{ID: streamTaskID})
 				}
 			}
 
@@ -433,28 +468,19 @@ func main() {
 	}
 
 	// 13. spec-list-tasks
-	{
+	if specClient != nil {
 		start := time.Now()
-		reqBody := `{"jsonrpc":"2.0","id":1,"method":"ListTasks","params":{}}`
-		_, body, err := restPost(baseURL+"/spec", reqBody)
+		resp, err := specClient.ListTasks(ctx, &a2a.ListTasksRequest{})
 		dur := time.Since(start)
 		if err != nil {
 			record("jsonrpc/spec-list-tasks", "List Tasks", false, fmt.Sprintf("error: %v", err), dur)
 		} else {
-			var rpcResp map[string]interface{}
-			json.Unmarshal([]byte(body), &rpcResp)
-			if rpcErr, ok := rpcResp["error"]; ok {
-				record("jsonrpc/spec-list-tasks", "List Tasks", false, fmt.Sprintf("rpc error: %v", rpcErr), dur)
-			} else if result, ok := rpcResp["result"].(map[string]interface{}); ok {
-				tasks, _ := result["tasks"].([]interface{})
-				passed := len(tasks) >= 1
-				record("jsonrpc/spec-list-tasks", "List Tasks", passed,
-					fmt.Sprintf("tasks=%d (need>=1)", len(tasks)), dur)
-			} else {
-				record("jsonrpc/spec-list-tasks", "List Tasks", false,
-					fmt.Sprintf("unexpected response: %s", truncate(body, 100)), dur)
-			}
+			passed := len(resp.Tasks) >= 1
+			record("jsonrpc/spec-list-tasks", "List Tasks", passed,
+				fmt.Sprintf("tasks=%d (need>=1)", len(resp.Tasks)), dur)
 		}
+	} else {
+		record("jsonrpc/spec-list-tasks", "List Tasks", false, "skipped — no spec client", 0)
 	}
 
 	// 14. spec-return-immediately (EXPECTED TO FAIL)
@@ -496,438 +522,444 @@ func main() {
 	// ── HTTP+JSON REST Binding ──
 	fmt.Println("\n── HTTP+JSON REST Binding ──")
 
-	var restTaskID string
+	var restEchoCard, restSpecCard *a2a.AgentCard
+	var restTaskID a2a.TaskID
 
 	// 1. rest/agent-card-echo
 	{
 		start := time.Now()
-		status, body, err := restGet(baseURL + "/echo/v1/card")
+		card, err := agentcard.DefaultResolver.Resolve(ctx, baseURL+"/echo", versionHeader)
 		dur := time.Since(start)
 		if err != nil {
 			record("rest/agent-card-echo", "REST Echo Agent Card", false, fmt.Sprintf("error: %v", err), dur)
-		} else if status != 200 {
-			record("rest/agent-card-echo", "REST Echo Agent Card", false, fmt.Sprintf("status=%d", status), dur)
 		} else {
-			hasName := strings.Contains(body, `"name"`)
-			record("rest/agent-card-echo", "REST Echo Agent Card", hasName,
-				fmt.Sprintf("status=%d, hasName=%v", status, hasName), dur)
+			hasREST := false
+			for _, iface := range card.SupportedInterfaces {
+				if iface.ProtocolBinding == a2a.TransportProtocolHTTPJSON {
+					hasREST = true
+					break
+				}
+			}
+			if hasREST {
+				restEchoCard = card
+				record("rest/agent-card-echo", "REST Echo Agent Card", true,
+					fmt.Sprintf("name=%s, skills=%d, hasHTTPJSON=true", card.Name, len(card.Skills)), dur)
+			} else {
+				record("rest/agent-card-echo", "REST Echo Agent Card", false, "card has no HTTP+JSON interface", dur)
+			}
 		}
 	}
 
 	// 2. rest/agent-card-spec
 	{
 		start := time.Now()
-		status, body, err := restGet(baseURL + "/spec/v1/card")
+		card, err := agentcard.DefaultResolver.Resolve(ctx, baseURL+"/spec", versionHeader)
 		dur := time.Since(start)
 		if err != nil {
 			record("rest/agent-card-spec", "REST Spec Agent Card", false, fmt.Sprintf("error: %v", err), dur)
-		} else if status != 200 {
-			record("rest/agent-card-spec", "REST Spec Agent Card", false, fmt.Sprintf("status=%d", status), dur)
 		} else {
-			hasSkills := strings.Contains(body, `"skills"`)
-			record("rest/agent-card-spec", "REST Spec Agent Card", hasSkills,
-				fmt.Sprintf("status=%d, hasSkills=%v", status, hasSkills), dur)
+			hasREST := false
+			for _, iface := range card.SupportedInterfaces {
+				if iface.ProtocolBinding == a2a.TransportProtocolHTTPJSON {
+					hasREST = true
+					break
+				}
+			}
+			if hasREST {
+				restSpecCard = card
+				record("rest/agent-card-spec", "REST Spec Agent Card", true,
+					fmt.Sprintf("name=%s, skills=%d, hasHTTPJSON=true", card.Name, len(card.Skills)), dur)
+			} else {
+				record("rest/agent-card-spec", "REST Spec Agent Card", false, "card has no HTTP+JSON interface", dur)
+			}
 		}
 	}
 
+	// Helper to create a REST-only client from a card's HTTP+JSON interface
+	createRESTClient := func(card *a2a.AgentCard) (*a2aclient.Client, error) {
+		var restIface *a2a.AgentInterface
+		for _, iface := range card.SupportedInterfaces {
+			if iface.ProtocolBinding == a2a.TransportProtocolHTTPJSON {
+				restIface = iface
+				break
+			}
+		}
+		if restIface == nil {
+			return nil, fmt.Errorf("card has no HTTP+JSON interface")
+		}
+		return a2aclient.NewFromEndpoints(ctx, []*a2a.AgentInterface{restIface})
+	}
+
 	// 3. rest/echo-send-message
-	{
+	if restEchoCard != nil {
 		start := time.Now()
-		msgID := uuid.New().String()
-		reqBody := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"hello from Go REST"}]}}`, msgID)
-		status, body, err := restPost(baseURL+"/echo/v1/message:send", reqBody)
-		dur := time.Since(start)
+		echoRESTClient, err := createRESTClient(restEchoCard)
 		if err != nil {
-			record("rest/echo-send-message", "REST Echo Send Message", false, fmt.Sprintf("error: %v", err), dur)
-		} else if status != 200 {
-			record("rest/echo-send-message", "REST Echo Send Message", false, fmt.Sprintf("status=%d body=%s", status, truncate(body, 100)), dur)
+			record("rest/echo-send-message", "REST Echo Send Message", false, fmt.Sprintf("client error: %v", err), time.Since(start))
 		} else {
-			hasHello := strings.Contains(strings.ToLower(body), "hello")
-			record("rest/echo-send-message", "REST Echo Send Message", hasHello,
-				fmt.Sprintf("status=%d, hasHello=%v, body=%s", status, hasHello, truncate(body, 120)), dur)
+			defer echoRESTClient.Destroy()
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("hello from Go REST"))
+			resp, err := echoRESTClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+			dur := time.Since(start)
+			if err != nil {
+				record("rest/echo-send-message", "REST Echo Send Message", false, fmt.Sprintf("error: %v", err), dur)
+			} else {
+				text := extractResultText(resp)
+				hasEcho := strings.Contains(strings.ToLower(text), "hello")
+				record("rest/echo-send-message", "REST Echo Send Message", hasEcho,
+					fmt.Sprintf("response=%s", truncate(text, 120)), dur)
+			}
+		}
+	} else {
+		record("rest/echo-send-message", "REST Echo Send Message", false, "skipped — no REST echo card", 0)
+	}
+
+	// Create a shared REST spec client for tests 4-14
+	var restSpecClient *a2aclient.Client
+	if restSpecCard != nil {
+		c, err := createRESTClient(restSpecCard)
+		if err != nil {
+			fmt.Printf("  [FAIL] REST spec client creation: %v\n", err)
+		} else {
+			restSpecClient = c
+			defer restSpecClient.Destroy()
 		}
 	}
 
 	// 4. rest/spec-message-only
-	{
+	if restSpecClient != nil {
 		start := time.Now()
-		msgID := uuid.New().String()
-		reqBody := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"message-only"}]}}`, msgID)
-		status, body, err := restPost(baseURL+"/spec/v1/message:send", reqBody)
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("message-only"))
+		resp, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
 		dur := time.Since(start)
 		if err != nil {
 			record("rest/spec-message-only", "REST Message Only", false, fmt.Sprintf("error: %v", err), dur)
-		} else if status != 200 {
-			record("rest/spec-message-only", "REST Message Only", false, fmt.Sprintf("status=%d", status), dur)
 		} else {
-			var parsed map[string]interface{}
-			json.Unmarshal([]byte(body), &parsed)
-			_, hasMessage := parsed["message"]
-			_, hasTask := parsed["task"]
-			passed := hasMessage && !hasTask
-			record("rest/spec-message-only", "REST Message Only", passed,
-				fmt.Sprintf("hasMessage=%v, hasTask=%v", hasMessage, hasTask), dur)
+			switch v := resp.(type) {
+			case *a2a.Message:
+				text := extractText(v.Parts)
+				record("rest/spec-message-only", "REST Message Only", true,
+					fmt.Sprintf("got Message, text=%s", truncate(text, 100)), dur)
+			case *a2a.Task:
+				record("rest/spec-message-only", "REST Message Only", false,
+					fmt.Sprintf("expected Message, got Task(state=%s)", v.Status.State), dur)
+			default:
+				record("rest/spec-message-only", "REST Message Only", false,
+					fmt.Sprintf("unexpected type %T", resp), dur)
+			}
 		}
+	} else {
+		record("rest/spec-message-only", "REST Message Only", false, "skipped — no REST spec client", 0)
 	}
 
 	// 5. rest/spec-task-lifecycle
-	{
+	if restSpecClient != nil {
 		start := time.Now()
-		msgID := uuid.New().String()
-		reqBody := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"task-lifecycle"}]}}`, msgID)
-		status, body, err := restPost(baseURL+"/spec/v1/message:send", reqBody)
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-lifecycle"))
+		resp, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
 		dur := time.Since(start)
 		if err != nil {
 			record("rest/spec-task-lifecycle", "REST Task Lifecycle", false, fmt.Sprintf("error: %v", err), dur)
-		} else if status != 200 {
-			record("rest/spec-task-lifecycle", "REST Task Lifecycle", false, fmt.Sprintf("status=%d", status), dur)
 		} else {
-			var parsed map[string]interface{}
-			json.Unmarshal([]byte(body), &parsed)
-			passed := false
-			if taskObj, ok := parsed["task"].(map[string]interface{}); ok {
-				if id, ok := taskObj["id"].(string); ok {
-					restTaskID = id
-				}
-				if statusObj, ok := taskObj["status"].(map[string]interface{}); ok {
-					state, _ := statusObj["state"].(string)
-					passed = state == "TASK_STATE_COMPLETED"
-				}
-				artifacts, hasArtifacts := taskObj["artifacts"].([]interface{})
+			switch v := resp.(type) {
+			case *a2a.Task:
+				restTaskID = v.ID
+				passed := v.Status.State == a2a.TaskStateCompleted
 				record("rest/spec-task-lifecycle", "REST Task Lifecycle", passed,
-					fmt.Sprintf("taskId=%s, hasArtifacts=%v(%d)", restTaskID, hasArtifacts, len(artifacts)), dur)
-			} else {
+					fmt.Sprintf("state=%s, artifacts=%d, id=%s", v.Status.State, len(v.Artifacts), v.ID), dur)
+			case *a2a.Message:
+				record("rest/spec-task-lifecycle", "REST Task Lifecycle", false, "expected Task, got Message", dur)
+			default:
 				record("rest/spec-task-lifecycle", "REST Task Lifecycle", false,
-					fmt.Sprintf("no task in response: %s", truncate(body, 100)), dur)
+					fmt.Sprintf("unexpected type %T", resp), dur)
 			}
 		}
+	} else {
+		record("rest/spec-task-lifecycle", "REST Task Lifecycle", false, "skipped — no REST spec client", 0)
 	}
 
 	// 6. rest/spec-get-task
-	if restTaskID != "" {
+	if restSpecClient != nil && restTaskID != "" {
 		start := time.Now()
-		status, body, err := restGet(baseURL + "/spec/v1/tasks/" + restTaskID)
+		task, err := restSpecClient.GetTask(ctx, &a2a.GetTaskRequest{ID: restTaskID})
 		dur := time.Since(start)
 		if err != nil {
 			record("rest/spec-get-task", "REST Get Task", false, fmt.Sprintf("error: %v", err), dur)
-		} else if status != 200 {
-			record("rest/spec-get-task", "REST Get Task", false, fmt.Sprintf("status=%d", status), dur)
 		} else {
-			var parsed map[string]interface{}
-			json.Unmarshal([]byte(body), &parsed)
-			id, _ := parsed["id"].(string)
-			passed := id == restTaskID
+			passed := task.ID == restTaskID
 			record("rest/spec-get-task", "REST Get Task", passed,
-				fmt.Sprintf("id=%s, expected=%s", id, restTaskID), dur)
+				fmt.Sprintf("id=%s, state=%s", task.ID, task.Status.State), dur)
 		}
 	} else {
-		record("rest/spec-get-task", "REST Get Task", false, "skipped — no task ID from lifecycle test", 0)
+		detail := "skipped — no REST spec client"
+		if restSpecClient != nil {
+			detail = "skipped — no task ID from lifecycle test"
+		}
+		record("rest/spec-get-task", "REST Get Task", false, detail, 0)
 	}
 
 	// 7. rest/spec-task-failure
-	{
+	if restSpecClient != nil {
 		start := time.Now()
-		msgID := uuid.New().String()
-		reqBody := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"task-failure"}]}}`, msgID)
-		status, body, err := restPost(baseURL+"/spec/v1/message:send", reqBody)
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-failure"))
+		resp, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
 		dur := time.Since(start)
 		if err != nil {
 			record("rest/spec-task-failure", "REST Task Failure", false, fmt.Sprintf("error: %v", err), dur)
-		} else if status != 200 {
-			record("rest/spec-task-failure", "REST Task Failure", false, fmt.Sprintf("status=%d", status), dur)
 		} else {
-			var parsed map[string]interface{}
-			json.Unmarshal([]byte(body), &parsed)
-			passed := false
-			if taskObj, ok := parsed["task"].(map[string]interface{}); ok {
-				if statusObj, ok := taskObj["status"].(map[string]interface{}); ok {
-					state, _ := statusObj["state"].(string)
-					passed = state == "TASK_STATE_FAILED"
-					record("rest/spec-task-failure", "REST Task Failure", passed,
-						fmt.Sprintf("state=%s", state), dur)
-				} else {
-					record("rest/spec-task-failure", "REST Task Failure", false, "no status in task", dur)
-				}
-			} else {
+			switch v := resp.(type) {
+			case *a2a.Task:
+				passed := v.Status.State == a2a.TaskStateFailed
+				record("rest/spec-task-failure", "REST Task Failure", passed,
+					fmt.Sprintf("state=%s", v.Status.State), dur)
+			default:
 				record("rest/spec-task-failure", "REST Task Failure", false,
-					fmt.Sprintf("no task in response: %s", truncate(body, 100)), dur)
+					fmt.Sprintf("expected failed Task, got %T", resp), dur)
 			}
 		}
+	} else {
+		record("rest/spec-task-failure", "REST Task Failure", false, "skipped — no REST spec client", 0)
 	}
 
 	// 8. rest/spec-data-types
-	{
+	if restSpecClient != nil {
 		start := time.Now()
-		msgID := uuid.New().String()
-		reqBody := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"data-types"}]}}`, msgID)
-		status, body, err := restPost(baseURL+"/spec/v1/message:send", reqBody)
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("data-types"))
+		resp, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
 		dur := time.Since(start)
 		if err != nil {
 			record("rest/spec-data-types", "REST Data Types", false, fmt.Sprintf("error: %v", err), dur)
-		} else if status != 200 {
-			record("rest/spec-data-types", "REST Data Types", false, fmt.Sprintf("status=%d", status), dur)
 		} else {
-			hasText := strings.Contains(body, `"text"`)
-			hasData := strings.Contains(body, `"data"`)
-			hasMediaType := strings.Contains(body, `"mediaType"`)
-			passed := hasText && hasData && hasMediaType
+			hasText, hasData, hasFile := false, false, false
+			for _, p := range collectAllParts(resp) {
+				if p == nil || p.Content == nil {
+					continue
+				}
+				switch p.Content.(type) {
+				case a2a.Text:
+					hasText = true
+				case a2a.Data:
+					hasData = true
+				case a2a.Raw, a2a.URL:
+					hasFile = true
+				}
+			}
+			passed := hasText && hasData && hasFile
 			record("rest/spec-data-types", "REST Data Types", passed,
-				fmt.Sprintf("hasText=%v, hasData=%v, hasMediaType=%v", hasText, hasData, hasMediaType), dur)
+				fmt.Sprintf("text=%v, data=%v, file=%v", hasText, hasData, hasFile), dur)
 		}
+	} else {
+		record("rest/spec-data-types", "REST Data Types", false, "skipped — no REST spec client", 0)
 	}
 
 	// 9. rest/spec-streaming
-	{
+	if restSpecClient != nil {
 		start := time.Now()
-		msgID := uuid.New().String()
-		reqBody := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"streaming"}]}}`, msgID)
-		dataLines, err := restStream(baseURL+"/spec/v1/message:stream", reqBody)
-		dur := time.Since(start)
-		if err != nil {
-			record("rest/spec-streaming", "REST Streaming", false, fmt.Sprintf("error: %v", err), dur)
-		} else {
-			passed := dataLines >= 3
-			record("rest/spec-streaming", "REST Streaming", passed,
-				fmt.Sprintf("dataLines=%d (need>=3)", dataLines), dur)
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("streaming"))
+		eventCount := 0
+		var lastState a2a.TaskState
+		var lastHasArtifact bool
+		var streamErr error
+		for event, err := range restSpecClient.SendStreamingMessage(ctx, &a2a.SendMessageRequest{Message: msg}) {
+			if err != nil {
+				streamErr = err
+				break
+			}
+			eventCount++
+			switch v := event.(type) {
+			case *a2a.TaskStatusUpdateEvent:
+				lastState = v.Status.State
+			case *a2a.TaskArtifactUpdateEvent:
+				lastHasArtifact = true
+			case *a2a.Task:
+				lastState = v.Status.State
+				if len(v.Artifacts) > 0 {
+					lastHasArtifact = true
+				}
+			}
 		}
+		dur := time.Since(start)
+		if streamErr != nil {
+			record("rest/spec-streaming", "REST Streaming", false, fmt.Sprintf("error: %v", streamErr), dur)
+		} else {
+			passed := eventCount > 1 && (lastState == a2a.TaskStateCompleted || lastHasArtifact)
+			record("rest/spec-streaming", "REST Streaming", passed,
+				fmt.Sprintf("events=%d, lastState=%s, hasArtifact=%v", eventCount, lastState, lastHasArtifact), dur)
+		}
+	} else {
+		record("rest/spec-streaming", "REST Streaming", false, "skipped — no REST spec client", 0)
 	}
 
 	// 10. rest/error-task-not-found
-	{
+	if restSpecClient != nil {
 		start := time.Now()
-		status, _, err := restGet(baseURL + "/spec/v1/tasks/00000000-0000-0000-0000-000000000000")
+		_, err := restSpecClient.GetTask(ctx, &a2a.GetTaskRequest{ID: "00000000-0000-0000-0000-000000000000"})
 		dur := time.Since(start)
 		if err != nil {
-			record("rest/error-task-not-found", "REST Task Not Found", false, fmt.Sprintf("error: %v", err), dur)
+			record("rest/error-task-not-found", "REST Task Not Found", true,
+				fmt.Sprintf("got expected error: %s", truncate(err.Error(), 100)), dur)
 		} else {
-			passed := status == 404
-			record("rest/error-task-not-found", "REST Task Not Found", passed,
-				fmt.Sprintf("status=%d (expected 404)", status), dur)
+			record("rest/error-task-not-found", "REST Task Not Found", false, "expected error, got nil", dur)
 		}
+	} else {
+		record("rest/error-task-not-found", "REST Task Not Found", false, "skipped — no REST spec client", 0)
 	}
 
 	// 11. rest/spec-multi-turn (3-step multi-turn conversation)
-	{
+	if restSpecClient != nil {
 		start := time.Now()
 		passed, detail := func() (bool, string) {
 			// Step 1: Start conversation
-			msgID1 := uuid.New().String()
-			reqBody1 := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"multi-turn start conversation"}]}}`, msgID1)
-			status1, body1, err := restPost(baseURL+"/spec/v1/message:send", reqBody1)
+			msg1 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("multi-turn start conversation"))
+			resp1, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg1})
 			if err != nil {
 				return false, fmt.Sprintf("step1 error: %v", err)
 			}
-			if status1 != 200 {
-				return false, fmt.Sprintf("step1 status=%d", status1)
-			}
-			var parsed1 map[string]interface{}
-			json.Unmarshal([]byte(body1), &parsed1)
-			taskObj1, ok := parsed1["task"].(map[string]interface{})
+			task1, ok := resp1.(*a2a.Task)
 			if !ok {
-				return false, fmt.Sprintf("step1: no task in response: %s", truncate(body1, 100))
+				return false, fmt.Sprintf("step1: expected Task, got %T", resp1)
 			}
-			taskID, _ := taskObj1["id"].(string)
-			if taskID == "" {
-				return false, "step1: no task id"
+			if task1.Status.State != a2a.TaskStateInputRequired {
+				return false, fmt.Sprintf("step1: expected INPUT_REQUIRED, got %s", task1.Status.State)
 			}
-			statusObj1, _ := taskObj1["status"].(map[string]interface{})
-			state1, _ := statusObj1["state"].(string)
-			if state1 != "TASK_STATE_INPUT_REQUIRED" {
-				return false, fmt.Sprintf("step1: expected INPUT_REQUIRED, got %s", state1)
-			}
+			taskID := task1.ID
 
 			// Step 2: Follow-up with taskId
-			msgID2 := uuid.New().String()
-			reqBody2 := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","taskId":"%s","parts":[{"text":"follow-up message"}]}}`, msgID2, taskID)
-			status2, body2, err := restPost(baseURL+"/spec/v1/message:send", reqBody2)
+			msg2 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("follow-up message"))
+			msg2.TaskID = taskID
+			resp2, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg2})
 			if err != nil {
 				return false, fmt.Sprintf("step2 error: %v", err)
 			}
-			if status2 != 200 {
-				return false, fmt.Sprintf("step2 status=%d", status2)
-			}
-			var parsed2 map[string]interface{}
-			json.Unmarshal([]byte(body2), &parsed2)
-			taskObj2, ok := parsed2["task"].(map[string]interface{})
+			task2, ok := resp2.(*a2a.Task)
 			if !ok {
-				return false, fmt.Sprintf("step2: no task in response: %s", truncate(body2, 100))
+				return false, fmt.Sprintf("step2: expected Task, got %T", resp2)
 			}
-			statusObj2, _ := taskObj2["status"].(map[string]interface{})
-			state2, _ := statusObj2["state"].(string)
-			if state2 != "TASK_STATE_INPUT_REQUIRED" {
-				return false, fmt.Sprintf("step2: expected INPUT_REQUIRED, got %s", state2)
+			if task2.Status.State != a2a.TaskStateInputRequired {
+				return false, fmt.Sprintf("step2: expected INPUT_REQUIRED, got %s", task2.Status.State)
 			}
 
 			// Step 3: Send "done" to complete
-			msgID3 := uuid.New().String()
-			reqBody3 := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","taskId":"%s","parts":[{"text":"done"}]}}`, msgID3, taskID)
-			status3, body3, err := restPost(baseURL+"/spec/v1/message:send", reqBody3)
+			msg3 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("done"))
+			msg3.TaskID = taskID
+			resp3, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg3})
 			if err != nil {
 				return false, fmt.Sprintf("step3 error: %v", err)
 			}
-			if status3 != 200 {
-				return false, fmt.Sprintf("step3 status=%d", status3)
-			}
-			var parsed3 map[string]interface{}
-			json.Unmarshal([]byte(body3), &parsed3)
-			taskObj3, ok := parsed3["task"].(map[string]interface{})
+			task3, ok := resp3.(*a2a.Task)
 			if !ok {
-				return false, fmt.Sprintf("step3: no task in response: %s", truncate(body3, 100))
+				return false, fmt.Sprintf("step3: expected Task, got %T", resp3)
 			}
-			statusObj3, _ := taskObj3["status"].(map[string]interface{})
-			state3, _ := statusObj3["state"].(string)
-			if state3 != "TASK_STATE_COMPLETED" {
-				return false, fmt.Sprintf("step3: expected COMPLETED, got %s", state3)
+			if task3.Status.State != a2a.TaskStateCompleted {
+				return false, fmt.Sprintf("step3: expected COMPLETED, got %s", task3.Status.State)
 			}
 			return true, fmt.Sprintf("taskId=%s, 3 steps completed", taskID)
 		}()
 		record("rest/spec-multi-turn", "REST Multi-Turn Conversation", passed, detail, time.Since(start))
+	} else {
+		record("rest/spec-multi-turn", "REST Multi-Turn Conversation", false, "skipped — no REST spec client", 0)
 	}
 
 	// 12. rest/spec-task-cancel (cancel a task via streaming)
-	{
+	if restSpecClient != nil {
 		cancelCtx, cancelTimeout := context.WithTimeout(ctx, 10*time.Second)
 		start := time.Now()
 		passed, detail := func() (bool, string) {
 			defer cancelTimeout()
-			msgID := uuid.New().String()
-			reqBody := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"task-cancel"}]}}`, msgID)
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-cancel"))
+			var streamTaskID a2a.TaskID
+			var lastState a2a.TaskState
+			cancelSent := false
 
-			req, err := http.NewRequestWithContext(cancelCtx, "POST", baseURL+"/spec/v1/message:stream", bytes.NewBufferString(reqBody))
-			if err != nil {
-				return false, fmt.Sprintf("request error: %v", err)
-			}
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "text/event-stream")
-			req.Header.Set("A2A-Version", "1.0")
-			resp, err := http.DefaultClient.Do(req)
-			if err != nil {
-				return false, fmt.Sprintf("stream error: %v", err)
-			}
-			defer resp.Body.Close()
-			if resp.StatusCode != 200 {
-				return false, fmt.Sprintf("stream status=%d", resp.StatusCode)
-			}
-
-			// Read SSE events to find task ID
-			scanner := bufio.NewScanner(resp.Body)
-			var streamTaskID string
-			for scanner.Scan() {
-				line := scanner.Text()
-				if !strings.HasPrefix(line, "data:") {
-					continue
-				}
-				data := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
-				var event map[string]interface{}
-				if err := json.Unmarshal([]byte(data), &event); err != nil {
-					continue
-				}
-				// REST SSE: first event is {"task":{"id":"...","status":...}}
-				if taskObj, ok := event["task"].(map[string]interface{}); ok {
-					if id, ok := taskObj["id"].(string); ok && id != "" {
-						streamTaskID = id
+			for event, err := range restSpecClient.SendStreamingMessage(cancelCtx, &a2a.SendMessageRequest{Message: msg}) {
+				if err != nil {
+					if cancelSent {
 						break
 					}
+					return false, fmt.Sprintf("stream error: %v", err)
 				}
-				// Or from statusUpdate/artifactUpdate events
-				if su, ok := event["statusUpdate"].(map[string]interface{}); ok {
-					if id, ok := su["taskId"].(string); ok && id != "" {
-						streamTaskID = id
-						break
+				switch v := event.(type) {
+				case *a2a.TaskStatusUpdateEvent:
+					if streamTaskID == "" {
+						streamTaskID = v.TaskID
 					}
+					lastState = v.Status.State
+				case *a2a.TaskArtifactUpdateEvent:
+					if streamTaskID == "" {
+						streamTaskID = v.TaskID
+					}
+				case *a2a.Task:
+					if streamTaskID == "" {
+						streamTaskID = a2a.TaskID(v.ID)
+					}
+					lastState = v.Status.State
+				}
+				if streamTaskID != "" && !cancelSent {
+					cancelSent = true
+					restSpecClient.CancelTask(ctx, &a2a.CancelTaskRequest{ID: streamTaskID})
 				}
 			}
+
 			if streamTaskID == "" {
-				return false, "no task ID from stream events"
+				return false, "no task ID from stream"
 			}
-
-			// Cancel the task
-			cancelStatus, cancelBody, err := restPost(baseURL+"/spec/v1/tasks/"+streamTaskID+":cancel", "{}")
+			if lastState == a2a.TaskStateCanceled {
+				return true, fmt.Sprintf("taskId=%s, state=CANCELED", streamTaskID)
+			}
+			// Fallback: check via GetTask
+			task, err := restSpecClient.GetTask(ctx, &a2a.GetTaskRequest{ID: streamTaskID})
 			if err != nil {
-				return false, fmt.Sprintf("cancel error: %v", err)
+				return false, fmt.Sprintf("taskId=%s, lastStreamState=%s, getTask error: %v", streamTaskID, lastState, err)
 			}
-			if cancelStatus != 200 {
-				return false, fmt.Sprintf("cancel status=%d, body=%s", cancelStatus, truncate(cancelBody, 100))
-			}
-
-			// Verify CANCELED state
-			var cancelResp map[string]interface{}
-			json.Unmarshal([]byte(cancelBody), &cancelResp)
-			if statusObj, ok := cancelResp["status"].(map[string]interface{}); ok {
-				state, _ := statusObj["state"].(string)
-				if state == "TASK_STATE_CANCELED" {
-					return true, fmt.Sprintf("taskId=%s, state=CANCELED", streamTaskID)
-				}
-				return false, fmt.Sprintf("taskId=%s, state=%s (expected CANCELED)", streamTaskID, state)
-			}
-			return false, fmt.Sprintf("taskId=%s, unexpected cancel response: %s", streamTaskID, truncate(cancelBody, 100))
+			p := task.Status.State == a2a.TaskStateCanceled
+			return p, fmt.Sprintf("taskId=%s, state=%s (via GetTask)", streamTaskID, task.Status.State)
 		}()
 		record("rest/spec-task-cancel", "REST Task Cancel", passed, detail, time.Since(start))
+	} else {
+		record("rest/spec-task-cancel", "REST Task Cancel", false, "skipped — no REST spec client", 0)
 	}
 
 	// 13. rest/spec-list-tasks
-	{
+	if restSpecClient != nil {
 		start := time.Now()
-		status, body, err := restGet(baseURL + "/spec/v1/tasks")
+		resp, err := restSpecClient.ListTasks(ctx, &a2a.ListTasksRequest{})
 		dur := time.Since(start)
 		if err != nil {
 			record("rest/spec-list-tasks", "REST List Tasks", false, fmt.Sprintf("error: %v", err), dur)
-		} else if status != 200 {
-			record("rest/spec-list-tasks", "REST List Tasks", false, fmt.Sprintf("status=%d", status), dur)
 		} else {
-			var parsed map[string]interface{}
-			json.Unmarshal([]byte(body), &parsed)
-			tasks, _ := parsed["tasks"].([]interface{})
-			passed := len(tasks) >= 1
+			passed := len(resp.Tasks) >= 1
 			record("rest/spec-list-tasks", "REST List Tasks", passed,
-				fmt.Sprintf("tasks=%d (need>=1)", len(tasks)), dur)
+				fmt.Sprintf("tasks=%d (need>=1)", len(resp.Tasks)), dur)
 		}
+	} else {
+		record("rest/spec-list-tasks", "REST List Tasks", false, "skipped — no REST spec client", 0)
 	}
 
 	// 14. rest/spec-return-immediately (EXPECTED TO FAIL)
-	{
+	if restSpecClient != nil {
 		riCtx, riCancel := context.WithTimeout(ctx, 15*time.Second)
 		start := time.Now()
-		msgID := uuid.New().String()
-		reqBody := fmt.Sprintf(`{"message":{"messageId":"%s","role":"ROLE_USER","parts":[{"text":"long-running test"}]},"configuration":{"blocking":false}}`, msgID)
-		req, err := http.NewRequestWithContext(riCtx, "POST", baseURL+"/spec/v1/message:send", bytes.NewBufferString(reqBody))
-		var riStatus int
-		var riBody string
-		if err == nil {
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("A2A-Version", "1.0")
-			riResp, rerr := http.DefaultClient.Do(req)
-			if rerr != nil {
-				err = rerr
-			} else {
-				defer riResp.Body.Close()
-				b, _ := io.ReadAll(riResp.Body)
-				riStatus = riResp.StatusCode
-				riBody = string(b)
-			}
-		}
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("long-running test"))
+		blocking := false
+		resp, err := restSpecClient.SendMessage(riCtx, &a2a.SendMessageRequest{
+			Message: msg,
+			Config:  &a2a.SendMessageConfig{Blocking: &blocking},
+		})
 		dur := time.Since(start)
 		riCancel()
 		if err != nil {
 			record("rest/spec-return-immediately", "REST Return Immediately", false,
-				fmt.Sprintf("error: %v (returnImmediately ignored by SDK)", err), dur)
-		} else if riStatus != 200 {
-			record("rest/spec-return-immediately", "REST Return Immediately", false,
-				fmt.Sprintf("status=%d", riStatus), dur)
+				fmt.Sprintf("error: %v", err), dur)
 		} else {
 			elapsed := dur.Seconds()
-			var state string
-			var parsed map[string]interface{}
-			json.Unmarshal([]byte(riBody), &parsed)
-			if taskObj, ok := parsed["task"].(map[string]interface{}); ok {
-				if statusObj, ok := taskObj["status"].(map[string]interface{}); ok {
-					state, _ = statusObj["state"].(string)
-				}
+			var state a2a.TaskState
+			if v, ok := resp.(*a2a.Task); ok {
+				state = v.Status.State
 			}
-			if elapsed > 3 || state == "TASK_STATE_COMPLETED" {
+			if elapsed > 3 || state == a2a.TaskStateCompleted {
 				record("rest/spec-return-immediately", "REST Return Immediately", false,
 					fmt.Sprintf("took %.1fs, state=%s — returnImmediately ignored by SDK", elapsed, state), dur)
-			} else if elapsed < 2 && state != "TASK_STATE_COMPLETED" {
+			} else if elapsed < 2 && state != a2a.TaskStateCompleted {
 				record("rest/spec-return-immediately", "REST Return Immediately", true,
 					fmt.Sprintf("took %.1fs, state=%s — returned promptly", elapsed, state), dur)
 			} else {
@@ -935,6 +967,8 @@ func main() {
 					fmt.Sprintf("took %.1fs, state=%s — inconclusive", elapsed, state), dur)
 			}
 		}
+	} else {
+		record("rest/spec-return-immediately", "REST Return Immediately", false, "skipped — no REST spec client", 0)
 	}
 
 	// Summary
@@ -952,7 +986,7 @@ func main() {
 	// Write results.json next to the binary or working directory
 	report := TestReport{
 		Client:          "go",
-		SDK:             "a2a-go",
+		SDK:             detectSDKSource(),
 		ProtocolVersion: "1.0",
 		Timestamp:       time.Now().UTC().Format(time.RFC3339),
 		BaseURL:         baseURL,
@@ -1034,71 +1068,4 @@ func truncate(s string, max int) string {
 	return s
 }
 
-// REST binding helpers
 
-func restGet(url string) (int, string, error) {
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return 0, "", err
-	}
-	req.Header.Set("A2A-Version", "1.0")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return 0, "", err
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return resp.StatusCode, "", err
-	}
-	return resp.StatusCode, string(b), nil
-}
-
-func restPost(url, jsonBody string) (int, string, error) {
-	req, err := http.NewRequest("POST", url, bytes.NewBufferString(jsonBody))
-	if err != nil {
-		return 0, "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("A2A-Version", "1.0")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return 0, "", err
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return resp.StatusCode, "", err
-	}
-	return resp.StatusCode, string(b), nil
-}
-
-func restStream(url, jsonBody string) (int, error) {
-	req, err := http.NewRequest("POST", url, bytes.NewBufferString(jsonBody))
-	if err != nil {
-		return 0, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "text/event-stream")
-	req.Header.Set("A2A-Version", "1.0")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return 0, fmt.Errorf("stream status %d", resp.StatusCode)
-	}
-	dataLines := 0
-	scanner := bufio.NewScanner(resp.Body)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "data:") {
-			dataLines++
-		}
-	}
-	if err := scanner.Err(); err != nil {
-		return dataLines, err
-	}
-	return dataLines, nil
-}
