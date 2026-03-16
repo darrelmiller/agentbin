@@ -229,7 +229,25 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
         if (typeof A2APlayground !== 'undefined') {
           A2APlayground.init({
             el: '#a2a-playground',
-            agentUrl: 'https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec/.well-known/agent.json',
+            agentUrl: 'https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec',
+            predefinedAgents: [
+              {
+                id: 'spec-agent',
+                name: 'SpecAgent',
+                description: 'Multi-skill spec compliance agent (8 skills, all A2A v1.0 patterns)',
+                url: 'https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec',
+                authType: 'none',
+                tags: ['a2a', 'spec', 'v1.0']
+              },
+              {
+                id: 'echo-agent',
+                name: 'EchoAgent',
+                description: 'Minimal echo agent — returns your message back',
+                url: 'https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/echo',
+                authType: 'none',
+                tags: ['a2a', 'echo']
+              }
+            ],
             showChat: true,
             showValidation: true,
             showSettings: true,
