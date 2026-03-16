@@ -33,9 +33,13 @@
   .tab-content { display: none; }
   .tab-content.active { display: block; }
   iframe { width: 100%; border: none; border-radius: 8px; min-height: 800px; background: var(--bg); }
+  #playground { position: relative; }
+  #playground .a2a-playground-wrapper { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  #a2a-playground { height: calc(100vh - 180px); min-height: 600px; }
   footer { text-align: center; color: var(--muted); font-size: 0.75rem; padding: 1rem; }
   footer a { color: var(--accent); }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/@open-resource-discovery/a2a-editor/dist-standalone/a2a-playground.css">
 </head>
 <body>
 
@@ -44,6 +48,7 @@
   <p class="tagline">A2A Specification Test Bed &mdash; publicly accessible agents supporting v1.0 and v0.3 for validating A2A client implementations</p>
   <nav>
     <a href="#" class="active" data-tab="overview">Overview</a>
+    <a href="#" data-tab="playground">Playground</a>
     <a href="#" data-tab="dashboard">Compatibility Dashboard</a>
     <a href="#" data-tab="endpoints">Endpoints</a>
     <a href="#" data-tab="tests">Test Descriptions</a>
@@ -106,6 +111,13 @@ curl -H "A2A-Version: 1.0" \
 curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
   https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec/v1/message:send \
   -d '{"message":{"messageId":"1","role":"ROLE_USER","parts":[{"text":"task-lifecycle hello"}]}}'</code></pre>
+    </div>
+  </div>
+
+  <!-- Playground Tab -->
+  <div id="playground" class="tab-content">
+    <div class="a2a-playground-wrapper">
+      <div id="a2a-playground"></div>
     </div>
   </div>
 
@@ -200,7 +212,9 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
   A2A v1.0 Specification Test Bed
 </footer>
 
+<script src="https://unpkg.com/@open-resource-discovery/a2a-editor/dist-standalone/a2a-playground.js"></script>
 <script>
+  // Tab navigation
   document.querySelectorAll('nav a').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
@@ -208,6 +222,26 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       link.classList.add('active');
       document.getElementById(link.dataset.tab).classList.add('active');
+
+      // Lazy-init playground on first visit
+      if (link.dataset.tab === 'playground' && !window._playgroundInit) {
+        window._playgroundInit = true;
+        if (typeof A2APlayground !== 'undefined') {
+          A2APlayground.init({
+            el: '#a2a-playground',
+            agentUrl: 'https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec/.well-known/agent.json',
+            showChat: true,
+            showValidation: true,
+            showSettings: true,
+            readOnly: false,
+            defaultTab: 'overview',
+            theme: 'dark',
+            onReady: function(instance) { console.log('A2A Playground ready'); },
+            onConnect: function(url, card) { console.log('Connected to:', card.name); },
+            onError: function(error) { console.error('Playground error:', error); }
+          });
+        }
+      }
     });
   });
 </script>

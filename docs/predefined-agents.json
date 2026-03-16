@@ -1,0 +1,18 @@
+[
+  {
+    "id": "spec-agent",
+    "name": "SpecAgent",
+    "description": "Multi-skill spec compliance agent with 8 skills exercising all A2A v1.0 patterns: message-only, task-lifecycle, task-failure, task-cancel, multi-turn, streaming, long-running, and data-types.",
+    "url": "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec/.well-known/agent.json",
+    "authType": "none",
+    "tags": ["a2a", "spec", "v1.0", "test"]
+  },
+  {
+    "id": "echo-agent",
+    "name": "EchoAgent",
+    "description": "Minimal echo agent that returns your message back. Validates multi-agent hosting and provides a baseline sanity check.",
+    "url": "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/echo/.well-known/agent.json",
+    "authType": "none",
+    "tags": ["a2a", "echo", "test"]
+  }
+]
