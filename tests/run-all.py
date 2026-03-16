@@ -59,6 +59,7 @@ CLIENTS = {
         "cmd": ["dotnet", "run", "--"],
         "icon": "&#9726;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/dotnet/Program.cs",
+        "sdk_url": "https://www.nuget.org/packages/A2A/",
     },
     "go": {
         "name": "Go",
@@ -66,6 +67,7 @@ CLIENTS = {
         "cmd": ["go", "run", "."],
         "icon": "&#9671;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/go/main.go",
+        "sdk_url": "https://github.com/a2aproject/a2a-go",
     },
     "python": {
         "name": "Python",
@@ -73,6 +75,7 @@ CLIENTS = {
         "cmd": [sys.executable, "test_python_client.py"],
         "icon": "&#9673;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/python/test_python_client.py",
+        "sdk_url": "https://pypi.org/project/a2a-sdk/",
     },
     "java": {
         "name": "Java",
@@ -80,6 +83,7 @@ CLIENTS = {
         "cmd_fn": lambda url: ["mvn", "-q", "compile", "exec:java", f"-Dexec.args={url}"],
         "icon": "&#9672;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/java/src/main/java/agentbin/TestJavaClient.java",
+        "sdk_url": "https://github.com/a2aproject/a2a-java",
     },
 }
 
@@ -288,11 +292,14 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
         p, f = totals[cid]
         color = "#3fb950" if f == 0 else "#f85149"
         source_link = info.get("source", "")
-        src_html = f' <a href="{source_link}" target="_blank" title="View test source" style="color:#58a6ff;text-decoration:none">&#128279;</a>' if source_link else ""
+        sdk_url = info.get("sdk_url", "")
+        sdk_html = f'<a href="{sdk_url}" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)">{sdk}</a>' if sdk_url and sdk else f'<small>{sdk}</small>'
+        src_html = f'<a href="{source_link}" target="_blank" style="color:#58a6ff;text-decoration:none;font-size:0.7rem">source</a>' if source_link else ""
         header_cells += (
-            f'<th>{info["name"]}{src_html}<br>'
-            f'<small>{sdk}</small><br>'
-            f'<span style="color:{color};font-weight:bold">{p}/{p+f}</span></th>'
+            f'<th>{info["name"]}<br>'
+            f'<small>{sdk_html}</small><br>'
+            f'<span style="color:{color};font-weight:bold">{p}/{p+f}</span>'
+            f'{" &middot; " + src_html if src_html else ""}</th>'
         )
 
     # Summary bar

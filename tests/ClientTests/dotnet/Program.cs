@@ -320,9 +320,7 @@ if (failed > 0)
 var a2aAssembly = typeof(A2AClient).Assembly;
 var sdkVersion = a2aAssembly.GetName().Version?.ToString() ?? "unknown";
 var sdkInfo = a2aAssembly.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? sdkVersion;
-var sdkLabel = sdkInfo.Contains("-") || sdkInfo.Contains("+") 
-    ? $"a2a-dotnet (local build, {sdkInfo})" 
-    : $"A2A {sdkInfo}";
+var sdkLabel = sdkInfo.Contains('+') ? $"A2A {sdkInfo[..sdkInfo.IndexOf('+')]}" : $"A2A {sdkInfo}";
 
 // Write results.json
 var jsonOutput = new

@@ -1,11 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copy NuGet config and local packages first for layer caching
+# Copy NuGet config and project file for restore
 COPY nuget.config .
-COPY nupkgs/ nupkgs/
-
-# Copy project file and restore
 COPY src/AgentBin/AgentBin.csproj src/AgentBin/
 RUN dotnet restore src/AgentBin/AgentBin.csproj
 

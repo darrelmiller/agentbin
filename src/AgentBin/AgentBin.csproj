@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="A2A" Version="1.0.0-alpha" />
-    <PackageReference Include="A2A.AspNetCore" Version="1.0.0-alpha" />
+    <PackageReference Include="A2A" Version="1.0.0-preview" />
+    <PackageReference Include="A2A.AspNetCore" Version="1.0.0-preview" />
   </ItemGroup>
 
 </Project>
