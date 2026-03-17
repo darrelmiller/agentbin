@@ -470,6 +470,79 @@ func main() {
 		record("jsonrpc/spec-task-cancel", "Task Cancel", false, "skipped — no spec client", 0)
 	}
 
+	// spec-cancel-with-metadata (cancel a task with metadata and verify metadata round-trips)
+	if specClient != nil {
+		cancelCtx, cancelTimeout := context.WithTimeout(ctx, 10*time.Second)
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			defer cancelTimeout()
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-cancel"))
+			var streamTaskID a2a.TaskID
+			cancelSent := false
+
+			for event, err := range specClient.SendStreamingMessage(cancelCtx, &a2a.SendMessageRequest{Message: msg}) {
+				if err != nil {
+					if cancelSent {
+						break
+					}
+					return false, fmt.Sprintf("stream error: %v", err)
+				}
+				switch v := event.(type) {
+				case *a2a.TaskStatusUpdateEvent:
+					if streamTaskID == "" {
+						streamTaskID = v.TaskID
+					}
+				case *a2a.TaskArtifactUpdateEvent:
+					if streamTaskID == "" {
+						streamTaskID = v.TaskID
+					}
+				case *a2a.Task:
+					if streamTaskID == "" {
+						streamTaskID = a2a.TaskID(v.ID)
+					}
+				}
+				if streamTaskID != "" && !cancelSent {
+					cancelSent = true
+					specClient.CancelTask(ctx, &a2a.CancelTaskRequest{
+						ID: streamTaskID,
+						Metadata: map[string]any{
+							"reason":      "test-cancel-reason",
+							"requestedBy": "go-sdk",
+						},
+					})
+				}
+			}
+
+			if streamTaskID == "" {
+				return false, "no task ID from stream"
+			}
+			// Retrieve task to verify state and metadata
+			task, err := specClient.GetTask(ctx, &a2a.GetTaskRequest{ID: streamTaskID})
+			if err != nil {
+				return false, fmt.Sprintf("taskId=%s, getTask error: %v", streamTaskID, err)
+			}
+			if task.Status.State != a2a.TaskStateCanceled {
+				return false, fmt.Sprintf("taskId=%s, expected state=canceled, got=%s", streamTaskID, task.Status.State)
+			}
+			if task.Metadata == nil {
+				return false, fmt.Sprintf("taskId=%s, state=canceled but metadata is nil", streamTaskID)
+			}
+			reason, hasReason := task.Metadata["reason"]
+			requestedBy, hasRequestedBy := task.Metadata["requestedBy"]
+			if !hasReason || !hasRequestedBy {
+				return false, fmt.Sprintf("taskId=%s, metadata missing keys: hasReason=%v hasRequestedBy=%v meta=%v", streamTaskID, hasReason, hasRequestedBy, task.Metadata)
+			}
+			if fmt.Sprint(reason) != "test-cancel-reason" || fmt.Sprint(requestedBy) != "go-sdk" {
+				return false, fmt.Sprintf("taskId=%s, metadata values wrong: reason=%v requestedBy=%v", streamTaskID, reason, requestedBy)
+			}
+			return true, fmt.Sprintf("taskId=%s, state=canceled, metadata={reason:%v, requestedBy:%v}", streamTaskID, reason, requestedBy)
+		}()
+		_ = cancelCtx
+		record("jsonrpc/spec-cancel-with-metadata", "Cancel With Metadata", passed, detail, time.Since(start))
+	} else {
+		record("jsonrpc/spec-cancel-with-metadata", "Cancel With Metadata", false, "skipped — no spec client", 0)
+	}
+
 	// 13. spec-list-tasks
 	if specClient != nil {
 		start := time.Now()
@@ -1260,6 +1333,79 @@ func main() {
 		record("rest/spec-task-cancel", "REST Task Cancel", passed, detail, time.Since(start))
 	} else {
 		record("rest/spec-task-cancel", "REST Task Cancel", false, "skipped — no REST spec client", 0)
+	}
+
+	// rest/spec-cancel-with-metadata (cancel a task with metadata and verify metadata round-trips)
+	if restSpecClient != nil {
+		cancelCtx, cancelTimeout := context.WithTimeout(ctx, 10*time.Second)
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			defer cancelTimeout()
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-cancel"))
+			var streamTaskID a2a.TaskID
+			cancelSent := false
+
+			for event, err := range restSpecClient.SendStreamingMessage(cancelCtx, &a2a.SendMessageRequest{Message: msg}) {
+				if err != nil {
+					if cancelSent {
+						break
+					}
+					return false, fmt.Sprintf("stream error: %v", err)
+				}
+				switch v := event.(type) {
+				case *a2a.TaskStatusUpdateEvent:
+					if streamTaskID == "" {
+						streamTaskID = v.TaskID
+					}
+				case *a2a.TaskArtifactUpdateEvent:
+					if streamTaskID == "" {
+						streamTaskID = v.TaskID
+					}
+				case *a2a.Task:
+					if streamTaskID == "" {
+						streamTaskID = a2a.TaskID(v.ID)
+					}
+				}
+				if streamTaskID != "" && !cancelSent {
+					cancelSent = true
+					restSpecClient.CancelTask(ctx, &a2a.CancelTaskRequest{
+						ID: streamTaskID,
+						Metadata: map[string]any{
+							"reason":      "test-cancel-reason",
+							"requestedBy": "go-sdk",
+						},
+					})
+				}
+			}
+
+			if streamTaskID == "" {
+				return false, "no task ID from stream"
+			}
+			// Retrieve task to verify state and metadata
+			task, err := restSpecClient.GetTask(ctx, &a2a.GetTaskRequest{ID: streamTaskID})
+			if err != nil {
+				return false, fmt.Sprintf("taskId=%s, getTask error: %v", streamTaskID, err)
+			}
+			if task.Status.State != a2a.TaskStateCanceled {
+				return false, fmt.Sprintf("taskId=%s, expected state=canceled, got=%s", streamTaskID, task.Status.State)
+			}
+			if task.Metadata == nil {
+				return false, fmt.Sprintf("taskId=%s, state=canceled but metadata is nil", streamTaskID)
+			}
+			reason, hasReason := task.Metadata["reason"]
+			requestedBy, hasRequestedBy := task.Metadata["requestedBy"]
+			if !hasReason || !hasRequestedBy {
+				return false, fmt.Sprintf("taskId=%s, metadata missing keys: hasReason=%v hasRequestedBy=%v meta=%v", streamTaskID, hasReason, hasRequestedBy, task.Metadata)
+			}
+			if fmt.Sprint(reason) != "test-cancel-reason" || fmt.Sprint(requestedBy) != "go-sdk" {
+				return false, fmt.Sprintf("taskId=%s, metadata values wrong: reason=%v requestedBy=%v", streamTaskID, reason, requestedBy)
+			}
+			return true, fmt.Sprintf("taskId=%s, state=canceled, metadata={reason:%v, requestedBy:%v}", streamTaskID, reason, requestedBy)
+		}()
+		_ = cancelCtx
+		record("rest/spec-cancel-with-metadata", "REST Cancel With Metadata", passed, detail, time.Since(start))
+	} else {
+		record("rest/spec-cancel-with-metadata", "REST Cancel With Metadata", false, "skipped — no REST spec client", 0)
 	}
 
 	// 13. rest/spec-list-tasks

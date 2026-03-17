@@ -113,6 +113,7 @@ public class TestJavaClient {
         testSpecStreaming(binding + "/spec-streaming", specUrl, tc);
         testSpecMultiTurn(binding + "/spec-multi-turn", specUrl, tc);
         testSpecTaskCancel(binding + "/spec-task-cancel", specUrl, tc);
+        testSpecCancelWithMetadata(binding + "/spec-cancel-with-metadata", specUrl, tc);
         testSpecListTasks(binding + "/spec-list-tasks", specUrl, tc);
         testSpecReturnImmediately(binding + "/spec-return-immediately", specUrl, tc);
         testErrorTaskNotFound(binding + "/error-task-not-found", specUrl, tc);
@@ -477,6 +478,65 @@ public class TestJavaClient {
             }
         } catch (Exception e) {
             record(id, "Task Cancel", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testSpecCancelWithMetadata(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            var taskIdFuture = new CompletableFuture<String>();
+
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        if (event instanceof TaskEvent te)
+                            taskIdFuture.complete(te.getTask().id());
+                        else if (event instanceof TaskUpdateEvent tue)
+                            taskIdFuture.complete(tue.getTask().id());
+                    })
+                    .streamingErrorHandler(e -> taskIdFuture.completeExceptionally(e))
+                    .build()) {
+
+                // Send async — the agent keeps the task in WORKING state
+                new Thread(() -> {
+                    try { client.sendMessage(A2A.toUserMessage("task-cancel start")); }
+                    catch (Exception ignored) {}
+                }).start();
+
+                String taskId = taskIdFuture.get(10, TimeUnit.SECONDS);
+
+                // SDK Alpha3 TaskIdParams has no metadata field; CancelTaskParams not yet available.
+                // Cancel the task — metadata cannot be attached with the current SDK version.
+                Task canceled = client.cancelTask(new TaskIdParams(taskId));
+
+                boolean stateOk = canceled.status().state() == TaskState.TASK_STATE_CANCELED;
+
+                // We cannot send metadata, so we can only verify the cancel itself succeeded
+                // and honestly report the metadata gap.
+                Map<String, Object> respMeta = canceled.metadata();
+                boolean metaOk = respMeta != null
+                        && "test-cancel-reason".equals(String.valueOf(respMeta.get("reason")))
+                        && "java-sdk".equals(String.valueOf(respMeta.get("requestedBy")));
+
+                String detail;
+                if (!stateOk) {
+                    detail = "taskId=" + taskId + ", state=" + canceled.status().state()
+                            + " (expected CANCELED)";
+                } else if (!metaOk) {
+                    detail = "taskId=" + taskId + ", state=CANCELED"
+                            + ", SDK limitation: TaskIdParams has no metadata field"
+                            + " (CancelTaskParams not in SDK " + "1.0.0.Alpha3"
+                            + "); cannot send reason/requestedBy";
+                } else {
+                    detail = "taskId=" + taskId + ", state=CANCELED, metadata verified";
+                }
+
+                record(id, "Cancel With Metadata", stateOk && metaOk, detail,
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "Cancel With Metadata", false, exDetail(e),
                     System.currentTimeMillis() - start);
         }
     }

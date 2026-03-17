@@ -82,6 +82,7 @@
       <li><a href="#spec-streaming">Streaming</a></li>
       <li><a href="#spec-multi-turn">Multi-Turn</a></li>
       <li><a href="#spec-task-cancel">Task Cancel</a></li>
+      <li><a href="#spec-cancel-with-metadata">Cancel With Metadata</a></li>
       <li><a href="#spec-list-tasks">ListTasks</a></li>
       <li><a href="#spec-return-immediately">Return Immediately</a></li>
     </ul>
@@ -387,6 +388,31 @@
       <li><code>CancelTask</code> with captured task ID succeeds</li>
       <li>Cancelled task state is <code>TASK_STATE_CANCELED</code></li>
       <li>Follow-up <code>GetTask</code> confirms task remains <code>CANCELED</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec-cancel-with-metadata">
+  <h2>Cancel With Metadata</h2>
+  <div class="test-id">spec-cancel-with-metadata</div>
+  <div class="description">
+    Start a cancellable task (via <code>task-cancel</code> skill), then cancel it with
+    <strong>metadata</strong> attached to the <code>CancelTask</code> request. The metadata includes
+    <code>{"reason": "test-cancel-reason", "requestedBy": "&lt;sdk-name&gt;"}</code>. The server echoes
+    the metadata back on the cancelled task. Tests that SDKs can send metadata with cancel requests and
+    that metadata round-trips correctly.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">cancel</span><span class="tag">metadata</span><span class="tag">v1.0</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li><code>CancelTask</code> request includes <code>metadata</code> field</li>
+      <li>Task state transitions to <code>TASK_STATE_CANCELED</code></li>
+      <li>Response task's <code>metadata</code> contains <code>reason</code> and <code>requestedBy</code> keys</li>
+      <li>Metadata values match what was sent</li>
     </ul>
   </div>
 </div>

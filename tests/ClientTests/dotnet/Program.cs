@@ -242,6 +242,32 @@ try
 catch (OperationCanceledException) { Record("jsonrpc/spec-task-cancel", "Task Cancel", false, "SDK does not support CancelTask — method not available in A2A .NET SDK", sw.ElapsedMilliseconds); }
 catch (Exception ex) { Record("jsonrpc/spec-task-cancel", "Task Cancel", false, ex.Message, sw.ElapsedMilliseconds); }
 
+// 12b. spec-cancel-with-metadata — cancel a running task with metadata
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var cancelMetaReq = new SendMessageRequest
+    {
+        Message = new Message
+        {
+            Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
+            Parts = [Part.FromText("task-cancel start")]
+        }
+    };
+    string? cancelMetaTaskId = null;
+    using var cancelMetaCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+    await foreach (var ev in client.SendStreamingMessageAsync(cancelMetaReq).WithCancellation(cancelMetaCts.Token))
+    {
+        cancelMetaTaskId = ev.Task?.Id ?? ev.StatusUpdate?.TaskId ?? ev.ArtifactUpdate?.TaskId;
+        if (cancelMetaTaskId is not null) break;
+    }
+    Record("jsonrpc/spec-cancel-with-metadata", "Cancel With Metadata", false,
+        "SDK does not support CancelTask with metadata — method not available in A2A .NET SDK", sw.ElapsedMilliseconds);
+}
+catch (OperationCanceledException) { Record("jsonrpc/spec-cancel-with-metadata", "Cancel With Metadata", false, "SDK does not support CancelTask with metadata — method not available in A2A .NET SDK", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("jsonrpc/spec-cancel-with-metadata", "Cancel With Metadata", false, ex.Message, sw.ElapsedMilliseconds); }
+
 // 13. spec-list-tasks — SDK does not support ListTasks
 sw.Restart();
 Record("jsonrpc/spec-list-tasks", "List Tasks", false,
@@ -475,6 +501,7 @@ var restTests = new (string Id, string Name)[]
     ("rest/error-task-not-found", "Task Not Found"),
     ("rest/spec-multi-turn", "Multi-Turn"),
     ("rest/spec-task-cancel", "Task Cancel"),
+    ("rest/spec-cancel-with-metadata", "Cancel With Metadata"),
     ("rest/spec-list-tasks", "List Tasks"),
     ("rest/spec-return-immediately", "Return Immediately"),
     ("rest/error-cancel-not-found", "Cancel Not Found"),

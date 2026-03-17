@@ -1496,6 +1496,67 @@ async def test_v03_streaming():
         await hc.aclose()
 
 
+async def _test_spec_cancel_with_metadata(binding: str):
+    """Cancel a streaming task with metadata and verify metadata is echoed back."""
+    binding_prefix = "rest" if binding == "REST" else "jsonrpc"
+    test_id = f"{binding_prefix}/spec-cancel-with-metadata"
+    test_name = f"{'REST ' if binding == 'REST' else ''}Spec Cancel With Metadata"
+    t0 = time.time()
+    task_id = None
+    canceled = False
+    metadata_ok = False
+    detail = ""
+
+    async def do_cancel():
+        nonlocal task_id, canceled, metadata_ok, detail
+        client, hc = await make_client(f"{BASE_URL}/spec", streaming=True, binding=binding)
+        try:
+            msg = create_text_message_object(role="ROLE_USER", content="task-cancel start")
+            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+                if task:
+                    task_id = task.id
+                    break
+
+            if not task_id:
+                detail = "no task id received from streaming"
+                return
+
+            cancel_req = pb2.CancelTaskRequest(id=task_id)
+            cancel_req.metadata.update({
+                "reason": "test-cancel-reason",
+                "requestedBy": "python-sdk",
+            })
+            result = await client.cancel_task(cancel_req)
+            state = task_state_name(result)
+            canceled = state == "TASK_STATE_CANCELED"
+
+            try:
+                fields = result.metadata.fields
+                has_reason = "reason" in fields
+                has_requested_by = "requestedBy" in fields
+                metadata_ok = has_reason and has_requested_by
+                detail = (f"taskId={task_id}, canceled={canceled}, "
+                          f"metadataOk={metadata_ok}, "
+                          f"keys={list(fields.keys())}")
+            except Exception:
+                metadata_ok = False
+                detail = (f"taskId={task_id}, canceled={canceled}, "
+                          f"metadataOk=False (no metadata on response)")
+        finally:
+            await hc.aclose()
+
+    try:
+        await asyncio.wait_for(do_cancel(), timeout=10.0)
+    except Exception as exc:
+        detail = detail or f"exception: {type(exc).__name__}: {str(exc)[:120]}"
+
+    ms = int((time.time() - t0) * 1000)
+    ok = task_id is not None and canceled and metadata_ok
+    if not detail:
+        detail = f"taskId={task_id}, canceled={canceled}, metadataOk={metadata_ok}"
+    record(test_id, test_name, ok, detail, ms)
+
+
 # -- Runner -----------------------------------------------------------
 
 ALL_TESTS = [
@@ -1526,6 +1587,7 @@ ALL_TESTS = [
     ("jsonrpc/multi-turn-context-preserved", test_multi_turn_context_preserved),
     ("jsonrpc/get-task-with-history",        test_get_task_with_history),
     ("jsonrpc/get-task-after-failure",       test_get_task_after_failure),
+    ("jsonrpc/spec-cancel-with-metadata",   lambda: _test_spec_cancel_with_metadata("JSONRPC")),
     # REST binding tests
     ("rest/agent-card-echo",                 test_rest_agent_card_echo),
     ("rest/agent-card-spec",                 test_rest_agent_card_spec),
@@ -1553,6 +1615,7 @@ ALL_TESTS = [
     ("rest/multi-turn-context-preserved",    test_rest_multi_turn_context_preserved),
     ("rest/get-task-with-history",           test_rest_get_task_with_history),
     ("rest/get-task-after-failure",          test_rest_get_task_after_failure),
+    ("rest/spec-cancel-with-metadata",      lambda: _test_spec_cancel_with_metadata("REST")),
     # v0.3 backward compatibility tests
     ("v03/spec03-agent-card",                test_v03_agent_card),
     ("v03/spec03-send-message",              test_v03_send_message),

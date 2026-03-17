@@ -11,6 +11,34 @@ namespace AgentBin.Agents;
 /// </summary>
 public sealed class SpecAgent : IAgentHandler
 {
+    /// <summary>
+    /// Override cancel to echo back any metadata the client sent with the cancel request.
+    /// This lets interop tests verify that cancel metadata round-trips correctly.
+    /// </summary>
+    public async Task CancelAsync(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        // Build the canceled task with metadata echoed from the cancel request
+        var task = context.Task ?? new AgentTask { Id = context.TaskId, ContextId = context.ContextId };
+        task.Status = new A2A.TaskStatus
+        {
+            State = TaskState.Canceled,
+            Timestamp = DateTimeOffset.UtcNow,
+        };
+
+        if (context.Metadata is { Count: > 0 })
+        {
+            task.Metadata ??= new Dictionary<string, JsonElement>();
+            foreach (var kvp in context.Metadata)
+            {
+                task.Metadata[kvp.Key] = kvp.Value;
+            }
+        }
+
+        // Emit the full task object — bypasses TaskUpdater status-only path
+        await eventQueue.EnqueueTaskAsync(task, ct);
+        eventQueue.Complete();
+    }
+
     public async Task ExecuteAsync(RequestContext context, AgentEventQueue eventQueue, CancellationToken cancellationToken)
     {
         // Continuations (follow-up messages with taskId) go straight to the

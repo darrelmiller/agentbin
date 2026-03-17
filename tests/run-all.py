@@ -40,6 +40,7 @@ BASE_TESTS = [
     ("spec-streaming", "Streaming", "Spec Agent"),
     ("spec-multi-turn", "Multi-Turn", "Spec Agent"),
     ("spec-task-cancel", "Task Cancel (via streaming)", "Spec Agent"),
+    ("spec-cancel-with-metadata", "Cancel With Metadata", "Spec Agent"),
     ("spec-list-tasks", "ListTasks", "Spec Agent"),
     ("spec-return-immediately", "Return Immediately", "Spec Agent"),
     ("error-task-not-found", "Task Not Found Error", "Error Handling"),
