@@ -1,0 +1,9 @@
+{
+  "name": "agentbin-js-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@a2a-js/sdk": "file:D:/github/a2aproject/a2a-js"
+  }
+}

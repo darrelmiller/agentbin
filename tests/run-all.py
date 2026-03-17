@@ -115,6 +115,14 @@ CLIENTS = {
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/java/src/main/java/agentbin/TestJavaClient.java",
         "sdk_url": "https://github.com/a2aproject/a2a-java",
     },
+    "js": {
+        "name": "JavaScript",
+        "dir": "js",
+        "cmd": ["node", "test_js_client.mjs"],
+        "icon": "&#9724;",
+        "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/js/test_js_client.mjs",
+        "sdk_url": "https://github.com/a2aproject/a2a-js",
+    },
 }
 
 
@@ -233,6 +241,12 @@ KNOWN_FAILURES: dict[tuple[str, str], str] = {
     ("java", "rest/spec-list-tasks"):
         "Known: Java SDK listTasks fails with Task 'id' null — "
         "protobuf deserialization issue when parsing task list.",
+
+    # JS SDK — protobuf-based method names and field names don't match .NET server
+    ("js", "jsonrpc/spec-list-tasks"):
+        "Known: JS SDK does not expose listTasks method.",
+    ("js", "rest/spec-list-tasks"):
+        "Known: JS SDK does not expose listTasks method.",
 }
 
 
