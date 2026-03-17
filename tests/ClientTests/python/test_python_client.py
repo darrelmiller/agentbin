@@ -1363,6 +1363,139 @@ async def test_rest_get_task_after_failure():
         await hc.aclose()
 
 
+# -- v0.3 Backward Compatibility Tests --------------------------------
+
+async def make_v03_client(url: str, *, streaming: bool = False):
+    """Create an SDK client for a v0.3 agent (no A2A-Version header)."""
+    hc = httpx.AsyncClient(timeout=httpx.Timeout(30.0))
+    config = ClientConfig(
+        streaming=streaming,
+        httpx_client=hc,
+    )
+    client = await ClientFactory.connect(url, client_config=config)
+    return client, hc
+
+
+async def test_v03_agent_card():
+    """Fetch the v0.3 agent card with raw httpx and verify its structure."""
+    t0 = time.time()
+    card_url = f"{BASE_URL}/spec03/.well-known/agent-card.json"
+    async with httpx.AsyncClient(timeout=httpx.Timeout(15.0)) as hc:
+        resp = await hc.get(card_url)
+    ms = int((time.time() - t0) * 1000)
+    if resp.status_code != 200:
+        record("v03/spec03-agent-card", "v0.3 Agent Card", False,
+               f"HTTP {resp.status_code}", ms)
+        return
+    data = resp.json()
+    proto_ver = data.get("protocolVersion", "")
+    has_url = "url" in data
+    ok = proto_ver == "0.3.0" and has_url
+    record("v03/spec03-agent-card", "v0.3 Agent Card", ok,
+           f"protocolVersion={proto_ver!r}, hasUrl={has_url}", ms)
+
+
+async def test_v03_send_message():
+    """Send a message to the v0.3 agent via SDK. Report honestly if v0.3 is unsupported."""
+    t0 = time.time()
+    try:
+        client, hc = await make_v03_client(f"{BASE_URL}/spec03")
+    except Exception as exc:
+        ms = int((time.time() - t0) * 1000)
+        record("v03/spec03-send-message", "v0.3 Send Message", False,
+               f"SDK v0.3 connect failed: {type(exc).__name__}: {str(exc)[:100]}", ms)
+        return
+    try:
+        msg = create_text_message_object(role="ROLE_USER", content="message-only hello")
+        req = pb2.SendMessageRequest(message=msg)
+        reply = ""
+        got_message = False
+        async for sr, task in client.send_message(req):
+            if sr.HasField("message"):
+                got_message = True
+                for p in sr.message.parts:
+                    if p.text:
+                        reply = p.text
+        ms = int((time.time() - t0) * 1000)
+        ok = got_message and len(reply) > 0
+        record("v03/spec03-send-message", "v0.3 Send Message", ok,
+               f"gotMessage={got_message}, text={reply!r:.60}", ms)
+    except Exception as exc:
+        ms = int((time.time() - t0) * 1000)
+        record("v03/spec03-send-message", "v0.3 Send Message", False,
+               f"SDK v0.3 send failed: {type(exc).__name__}: {str(exc)[:100]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_v03_task_lifecycle():
+    """Send task-lifecycle message to v0.3 agent. Report honestly if unsupported."""
+    t0 = time.time()
+    try:
+        client, hc = await make_v03_client(f"{BASE_URL}/spec03")
+    except Exception as exc:
+        ms = int((time.time() - t0) * 1000)
+        record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", False,
+               f"SDK v0.3 connect failed: {type(exc).__name__}: {str(exc)[:100]}", ms)
+        return
+    try:
+        msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process")
+        req = pb2.SendMessageRequest(message=msg)
+        final_task = None
+        async for _, task in client.send_message(req):
+            if task:
+                final_task = task
+        ms = int((time.time() - t0) * 1000)
+        state = task_state_name(final_task)
+        ok = final_task is not None and state in ("TASK_STATE_COMPLETED", "TASK_STATE_WORKING")
+        record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", ok,
+               f"state={state}, taskId={final_task.id if final_task else None}", ms)
+    except Exception as exc:
+        ms = int((time.time() - t0) * 1000)
+        record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", False,
+               f"SDK v0.3 send failed: {type(exc).__name__}: {str(exc)[:100]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_v03_streaming():
+    """Stream a message to the v0.3 agent. Report honestly if unsupported."""
+    t0 = time.time()
+    try:
+        client, hc = await make_v03_client(f"{BASE_URL}/spec03", streaming=True)
+    except Exception as exc:
+        ms = int((time.time() - t0) * 1000)
+        record("v03/spec03-streaming", "v0.3 Streaming", False,
+               f"SDK v0.3 connect failed: {type(exc).__name__}: {str(exc)[:100]}", ms)
+        return
+    try:
+        msg = create_text_message_object(role="ROLE_USER", content="streaming generate")
+        req = pb2.SendMessageRequest(message=msg)
+        events = []
+        final_text = ""
+        async for sr, task in client.send_message(req):
+            events.append((sr, task))
+            if task:
+                for art in task.artifacts:
+                    for p in art.parts:
+                        if p.text:
+                            final_text = p.text
+            if sr.HasField("message"):
+                for p in sr.message.parts:
+                    if p.text:
+                        final_text = p.text
+        ms = int((time.time() - t0) * 1000)
+        ok = len(events) >= 1 and len(final_text) > 0
+        record("v03/spec03-streaming", "v0.3 Streaming", ok,
+               f"events={len(events)}, text={final_text!r:.50}", ms)
+    except Exception as exc:
+        ms = int((time.time() - t0) * 1000)
+        record("v03/spec03-streaming", "v0.3 Streaming", False,
+               f"SDK v0.3 stream failed: {type(exc).__name__}: {str(exc)[:100]}", ms)
+    finally:
+        await hc.aclose()
+
+
 # -- Runner -----------------------------------------------------------
 
 ALL_TESTS = [
@@ -1420,6 +1553,11 @@ ALL_TESTS = [
     ("rest/multi-turn-context-preserved",    test_rest_multi_turn_context_preserved),
     ("rest/get-task-with-history",           test_rest_get_task_with_history),
     ("rest/get-task-after-failure",          test_rest_get_task_after_failure),
+    # v0.3 backward compatibility tests
+    ("v03/spec03-agent-card",                test_v03_agent_card),
+    ("v03/spec03-send-message",              test_v03_send_message),
+    ("v03/spec03-task-lifecycle",            test_v03_task_lifecycle),
+    ("v03/spec03-streaming",                 test_v03_streaming),
 ]
 
 

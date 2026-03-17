@@ -17,6 +17,10 @@ import io.a2a.client.transport.spi.interceptors.PayloadAndHeaders;
 import io.a2a.spec.*;
 
 import java.io.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
@@ -76,6 +80,9 @@ public class TestJavaClient {
 
         System.out.println("\n── HTTP+JSON REST Binding (SDK) ──");
         runBindingTests(baseUrl, "rest", rest);
+
+        System.out.println("\n── v0.3 Backward Compatibility ──");
+        runV03Tests(baseUrl);
 
         int passed = (int) results.stream().filter(r -> r.passed).count();
         int failed = results.size() - passed;
@@ -913,6 +920,164 @@ public class TestJavaClient {
             }
         } catch (Exception e) {
             record(id, "Get Task After Failure", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    // ── v0.3 Backward Compatibility Tests ───────────────────────────
+
+    static void runV03Tests(String baseUrl) {
+        String spec03Url = baseUrl + "/spec03";
+
+        testV03AgentCard("v03/spec03-agent-card", spec03Url);
+        testV03SendMessage("v03/spec03-send-message", spec03Url);
+        testV03TaskLifecycle("v03/spec03-task-lifecycle", spec03Url);
+        testV03Streaming("v03/spec03-streaming", spec03Url);
+    }
+
+    static void testV03AgentCard(String id, String agentUrl) {
+        long start = System.currentTimeMillis();
+        try {
+            var httpClient = HttpClient.newHttpClient();
+            var request = HttpRequest.newBuilder()
+                    .uri(URI.create(agentUrl + "/.well-known/agent-card.json"))
+                    .GET()
+                    .build();
+            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            String body = response.body();
+            int status = response.statusCode();
+
+            boolean hasProtocolVersion = body.contains("\"protocolVersion\"")
+                    && body.contains("\"0.3.0\"");
+            boolean hasUrl = body.contains("\"url\"");
+            boolean ok = status == 200 && hasProtocolVersion && hasUrl;
+            record(id, "v0.3 Agent Card", ok,
+                    "status=" + status + ", protocolVersion=0.3.0=" + hasProtocolVersion
+                            + ", hasUrl=" + hasUrl,
+                    System.currentTimeMillis() - start);
+        } catch (Exception e) {
+            record(id, "v0.3 Agent Card", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static AgentCard buildV03Card(String agentUrl) {
+        return AgentCard.builder()
+                .name("v0.3 Spec Agent")
+                .description("Manually constructed card for v0.3 agent")
+                .version("0.3.0")
+                .supportedInterfaces(List.of(
+                        new AgentInterface("JSONRPC", agentUrl, "", "0.3.0"),
+                        new AgentInterface("HTTP+JSON", agentUrl + "/v1", "", "0.3.0")))
+                .capabilities(new AgentCapabilities(true, false, false, List.of()))
+                .defaultInputModes(List.of("text/plain"))
+                .defaultOutputModes(List.of("text/plain"))
+                .skills(List.of())
+                .build();
+    }
+
+    static AgentCard getV03Card(String agentUrl) {
+        try {
+            return A2A.getAgentCard(agentUrl, null, Map.of());
+        } catch (Exception e) {
+            System.out.println("    ⚠ SDK v0.3 card fetch failed, using manual card: " + e.getMessage());
+            return buildV03Card(agentUrl);
+        }
+    }
+
+    static TransportConfigurer v03Jsonrpc() {
+        return b -> b.withTransport(JSONRPCTransport.class,
+                new JSONRPCTransportConfigBuilder());
+    }
+
+    static void testV03SendMessage(String id, String agentUrl) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getV03Card(agentUrl);
+            var result = new CompletableFuture<ClientEvent>();
+
+            try (Client client = v03Jsonrpc().apply(Client.builder(card))
+                    .addConsumer((event, c) -> result.complete(event))
+                    .streamingErrorHandler(e -> result.completeExceptionally(e))
+                    .build()) {
+
+                client.sendMessage(A2A.toUserMessage("message-only hello"));
+                ClientEvent event = result.get(15, TimeUnit.SECONDS);
+                boolean isMessage = event instanceof MessageEvent;
+                record(id, "v0.3 Send Message", isMessage,
+                        "eventType=" + event.getClass().getSimpleName(),
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "v0.3 Send Message", false,
+                    "SDK may not support v0.3 fallback: " + exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testV03TaskLifecycle(String id, String agentUrl) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getV03Card(agentUrl);
+            var result = new CompletableFuture<Task>();
+
+            try (Client client = v03Jsonrpc().apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        if (event instanceof TaskEvent te)
+                            result.complete(te.getTask());
+                        else if (event instanceof TaskUpdateEvent tue
+                                && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            result.complete(tue.getTask());
+                    })
+                    .streamingErrorHandler(e -> result.completeExceptionally(e))
+                    .build()) {
+
+                client.sendMessage(A2A.toUserMessage("task-lifecycle process"));
+                Task task = result.get(15, TimeUnit.SECONDS);
+                boolean ok = task.status().state() == TaskState.TASK_STATE_COMPLETED
+                        && task.artifacts() != null && !task.artifacts().isEmpty();
+                record(id, "v0.3 Task Lifecycle", ok,
+                        "state=" + task.status().state() + ", artifacts=" +
+                                (task.artifacts() != null ? task.artifacts().size() : 0),
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "v0.3 Task Lifecycle", false,
+                    "SDK may not support v0.3 fallback: " + exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testV03Streaming(String id, String agentUrl) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getV03Card(agentUrl);
+            var events = new CopyOnWriteArrayList<ClientEvent>();
+            var done = new CompletableFuture<Void>();
+
+            try (Client client = v03Jsonrpc().apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        events.add(event);
+                        if (event instanceof TaskEvent te
+                                && te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            done.complete(null);
+                        if (event instanceof TaskUpdateEvent tue
+                                && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            done.complete(null);
+                    })
+                    .streamingErrorHandler(e -> done.completeExceptionally(e))
+                    .build()) {
+
+                client.sendMessage(A2A.toUserMessage("streaming generate"));
+                done.get(15, TimeUnit.SECONDS);
+                boolean ok = events.size() >= 3;
+                record(id, "v0.3 Streaming", ok,
+                        "events=" + events.size(),
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "v0.3 Streaming", false,
+                    "SDK may not support v0.3 fallback: " + exDetail(e),
                     System.currentTimeMillis() - start);
         }
     }

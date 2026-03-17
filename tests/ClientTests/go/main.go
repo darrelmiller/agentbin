@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -1648,6 +1650,160 @@ func main() {
 		record("rest/get-task-after-failure", "REST Get Task After Failure", passed, detail, time.Since(start))
 	} else {
 		record("rest/get-task-after-failure", "REST Get Task After Failure", false, "skipped — no REST spec client", 0)
+	}
+
+	// ── v0.3 Backward Compatibility Tests ──
+	fmt.Println("\n── v0.3 Backward Compatibility ──")
+
+	// v03/spec03-agent-card — Raw HTTP GET to verify v0.3 card format
+	{
+		start := time.Now()
+		cardURL := baseURL + "/spec03/.well-known/agent-card.json"
+		httpResp, err := http.Get(cardURL)
+		dur := time.Since(start)
+		if err != nil {
+			record("v03/spec03-agent-card", "v0.3 Agent Card", false, fmt.Sprintf("HTTP error: %v", err), dur)
+		} else {
+			body, readErr := io.ReadAll(httpResp.Body)
+			httpResp.Body.Close()
+			if readErr != nil {
+				record("v03/spec03-agent-card", "v0.3 Agent Card", false, fmt.Sprintf("read error: %v", readErr), dur)
+			} else if httpResp.StatusCode != 200 {
+				record("v03/spec03-agent-card", "v0.3 Agent Card", false,
+					fmt.Sprintf("status=%d, body=%s", httpResp.StatusCode, truncate(string(body), 100)), dur)
+			} else {
+				var cardData map[string]interface{}
+				if jsonErr := json.Unmarshal(body, &cardData); jsonErr != nil {
+					record("v03/spec03-agent-card", "v0.3 Agent Card", false, fmt.Sprintf("JSON parse error: %v", jsonErr), dur)
+				} else {
+					pv, _ := cardData["protocolVersion"].(string)
+					_, hasURL := cardData["url"]
+					passed := pv == "0.3.0" && hasURL
+					record("v03/spec03-agent-card", "v0.3 Agent Card", passed,
+						fmt.Sprintf("protocolVersion=%s, hasUrl=%v", pv, hasURL), dur)
+				}
+			}
+		}
+	}
+
+	// v03/spec03-send-message — SDK send message to v0.3 agent
+	{
+		start := time.Now()
+		spec03URL := baseURL + "/spec03"
+		card, err := agentcard.DefaultResolver.Resolve(ctx, spec03URL)
+		if err != nil {
+			record("v03/spec03-send-message", "v0.3 Send Message", false,
+				fmt.Sprintf("card resolve error (SDK may not support v0.3): %v", err), time.Since(start))
+		} else {
+			v03Client, cErr := a2aclient.NewFromCard(ctx, card)
+			if cErr != nil {
+				record("v03/spec03-send-message", "v0.3 Send Message", false,
+					fmt.Sprintf("client create error (SDK may not support v0.3): %v", cErr), time.Since(start))
+			} else {
+				msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("message-only hello"))
+				resp, sErr := v03Client.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+				dur := time.Since(start)
+				v03Client.Destroy()
+				if sErr != nil {
+					record("v03/spec03-send-message", "v0.3 Send Message", false,
+						fmt.Sprintf("send error (SDK may not support v0.3): %v", sErr), dur)
+				} else {
+					text := extractResultText(resp)
+					record("v03/spec03-send-message", "v0.3 Send Message", true,
+						fmt.Sprintf("response=%s", truncate(text, 120)), dur)
+				}
+			}
+		}
+	}
+
+	// v03/spec03-task-lifecycle — SDK task lifecycle on v0.3 agent
+	{
+		start := time.Now()
+		spec03URL := baseURL + "/spec03"
+		card, err := agentcard.DefaultResolver.Resolve(ctx, spec03URL)
+		if err != nil {
+			record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", false,
+				fmt.Sprintf("card resolve error (SDK may not support v0.3): %v", err), time.Since(start))
+		} else {
+			v03Client, cErr := a2aclient.NewFromCard(ctx, card)
+			if cErr != nil {
+				record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", false,
+					fmt.Sprintf("client create error (SDK may not support v0.3): %v", cErr), time.Since(start))
+			} else {
+				msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-lifecycle process"))
+				resp, sErr := v03Client.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+				dur := time.Since(start)
+				v03Client.Destroy()
+				if sErr != nil {
+					record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", false,
+						fmt.Sprintf("send error (SDK may not support v0.3): %v", sErr), dur)
+				} else {
+					switch v := resp.(type) {
+					case *a2a.Task:
+						passed := v.Status.State == a2a.TaskStateCompleted
+						record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", passed,
+							fmt.Sprintf("state=%s, artifacts=%d, id=%s", v.Status.State, len(v.Artifacts), v.ID), dur)
+					case *a2a.Message:
+						record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", false,
+							"expected Task, got Message", dur)
+					default:
+						record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", false,
+							fmt.Sprintf("unexpected type %T", resp), dur)
+					}
+				}
+			}
+		}
+	}
+
+	// v03/spec03-streaming — SDK streaming on v0.3 agent
+	{
+		start := time.Now()
+		spec03URL := baseURL + "/spec03"
+		card, err := agentcard.DefaultResolver.Resolve(ctx, spec03URL)
+		if err != nil {
+			record("v03/spec03-streaming", "v0.3 Streaming", false,
+				fmt.Sprintf("card resolve error (SDK may not support v0.3): %v", err), time.Since(start))
+		} else {
+			v03Client, cErr := a2aclient.NewFromCard(ctx, card)
+			if cErr != nil {
+				record("v03/spec03-streaming", "v0.3 Streaming", false,
+					fmt.Sprintf("client create error (SDK may not support v0.3): %v", cErr), time.Since(start))
+			} else {
+				msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("streaming generate"))
+				eventCount := 0
+				var lastState a2a.TaskState
+				var lastHasArtifact bool
+				var streamErr error
+				for event, sErr := range v03Client.SendStreamingMessage(ctx, &a2a.SendMessageRequest{Message: msg}) {
+					if sErr != nil {
+						streamErr = sErr
+						break
+					}
+					eventCount++
+					switch v := event.(type) {
+					case *a2a.TaskStatusUpdateEvent:
+						lastState = v.Status.State
+					case *a2a.TaskArtifactUpdateEvent:
+						lastHasArtifact = true
+					case *a2a.Task:
+						lastState = v.Status.State
+						if len(v.Artifacts) > 0 {
+							lastHasArtifact = true
+						}
+					}
+				}
+				dur := time.Since(start)
+				v03Client.Destroy()
+				if streamErr != nil {
+					record("v03/spec03-streaming", "v0.3 Streaming", false,
+						fmt.Sprintf("stream error (SDK may not support v0.3 streaming): %v", streamErr), dur)
+				} else {
+					passed := eventCount > 1 && (lastState == a2a.TaskStateCompleted || lastHasArtifact)
+					record("v03/spec03-streaming", "v0.3 Streaming", passed,
+						fmt.Sprintf("events=%d, lastState=%s, hasArtifact=%v", eventCount, lastState, lastHasArtifact), dur)
+				}
+			}
+		}
 	}
 
 	// Summary

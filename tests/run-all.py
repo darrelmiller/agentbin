@@ -58,12 +58,28 @@ BASE_TESTS = [
     ("get-task-after-failure", "GetTask After Failure", "GetTask"),
 ]
 
+# v0.3 backward-compatibility tests — clients talk to an agent with a v0.3 card
+V03_TESTS = [
+    ("spec03-agent-card", "v0.3 Agent Card", "v0.3 Discovery"),
+    ("spec03-send-message", "v0.3 Send Message", "v0.3 Interop"),
+    ("spec03-task-lifecycle", "v0.3 Task Lifecycle", "v0.3 Interop"),
+    ("spec03-streaming", "v0.3 Streaming", "v0.3 Interop"),
+]
+
 # Full test IDs include binding prefix
 STANDARD_TESTS = [
     (f"{binding}/{test_id}", test_name, cat)
     for binding in BINDINGS
     for test_id, test_name, cat in BASE_TESTS
 ]
+
+# v0.3 tests use "v03" prefix
+V03_FULL_TESTS = [
+    (f"v03/{test_id}", test_name, cat)
+    for test_id, test_name, cat in V03_TESTS
+]
+
+ALL_TESTS = STANDARD_TESTS + V03_FULL_TESTS
 
 CLIENTS = {
     "dotnet": {
@@ -264,6 +280,26 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
 
     # Build table rows grouped by binding then category
     rows_html = ""
+
+    def _render_cell(cid, full_id):
+        """Render a single result cell for a client/test pair."""
+        r = matrix.get(cid, {}).get(full_id)
+        if r is None:
+            return '<td class="skip" title="Not implemented">&mdash;</td>'
+        elif r.get("passed") or r.get("Passed"):
+            detail = r.get("detail", r.get("Detail", ""))
+            dur = r.get("durationMs") or r.get("DurationMs") or ""
+            tip = f"{detail}\n({dur}ms)" if dur else detail
+            return f'<td class="pass" title="{_esc(tip)}">&#10004;</td>'
+        else:
+            detail = r.get("detail", r.get("Detail", ""))
+            known = _get_known_failure(cid, full_id)
+            if known:
+                tip = f"{detail}\n\n⚠ {known}"
+                return f'<td class="fail known" title="{_esc(tip)}">&#10008;</td>'
+            else:
+                return f'<td class="fail" title="{_esc(detail)}">&#10008;</td>'
+
     for binding in BINDINGS:
         binding_label = "JSON-RPC" if binding == "jsonrpc" else "HTTP+JSON (REST)"
         rows_html += f'<tr class="binding-row"><td colspan="{1 + len(ordered_clients)}">{binding_label}</td></tr>\n'
@@ -279,22 +315,22 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
                 full_id = f"{binding}/{test_id}"
                 cells = f'<td class="test-name" title="{full_id}"><a href="tests.html#{test_id}" target="_parent" style="color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted,#8b949e)">{test_name}</a></td>'
                 for cid in ordered_clients:
-                    r = matrix.get(cid, {}).get(full_id)
-                    if r is None:
-                        cells += '<td class="skip" title="Not implemented">&mdash;</td>'
-                    elif r.get("passed") or r.get("Passed"):
-                        detail = r.get("detail", r.get("Detail", ""))
-                        dur = r.get("durationMs") or r.get("DurationMs") or ""
-                        tip = f"{detail}\n({dur}ms)" if dur else detail
-                        cells += f'<td class="pass" title="{_esc(tip)}">&#10004;</td>'
-                    else:
-                        detail = r.get("detail", r.get("Detail", ""))
-                        known = _get_known_failure(cid, full_id)
-                        if known:
-                            tip = f"{detail}\n\n⚠ {known}"
-                            cells += f'<td class="fail known" title="{_esc(tip)}">&#10008;</td>'
-                        else:
-                            cells += f'<td class="fail" title="{_esc(detail)}">&#10008;</td>'
+                    cells += _render_cell(cid, full_id)
+                rows_html += f"<tr>{cells}</tr>\n"
+
+    # v0.3 backward-compatibility section
+    if V03_TESTS:
+        rows_html += f'<tr class="binding-row"><td colspan="{1 + len(ordered_clients)}">v0.3 Backward Compatibility</td></tr>\n'
+        v03_categories: dict[str, list[tuple[str, str]]] = {}
+        for test_id, test_name, cat in V03_TESTS:
+            v03_categories.setdefault(cat, []).append((test_id, test_name))
+        for cat, tests in v03_categories.items():
+            rows_html += f'<tr class="cat-row"><td colspan="{1 + len(ordered_clients)}">{cat}</td></tr>\n'
+            for test_id, test_name in tests:
+                full_id = f"v03/{test_id}"
+                cells = f'<td class="test-name" title="{full_id}"><a href="tests.html#{test_id}" target="_parent" style="color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted,#8b949e)">{test_name}</a></td>'
+                for cid in ordered_clients:
+                    cells += _render_cell(cid, full_id)
                 rows_html += f"<tr>{cells}</tr>\n"
 
     # Header columns

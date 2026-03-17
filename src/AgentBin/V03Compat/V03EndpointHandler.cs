@@ -24,9 +24,11 @@ public sealed class V03TranslationMiddleware
     {
         var hasVersionHeader = !string.IsNullOrEmpty(context.Request.Headers["A2A-Version"].FirstOrDefault());
 
-        // For GET requests to agent card endpoints — translate v1.0 card to v0.3 when no header
+        // For GET requests to agent card endpoints — translate v1.0 card to v0.3 when no header.
+        // Skip /spec03 which already serves a native v0.3-format card.
         if (context.Request.Method == "GET" &&
             context.Request.Path.Value?.EndsWith("/.well-known/agent-card.json") == true &&
+            !context.Request.Path.StartsWithSegments("/spec03") &&
             !hasVersionHeader)
         {
             await TranslateAgentCardResponse(context);

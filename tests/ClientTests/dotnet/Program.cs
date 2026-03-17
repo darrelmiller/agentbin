@@ -497,6 +497,87 @@ foreach (var (id, name) in restTests)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// v0.3 BACKWARD COMPATIBILITY TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+Console.WriteLine("\n── v0.3 Backward Compatibility ──");
+
+var plainHttpClient = new HttpClient();
+
+// v03/spec03-agent-card — raw HTTP fetch of v0.3 agent card
+try
+{
+    sw.Restart();
+    var cardUrl = $"{baseUrl}/spec03/.well-known/agent-card.json";
+    var cardResponse = await plainHttpClient.GetAsync(cardUrl);
+    cardResponse.EnsureSuccessStatusCode();
+    var cardJson = await cardResponse.Content.ReadAsStringAsync();
+    using var doc = JsonDocument.Parse(cardJson);
+    var root = doc.RootElement;
+    var hasProtocolVersion = root.TryGetProperty("protocolVersion", out var pvProp) && pvProp.GetString() == "0.3.0";
+    var hasUrl = root.TryGetProperty("url", out _);
+    Record("v03/spec03-agent-card", "v0.3 Agent Card", hasProtocolVersion && hasUrl,
+        $"protocolVersion={pvProp}, hasUrl={hasUrl}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("v03/spec03-agent-card", "v0.3 Agent Card", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// v03/spec03-send-message — send message to v0.3 agent via SDK
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec03"), plainHttpClient);
+    var response = await client.SendMessageAsync(text: "message-only hello", role: Role.User);
+    var text = response.Message?.Parts.FirstOrDefault()?.Text ?? response.Task?.Artifacts?.FirstOrDefault()?.Parts.FirstOrDefault()?.Text ?? "";
+    Record("v03/spec03-send-message", "v0.3 Send Message", !string.IsNullOrEmpty(text),
+        $"text={text}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("v03/spec03-send-message", "v0.3 Send Message", false, $"SDK error: {ex.Message}", sw.ElapsedMilliseconds); }
+
+// v03/spec03-task-lifecycle — task lifecycle against v0.3 agent
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec03"), plainHttpClient);
+    var response = await client.SendMessageAsync(text: "task-lifecycle process", role: Role.User);
+    if (response.Task is { } task03)
+    {
+        Record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle",
+            task03.Status.State == TaskState.Completed && task03.Artifacts?.Count >= 1,
+            $"state={task03.Status.State}, artifacts={task03.Artifacts?.Count}", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        Record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", false,
+            "got message, expected task", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("v03/spec03-task-lifecycle", "v0.3 Task Lifecycle", false, $"SDK error: {ex.Message}", sw.ElapsedMilliseconds); }
+
+// v03/spec03-streaming — streaming against v0.3 agent
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec03"), plainHttpClient);
+    var streamReq = new SendMessageRequest
+    {
+        Message = new Message
+        {
+            Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
+            Parts = [Part.FromText("streaming generate")]
+        }
+    };
+    int v03EvtCount = 0; bool v03SawArt = false, v03SawDone = false;
+    await foreach (var ev in client.SendStreamingMessageAsync(streamReq))
+    {
+        v03EvtCount++;
+        if (ev.ArtifactUpdate is not null) v03SawArt = true;
+        if (ev.Task?.Status.State == TaskState.Completed || ev.StatusUpdate?.Status.State == TaskState.Completed) v03SawDone = true;
+    }
+    Record("v03/spec03-streaming", "v0.3 Streaming", v03EvtCount >= 1 && v03SawDone,
+        $"events={v03EvtCount}, artifact={v03SawArt}, completed={v03SawDone}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("v03/spec03-streaming", "v0.3 Streaming", false, $"SDK error: {ex.Message}", sw.ElapsedMilliseconds); }
+
+// ═══════════════════════════════════════════════════════════════════════════
 // SUMMARY + JSON OUTPUT
 // ═══════════════════════════════════════════════════════════════════════════
 var passed = results.Count(r => r.Passed);

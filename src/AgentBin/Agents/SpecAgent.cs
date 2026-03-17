@@ -501,4 +501,31 @@ public sealed class SpecAgent : IAgentHandler
                 },
             ],
         };
+
+    /// <summary>
+    /// Returns a v0.3-format agent card (no supportedInterfaces, has url + protocolVersion).
+    /// Used by the /spec03 endpoint to test SDK backward compatibility.
+    /// </summary>
+    public static object GetV03AgentCard(string agentUrl) => new
+    {
+        name = "AgentBin Spec Agent (v0.3)",
+        description = "A2A v0.3 spec compliance test agent. Tests SDK backward compatibility with v0.3 protocol.",
+        version = "1.0.0",
+        url = agentUrl,
+        protocolVersion = "0.3.0",
+        defaultInputModes = new[] { "text/plain" },
+        defaultOutputModes = new[] { "text/plain", "application/json", "image/svg+xml" },
+        capabilities = new
+        {
+            supportsStreaming = true,
+            supportsPushNotifications = false,
+        },
+        skills = new[]
+        {
+            new { id = "message-only", name = "Message Only", description = "Stateless message send/receive.", tags = new[] { "message" }, examples = new[] { "message-only hello" } },
+            new { id = "task-lifecycle", name = "Task Lifecycle", description = "Full task state machine.", tags = new[] { "task" }, examples = new[] { "task-lifecycle process" } },
+            new { id = "task-failure", name = "Task Failure", description = "Task transitions to failed.", tags = new[] { "task" }, examples = new[] { "task-failure trigger" } },
+            new { id = "streaming", name = "Streaming", description = "SSE streaming.", tags = new[] { "streaming" }, examples = new[] { "streaming generate" } },
+        },
+    };
 }

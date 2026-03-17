@@ -53,10 +53,21 @@ app.MapHttpA2A(echoServer, echoCard, "/echo");
 // Echo agent card — MapA2A(server, path) doesn't register the card endpoint
 app.MapGet("/echo/.well-known/agent-card.json", () => Results.Ok(echoCard));
 
+// Map Spec v0.3 agent — same handler, but serves a v0.3-format agent card.
+// Clients discovering this agent should see protocolVersion "0.3.0" and fall back.
+var spec03Card = SpecAgent.GetV03AgentCard($"{baseUrl}/spec03");
+var spec03Server = new A2AServer(
+    new SpecAgent(),
+    new InMemoryTaskStore(),
+    new ChannelEventNotifier(),
+    app.Services.GetRequiredService<ILogger<A2AServer>>());
+app.MapA2A(spec03Server, "/spec03");
+app.MapGet("/spec03/.well-known/agent-card.json", () => Results.Ok(spec03Card));
+
 // Root listing endpoint — not covered by MapA2A, so this is safe to add
 app.MapGet("/.well-known/agent-card.json", (HttpRequest request) =>
 {
-    return Results.Ok(new[] { specCard, echoCard });
+    return Results.Ok(new[] { specCard, echoCard, spec03Card });
 });
 
 app.Run();
