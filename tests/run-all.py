@@ -97,7 +97,7 @@ CLIENTS = {
         "cmd": ["go", "run", "."],
         "icon": "&#9671;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/go/main.go",
-        "sdk_url": "https://github.com/a2aproject/a2a-go",
+        "sdk_url": "https://pkg.go.dev/github.com/a2aproject/a2a-go/v2",
     },
     "python": {
         "name": "Python",
