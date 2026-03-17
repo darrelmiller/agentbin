@@ -43,6 +43,19 @@ BASE_TESTS = [
     ("spec-list-tasks", "ListTasks", "Spec Agent"),
     ("spec-return-immediately", "Return Immediately", "Spec Agent"),
     ("error-task-not-found", "Task Not Found Error", "Error Handling"),
+    # --- TCK-inspired interop tests ---
+    ("error-cancel-not-found", "Cancel Not Found", "Error Handling"),
+    ("error-cancel-terminal", "Cancel Terminal Task", "Error Handling"),
+    ("error-send-terminal", "Send To Terminal Task", "Error Handling"),
+    ("error-send-invalid-task", "Send Invalid TaskId", "Error Handling"),
+    ("error-push-not-supported", "Push Not Supported", "Error Handling"),
+    ("subscribe-to-task", "SubscribeToTask", "Streaming"),
+    ("error-subscribe-not-found", "Subscribe Not Found", "Error Handling"),
+    ("stream-message-only", "Stream Message Only", "Streaming"),
+    ("stream-task-lifecycle", "Stream Task Lifecycle", "Streaming"),
+    ("multi-turn-context-preserved", "Context Preserved", "Multi-Turn"),
+    ("get-task-with-history", "GetTask With History", "GetTask"),
+    ("get-task-after-failure", "GetTask After Failure", "GetTask"),
 ]
 
 # Full test IDs include binding prefix

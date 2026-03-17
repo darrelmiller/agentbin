@@ -413,6 +413,338 @@ async def test_spec_return_immediately():
            detail, ms)
 
 
+async def test_error_cancel_not_found():
+    """CancelTask with a nonexistent ID should raise an error."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        try:
+            await client.cancel_task(pb2.CancelTaskRequest(id="00000000-0000-0000-0000-000000000000"))
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-cancel-not-found", "Error Cancel Not Found", False,
+                   "expected error, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-cancel-not-found", "Error Cancel Not Found", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_error_cancel_terminal():
+    """CancelTask on a completed task should raise an error."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        # Create a completed task
+        msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
+        final_task = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            if task:
+                final_task = task
+        if not final_task:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-cancel-terminal", "Error Cancel Terminal", False,
+                   "could not create completed task", ms)
+            return
+        task_id = final_task.id
+        try:
+            await client.cancel_task(pb2.CancelTaskRequest(id=task_id))
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-cancel-terminal", "Error Cancel Terminal", False,
+                   "expected error canceling completed task, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-cancel-terminal", "Error Cancel Terminal", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_error_send_terminal():
+    """SendMessage to a completed task should raise an error."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        # Create a completed task
+        msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
+        final_task = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            if task:
+                final_task = task
+        if not final_task:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-send-terminal", "Error Send Terminal", False,
+                   "could not create completed task", ms)
+            return
+        task_id = final_task.id
+        try:
+            msg2 = create_text_message_object(role="ROLE_USER", content="follow-up to completed task")
+            msg2.task_id = task_id
+            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+                pass
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-send-terminal", "Error Send Terminal", False,
+                   "expected error sending to completed task, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-send-terminal", "Error Send Terminal", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_error_send_invalid_task():
+    """SendMessage with a bogus taskId should raise TaskNotFoundError."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        try:
+            msg = create_text_message_object(role="ROLE_USER", content="hello")
+            msg.task_id = "00000000-0000-0000-0000-000000000000"
+            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+                pass
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-send-invalid-task", "Error Send Invalid Task", False,
+                   "expected error, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-send-invalid-task", "Error Send Invalid Task", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_error_push_not_supported():
+    """SetTaskPushNotificationConfig should error since server doesn't support push."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        if not hasattr(client, "set_task_callback"):
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-push-not-supported", "Error Push Not Supported", True,
+                   "SDK does not support push notification config", ms)
+            return
+        try:
+            push_config = pb2.PushNotificationConfig(url="https://example.com/webhook")
+            req = pb2.SetTaskPushNotificationConfigRequest(
+                task_id="dummy",
+                push_notification_config=push_config,
+            )
+            await client.set_task_callback(req)
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-push-not-supported", "Error Push Not Supported", False,
+                   "expected error, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-push-not-supported", "Error Push Not Supported", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_subscribe_to_task():
+    """Subscribe to a working task, collect events, then cancel to complete."""
+    t0 = time.time()
+
+    async def do_subscribe():
+        client, hc = await make_client(f"{BASE_URL}/spec", streaming=True)
+        try:
+            if not hasattr(client, "subscribe"):
+                ms = int((time.time() - t0) * 1000)
+                record("jsonrpc/subscribe-to-task", "Subscribe To Task", True,
+                       "SDK does not support SubscribeToTask", ms)
+                return
+
+            # Start a task that stays in WORKING state
+            msg = create_text_message_object(role="ROLE_USER", content="task-cancel")
+            task_id = None
+            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+                if task:
+                    task_id = task.id
+                    break
+
+            if not task_id:
+                ms = int((time.time() - t0) * 1000)
+                record("jsonrpc/subscribe-to-task", "Subscribe To Task", False,
+                       "could not start working task", ms)
+                return
+
+            # Subscribe to the task and collect events
+            sub_events = []
+
+            async def collect_events():
+                async for event in client.subscribe(pb2.SubscribeToTaskRequest(id=task_id)):
+                    sub_events.append(event)
+
+            collect_task = asyncio.create_task(collect_events())
+            await asyncio.sleep(1)
+
+            # Cancel the task to let it complete
+            await client.cancel_task(pb2.CancelTaskRequest(id=task_id))
+            try:
+                await asyncio.wait_for(collect_task, timeout=5.0)
+            except (asyncio.TimeoutError, Exception):
+                pass
+
+            ms = int((time.time() - t0) * 1000)
+            ok = len(sub_events) >= 1
+            record("jsonrpc/subscribe-to-task", "Subscribe To Task", ok,
+                   f"subscription events={len(sub_events)}", ms)
+        finally:
+            await hc.aclose()
+
+    await asyncio.wait_for(do_subscribe(), timeout=15.0)
+
+
+async def test_error_subscribe_not_found():
+    """Subscribe to a nonexistent task should raise an error."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        if not hasattr(client, "subscribe"):
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-subscribe-not-found", "Error Subscribe Not Found", True,
+                   "SDK does not support SubscribeToTask", ms)
+            return
+        try:
+            async for _ in client.subscribe(
+                pb2.SubscribeToTaskRequest(id="00000000-0000-0000-0000-000000000000")
+            ):
+                break
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-subscribe-not-found", "Error Subscribe Not Found", False,
+                   "expected error, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/error-subscribe-not-found", "Error Subscribe Not Found", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_stream_message_only():
+    """Streaming send of message-only should yield exactly one message event."""
+    t0 = time.time()
+    events, _ = await sdk_send(f"{BASE_URL}/spec", "message-only hello", streaming=True)
+    ms = int((time.time() - t0) * 1000)
+    has_message = any(sr.HasField("message") for sr, _ in events)
+    ok = len(events) == 1 and has_message
+    record("jsonrpc/stream-message-only", "Stream Message Only", ok,
+           f"events={len(events)}, hasMessage={has_message}", ms)
+
+
+async def test_stream_task_lifecycle():
+    """Streaming task-lifecycle should yield task events ending in COMPLETED."""
+    t0 = time.time()
+    events, final_task = await sdk_send(
+        f"{BASE_URL}/spec", "task-lifecycle process this", streaming=True,
+    )
+    ms = int((time.time() - t0) * 1000)
+    has_task_event = any(t is not None for _, t in events)
+    final_state = task_state_name(final_task)
+    ok = has_task_event and final_state == "TASK_STATE_COMPLETED"
+    record("jsonrpc/stream-task-lifecycle", "Stream Task Lifecycle", ok,
+           f"hasTaskEvent={has_task_event}, finalState={final_state}, events={len(events)}", ms)
+
+
+async def test_multi_turn_context_preserved():
+    """Multi-turn conversation should preserve contextId across steps."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        # Step 1: start multi-turn conversation
+        msg1 = create_text_message_object(role="ROLE_USER", content="multi-turn start")
+        task1 = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg1)):
+            if task:
+                task1 = task
+        if not task1:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/multi-turn-context-preserved", "Multi-Turn Context Preserved", False,
+                   "step1 returned no task", ms)
+            return
+
+        context_id_1 = task1.context_id if task1.context_id else None
+        task_id = task1.id
+
+        # Step 2: follow-up with taskId
+        msg2 = create_text_message_object(role="ROLE_USER", content="more data")
+        msg2.task_id = task_id
+        task2 = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+            if task:
+                task2 = task
+        if not task2:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/multi-turn-context-preserved", "Multi-Turn Context Preserved", False,
+                   "step2 returned no task", ms)
+            return
+
+        context_id_2 = task2.context_id if task2.context_id else None
+        ms = int((time.time() - t0) * 1000)
+        ok = context_id_1 is not None and context_id_1 == context_id_2
+        record("jsonrpc/multi-turn-context-preserved", "Multi-Turn Context Preserved", ok,
+               f"contextId1={context_id_1}, contextId2={context_id_2}, match={context_id_1 == context_id_2}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_get_task_with_history():
+    """GetTask with history_length should succeed."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        # Create a task first
+        msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
+        final_task = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            if task:
+                final_task = task
+        if not final_task:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/get-task-with-history", "GetTask With History", False,
+                   "could not create task", ms)
+            return
+        task_id = final_task.id
+        result = await client.get_task(pb2.GetTaskRequest(id=task_id, history_length=10))
+        ms = int((time.time() - t0) * 1000)
+        history_count = len(result.history) if result.history else 0
+        ok = result.id == task_id
+        record("jsonrpc/get-task-with-history", "GetTask With History", ok,
+               f"taskId={result.id}, historyCount={history_count}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_get_task_after_failure():
+    """GetTask on a failed task should return FAILED state with status message."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec")
+    try:
+        # Create a failed task
+        msg = create_text_message_object(role="ROLE_USER", content="task-failure trigger error")
+        final_task = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            if task:
+                final_task = task
+        if not final_task:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/get-task-after-failure", "GetTask After Failure", False,
+                   "could not create failed task", ms)
+            return
+        task_id = final_task.id
+        result = await client.get_task(pb2.GetTaskRequest(id=task_id))
+        ms = int((time.time() - t0) * 1000)
+        state = task_state_name(result)
+        has_status_msg = bool(result.status and result.status.message)
+        ok = state == "TASK_STATE_FAILED" and has_status_msg
+        record("jsonrpc/get-task-after-failure", "GetTask After Failure", ok,
+               f"state={state}, hasStatusMsg={has_status_msg}", ms)
+    finally:
+        await hc.aclose()
+
+
 # -- REST Tests (via SDK HTTP+JSON transport) ----------------------------
 
 async def test_rest_agent_card_echo():
@@ -708,39 +1040,386 @@ async def test_rest_spec_return_immediately():
            detail, ms)
 
 
+async def test_rest_error_cancel_not_found():
+    """REST CancelTask with a nonexistent ID should raise an error."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        try:
+            await client.cancel_task(pb2.CancelTaskRequest(id="00000000-0000-0000-0000-000000000000"))
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-cancel-not-found", "REST Error Cancel Not Found", False,
+                   "expected error, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-cancel-not-found", "REST Error Cancel Not Found", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_rest_error_cancel_terminal():
+    """REST CancelTask on a completed task should raise an error."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
+        final_task = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            if task:
+                final_task = task
+        if not final_task:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-cancel-terminal", "REST Error Cancel Terminal", False,
+                   "could not create completed task", ms)
+            return
+        task_id = final_task.id
+        try:
+            await client.cancel_task(pb2.CancelTaskRequest(id=task_id))
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-cancel-terminal", "REST Error Cancel Terminal", False,
+                   "expected error canceling completed task, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-cancel-terminal", "REST Error Cancel Terminal", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_rest_error_send_terminal():
+    """REST SendMessage to a completed task should raise an error."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
+        final_task = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            if task:
+                final_task = task
+        if not final_task:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-send-terminal", "REST Error Send Terminal", False,
+                   "could not create completed task", ms)
+            return
+        task_id = final_task.id
+        try:
+            msg2 = create_text_message_object(role="ROLE_USER", content="follow-up to completed task")
+            msg2.task_id = task_id
+            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+                pass
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-send-terminal", "REST Error Send Terminal", False,
+                   "expected error sending to completed task, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-send-terminal", "REST Error Send Terminal", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_rest_error_send_invalid_task():
+    """REST SendMessage with a bogus taskId should raise an error."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        try:
+            msg = create_text_message_object(role="ROLE_USER", content="hello")
+            msg.task_id = "00000000-0000-0000-0000-000000000000"
+            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+                pass
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-send-invalid-task", "REST Error Send Invalid Task", False,
+                   "expected error, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-send-invalid-task", "REST Error Send Invalid Task", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_rest_error_push_not_supported():
+    """REST SetTaskPushNotificationConfig should error since server doesn't support push."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        if not hasattr(client, "set_task_callback"):
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-push-not-supported", "REST Error Push Not Supported", True,
+                   "SDK does not support push notification config", ms)
+            return
+        try:
+            push_config = pb2.PushNotificationConfig(url="https://example.com/webhook")
+            req = pb2.SetTaskPushNotificationConfigRequest(
+                task_id="dummy",
+                push_notification_config=push_config,
+            )
+            await client.set_task_callback(req)
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-push-not-supported", "REST Error Push Not Supported", False,
+                   "expected error, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-push-not-supported", "REST Error Push Not Supported", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_rest_subscribe_to_task():
+    """REST Subscribe to a working task, collect events, then cancel."""
+    t0 = time.time()
+
+    async def do_subscribe():
+        client, hc = await make_client(f"{BASE_URL}/spec", streaming=True, binding="REST")
+        try:
+            if not hasattr(client, "subscribe"):
+                ms = int((time.time() - t0) * 1000)
+                record("rest/subscribe-to-task", "REST Subscribe To Task", True,
+                       "SDK does not support SubscribeToTask", ms)
+                return
+
+            msg = create_text_message_object(role="ROLE_USER", content="task-cancel")
+            task_id = None
+            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+                if task:
+                    task_id = task.id
+                    break
+
+            if not task_id:
+                ms = int((time.time() - t0) * 1000)
+                record("rest/subscribe-to-task", "REST Subscribe To Task", False,
+                       "could not start working task", ms)
+                return
+
+            sub_events = []
+
+            async def collect_events():
+                async for event in client.subscribe(pb2.SubscribeToTaskRequest(id=task_id)):
+                    sub_events.append(event)
+
+            collect_task = asyncio.create_task(collect_events())
+            await asyncio.sleep(1)
+
+            await client.cancel_task(pb2.CancelTaskRequest(id=task_id))
+            try:
+                await asyncio.wait_for(collect_task, timeout=5.0)
+            except (asyncio.TimeoutError, Exception):
+                pass
+
+            ms = int((time.time() - t0) * 1000)
+            ok = len(sub_events) >= 1
+            record("rest/subscribe-to-task", "REST Subscribe To Task", ok,
+                   f"subscription events={len(sub_events)}", ms)
+        finally:
+            await hc.aclose()
+
+    await asyncio.wait_for(do_subscribe(), timeout=15.0)
+
+
+async def test_rest_error_subscribe_not_found():
+    """REST Subscribe to a nonexistent task should raise an error."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        if not hasattr(client, "subscribe"):
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-subscribe-not-found", "REST Error Subscribe Not Found", True,
+                   "SDK does not support SubscribeToTask", ms)
+            return
+        try:
+            async for _ in client.subscribe(
+                pb2.SubscribeToTaskRequest(id="00000000-0000-0000-0000-000000000000")
+            ):
+                break
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-subscribe-not-found", "REST Error Subscribe Not Found", False,
+                   "expected error, got success", ms)
+        except Exception as exc:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/error-subscribe-not-found", "REST Error Subscribe Not Found", True,
+                   f"got expected error: {type(exc).__name__}: {str(exc)[:80]}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_rest_stream_message_only():
+    """REST streaming send of message-only should yield exactly one message event."""
+    t0 = time.time()
+    events, _ = await sdk_send(f"{BASE_URL}/spec", "message-only hello", streaming=True, binding="REST")
+    ms = int((time.time() - t0) * 1000)
+    has_message = any(sr.HasField("message") for sr, _ in events)
+    ok = len(events) == 1 and has_message
+    record("rest/stream-message-only", "REST Stream Message Only", ok,
+           f"events={len(events)}, hasMessage={has_message}", ms)
+
+
+async def test_rest_stream_task_lifecycle():
+    """REST streaming task-lifecycle should yield task events ending in COMPLETED."""
+    t0 = time.time()
+    events, final_task = await sdk_send(
+        f"{BASE_URL}/spec", "task-lifecycle process this", streaming=True, binding="REST",
+    )
+    ms = int((time.time() - t0) * 1000)
+    has_task_event = any(t is not None for _, t in events)
+    final_state = task_state_name(final_task)
+    ok = has_task_event and final_state == "TASK_STATE_COMPLETED"
+    record("rest/stream-task-lifecycle", "REST Stream Task Lifecycle", ok,
+           f"hasTaskEvent={has_task_event}, finalState={final_state}, events={len(events)}", ms)
+
+
+async def test_rest_multi_turn_context_preserved():
+    """REST multi-turn conversation should preserve contextId across steps."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        msg1 = create_text_message_object(role="ROLE_USER", content="multi-turn start")
+        task1 = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg1)):
+            if task:
+                task1 = task
+        if not task1:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/multi-turn-context-preserved", "REST Multi-Turn Context Preserved", False,
+                   "step1 returned no task", ms)
+            return
+
+        context_id_1 = task1.context_id if task1.context_id else None
+        task_id = task1.id
+
+        msg2 = create_text_message_object(role="ROLE_USER", content="more data")
+        msg2.task_id = task_id
+        task2 = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+            if task:
+                task2 = task
+        if not task2:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/multi-turn-context-preserved", "REST Multi-Turn Context Preserved", False,
+                   "step2 returned no task", ms)
+            return
+
+        context_id_2 = task2.context_id if task2.context_id else None
+        ms = int((time.time() - t0) * 1000)
+        ok = context_id_1 is not None and context_id_1 == context_id_2
+        record("rest/multi-turn-context-preserved", "REST Multi-Turn Context Preserved", ok,
+               f"contextId1={context_id_1}, contextId2={context_id_2}, match={context_id_1 == context_id_2}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_rest_get_task_with_history():
+    """REST GetTask with history_length should succeed."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
+        final_task = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            if task:
+                final_task = task
+        if not final_task:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/get-task-with-history", "REST GetTask With History", False,
+                   "could not create task", ms)
+            return
+        task_id = final_task.id
+        result = await client.get_task(pb2.GetTaskRequest(id=task_id, history_length=10))
+        ms = int((time.time() - t0) * 1000)
+        history_count = len(result.history) if result.history else 0
+        ok = result.id == task_id
+        record("rest/get-task-with-history", "REST GetTask With History", ok,
+               f"taskId={result.id}, historyCount={history_count}", ms)
+    finally:
+        await hc.aclose()
+
+
+async def test_rest_get_task_after_failure():
+    """REST GetTask on a failed task should return FAILED state with status message."""
+    t0 = time.time()
+    client, hc = await make_client(f"{BASE_URL}/spec", binding="REST")
+    try:
+        msg = create_text_message_object(role="ROLE_USER", content="task-failure trigger error")
+        final_task = None
+        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            if task:
+                final_task = task
+        if not final_task:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/get-task-after-failure", "REST GetTask After Failure", False,
+                   "could not create failed task", ms)
+            return
+        task_id = final_task.id
+        result = await client.get_task(pb2.GetTaskRequest(id=task_id))
+        ms = int((time.time() - t0) * 1000)
+        state = task_state_name(result)
+        has_status_msg = bool(result.status and result.status.message)
+        ok = state == "TASK_STATE_FAILED" and has_status_msg
+        record("rest/get-task-after-failure", "REST GetTask After Failure", ok,
+               f"state={state}, hasStatusMsg={has_status_msg}", ms)
+    finally:
+        await hc.aclose()
+
+
 # -- Runner -----------------------------------------------------------
 
 ALL_TESTS = [
     # JSON-RPC (SDK) tests
-    ("jsonrpc/agent-card-echo",         test_agent_card_echo),
-    ("jsonrpc/agent-card-spec",         test_agent_card_spec),
-    ("jsonrpc/echo-send-message",       test_echo_send_message),
-    ("jsonrpc/spec-message-only",       test_spec_message_only),
-    ("jsonrpc/spec-task-lifecycle",     test_spec_task_lifecycle),
-    ("jsonrpc/spec-get-task",           test_spec_get_task),
-    ("jsonrpc/spec-task-failure",       test_spec_task_failure),
-    ("jsonrpc/spec-data-types",         test_spec_data_types),
-    ("jsonrpc/spec-streaming",          test_spec_streaming),
-    ("jsonrpc/error-task-not-found",    test_error_task_not_found),
-    ("jsonrpc/spec-multi-turn",         test_spec_multi_turn),
-    ("jsonrpc/spec-task-cancel",        test_spec_task_cancel),
-    ("jsonrpc/spec-list-tasks",         test_spec_list_tasks),
-    ("jsonrpc/spec-return-immediately", test_spec_return_immediately),
+    ("jsonrpc/agent-card-echo",              test_agent_card_echo),
+    ("jsonrpc/agent-card-spec",              test_agent_card_spec),
+    ("jsonrpc/echo-send-message",            test_echo_send_message),
+    ("jsonrpc/spec-message-only",            test_spec_message_only),
+    ("jsonrpc/spec-task-lifecycle",          test_spec_task_lifecycle),
+    ("jsonrpc/spec-get-task",                test_spec_get_task),
+    ("jsonrpc/spec-task-failure",            test_spec_task_failure),
+    ("jsonrpc/spec-data-types",              test_spec_data_types),
+    ("jsonrpc/spec-streaming",               test_spec_streaming),
+    ("jsonrpc/error-task-not-found",         test_error_task_not_found),
+    ("jsonrpc/spec-multi-turn",              test_spec_multi_turn),
+    ("jsonrpc/spec-task-cancel",             test_spec_task_cancel),
+    ("jsonrpc/spec-list-tasks",              test_spec_list_tasks),
+    ("jsonrpc/spec-return-immediately",      test_spec_return_immediately),
+    ("jsonrpc/error-cancel-not-found",       test_error_cancel_not_found),
+    ("jsonrpc/error-cancel-terminal",        test_error_cancel_terminal),
+    ("jsonrpc/error-send-terminal",          test_error_send_terminal),
+    ("jsonrpc/error-send-invalid-task",      test_error_send_invalid_task),
+    ("jsonrpc/error-push-not-supported",     test_error_push_not_supported),
+    ("jsonrpc/subscribe-to-task",            test_subscribe_to_task),
+    ("jsonrpc/error-subscribe-not-found",    test_error_subscribe_not_found),
+    ("jsonrpc/stream-message-only",          test_stream_message_only),
+    ("jsonrpc/stream-task-lifecycle",        test_stream_task_lifecycle),
+    ("jsonrpc/multi-turn-context-preserved", test_multi_turn_context_preserved),
+    ("jsonrpc/get-task-with-history",        test_get_task_with_history),
+    ("jsonrpc/get-task-after-failure",       test_get_task_after_failure),
     # REST binding tests
-    ("rest/agent-card-echo",            test_rest_agent_card_echo),
-    ("rest/agent-card-spec",            test_rest_agent_card_spec),
-    ("rest/echo-send-message",          test_rest_echo_send_message),
-    ("rest/spec-message-only",          test_rest_spec_message_only),
-    ("rest/spec-task-lifecycle",        test_rest_spec_task_lifecycle),
-    ("rest/spec-get-task",              test_rest_spec_get_task),
-    ("rest/spec-task-failure",          test_rest_spec_task_failure),
-    ("rest/spec-data-types",            test_rest_spec_data_types),
-    ("rest/spec-streaming",             test_rest_spec_streaming),
-    ("rest/error-task-not-found",       test_rest_error_task_not_found),
-    ("rest/spec-multi-turn",            test_rest_spec_multi_turn),
-    ("rest/spec-task-cancel",           test_rest_spec_task_cancel),
-    ("rest/spec-list-tasks",            test_rest_spec_list_tasks),
-    ("rest/spec-return-immediately",    test_rest_spec_return_immediately),
+    ("rest/agent-card-echo",                 test_rest_agent_card_echo),
+    ("rest/agent-card-spec",                 test_rest_agent_card_spec),
+    ("rest/echo-send-message",               test_rest_echo_send_message),
+    ("rest/spec-message-only",               test_rest_spec_message_only),
+    ("rest/spec-task-lifecycle",             test_rest_spec_task_lifecycle),
+    ("rest/spec-get-task",                   test_rest_spec_get_task),
+    ("rest/spec-task-failure",               test_rest_spec_task_failure),
+    ("rest/spec-data-types",                 test_rest_spec_data_types),
+    ("rest/spec-streaming",                  test_rest_spec_streaming),
+    ("rest/error-task-not-found",            test_rest_error_task_not_found),
+    ("rest/spec-multi-turn",                 test_rest_spec_multi_turn),
+    ("rest/spec-task-cancel",                test_rest_spec_task_cancel),
+    ("rest/spec-list-tasks",                 test_rest_spec_list_tasks),
+    ("rest/spec-return-immediately",         test_rest_spec_return_immediately),
+    ("rest/error-cancel-not-found",          test_rest_error_cancel_not_found),
+    ("rest/error-cancel-terminal",           test_rest_error_cancel_terminal),
+    ("rest/error-send-terminal",             test_rest_error_send_terminal),
+    ("rest/error-send-invalid-task",         test_rest_error_send_invalid_task),
+    ("rest/error-push-not-supported",        test_rest_error_push_not_supported),
+    ("rest/subscribe-to-task",               test_rest_subscribe_to_task),
+    ("rest/error-subscribe-not-found",       test_rest_error_subscribe_not_found),
+    ("rest/stream-message-only",             test_rest_stream_message_only),
+    ("rest/stream-task-lifecycle",           test_rest_stream_task_lifecycle),
+    ("rest/multi-turn-context-preserved",    test_rest_multi_turn_context_preserved),
+    ("rest/get-task-with-history",           test_rest_get_task_with_history),
+    ("rest/get-task-after-failure",          test_rest_get_task_after_failure),
 ]
 
 

@@ -3,15 +3,16 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/a2aproject/a2a-go/a2a"
-	"github.com/a2aproject/a2a-go/a2aclient"
-	"github.com/a2aproject/a2a-go/a2aclient/agentcard"
+	"github.com/a2aproject/a2a-go/v2/a2a"
+	"github.com/a2aproject/a2a-go/v2/a2aclient"
+	"github.com/a2aproject/a2a-go/v2/a2aclient/agentcard"
 )
 
 const defaultBaseURL = "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io"
@@ -488,10 +489,9 @@ func main() {
 		riCtx, riCancel := context.WithTimeout(ctx, 15*time.Second)
 		start := time.Now()
 		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("long-running test"))
-		blocking := false
 		resp, err := specClient.SendMessage(riCtx, &a2a.SendMessageRequest{
 			Message: msg,
-			Config:  &a2a.SendMessageConfig{Blocking: &blocking},
+			Config:  &a2a.SendMessageConfig{ReturnImmediately: true},
 		})
 		dur := time.Since(start)
 		riCancel()
@@ -517,6 +517,347 @@ func main() {
 		}
 	} else {
 		record("jsonrpc/spec-return-immediately", "Return Immediately", false, "skipped — no spec client", 0)
+	}
+
+	// 15. error-cancel-not-found
+	if specClient != nil {
+		start := time.Now()
+		_, err := specClient.CancelTask(ctx, &a2a.CancelTaskRequest{ID: "00000000-0000-0000-0000-000000000000"})
+		dur := time.Since(start)
+		if err != nil {
+			record("jsonrpc/error-cancel-not-found", "Cancel Not Found Error", true,
+				fmt.Sprintf("got expected error: %s", truncate(err.Error(), 100)), dur)
+		} else {
+			record("jsonrpc/error-cancel-not-found", "Cancel Not Found Error", false, "expected error, got nil", dur)
+		}
+	} else {
+		record("jsonrpc/error-cancel-not-found", "Cancel Not Found Error", false, "skipped — no spec client", 0)
+	}
+
+	// 16. error-cancel-terminal
+	if specClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-lifecycle"))
+			resp, err := specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+			if err != nil {
+				return false, fmt.Sprintf("send error: %v", err)
+			}
+			task, ok := resp.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("expected Task, got %T", resp)
+			}
+			if task.Status.State != a2a.TaskStateCompleted {
+				return false, fmt.Sprintf("expected COMPLETED, got %s", task.Status.State)
+			}
+			_, err = specClient.CancelTask(ctx, &a2a.CancelTaskRequest{ID: task.ID})
+			if err != nil {
+				isExpected := errors.Is(err, a2a.ErrTaskNotCancelable)
+				return true, fmt.Sprintf("got error (isTaskNotCancelable=%v): %s", isExpected, truncate(err.Error(), 80))
+			}
+			return false, "expected error canceling completed task, got nil"
+		}()
+		record("jsonrpc/error-cancel-terminal", "Cancel Terminal Error", passed, detail, time.Since(start))
+	} else {
+		record("jsonrpc/error-cancel-terminal", "Cancel Terminal Error", false, "skipped — no spec client", 0)
+	}
+
+	// 17. error-send-terminal
+	if specClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-lifecycle"))
+			resp, err := specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+			if err != nil {
+				return false, fmt.Sprintf("send error: %v", err)
+			}
+			task, ok := resp.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("expected Task, got %T", resp)
+			}
+			if task.Status.State != a2a.TaskStateCompleted {
+				return false, fmt.Sprintf("expected COMPLETED, got %s", task.Status.State)
+			}
+			msg2 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("follow-up after done"))
+			msg2.TaskID = task.ID
+			_, err = specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg2})
+			if err != nil {
+				return true, fmt.Sprintf("got expected error: %s", truncate(err.Error(), 100))
+			}
+			return false, "expected error sending to completed task, got nil"
+		}()
+		record("jsonrpc/error-send-terminal", "Send Terminal Error", passed, detail, time.Since(start))
+	} else {
+		record("jsonrpc/error-send-terminal", "Send Terminal Error", false, "skipped — no spec client", 0)
+	}
+
+	// 18. error-send-invalid-task
+	if specClient != nil {
+		start := time.Now()
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("hello"))
+		msg.TaskID = "00000000-0000-0000-0000-000000000000"
+		_, err := specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+		dur := time.Since(start)
+		if err != nil {
+			record("jsonrpc/error-send-invalid-task", "Send Invalid Task Error", true,
+				fmt.Sprintf("got expected error: %s", truncate(err.Error(), 100)), dur)
+		} else {
+			record("jsonrpc/error-send-invalid-task", "Send Invalid Task Error", false, "expected error, got nil", dur)
+		}
+	} else {
+		record("jsonrpc/error-send-invalid-task", "Send Invalid Task Error", false, "skipped — no spec client", 0)
+	}
+
+	// 19. error-push-not-supported
+	if specClient != nil {
+		start := time.Now()
+		_, err := specClient.CreateTaskPushConfig(ctx, &a2a.CreateTaskPushConfigRequest{
+			TaskID: "00000000-0000-0000-0000-000000000000",
+			Config: a2a.PushConfig{URL: "https://example.com/webhook"},
+		})
+		dur := time.Since(start)
+		if err != nil {
+			isExpected := errors.Is(err, a2a.ErrPushNotificationNotSupported)
+			record("jsonrpc/error-push-not-supported", "Push Not Supported Error", true,
+				fmt.Sprintf("got error (isPushNotSupported=%v): %s", isExpected, truncate(err.Error(), 80)), dur)
+		} else {
+			record("jsonrpc/error-push-not-supported", "Push Not Supported Error", false, "expected error, got nil", dur)
+		}
+	} else {
+		record("jsonrpc/error-push-not-supported", "Push Not Supported Error", false, "skipped — no spec client", 0)
+	}
+
+	// 20. subscribe-to-task
+	if specClient != nil {
+		subCtx, subCancel := context.WithTimeout(ctx, 15*time.Second)
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			defer subCancel()
+			// Start a long-running task via streaming to get a WORKING task ID
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-cancel"))
+			var taskID a2a.TaskID
+			for event, err := range specClient.SendStreamingMessage(subCtx, &a2a.SendMessageRequest{Message: msg}) {
+				if err != nil {
+					return false, fmt.Sprintf("stream error: %v", err)
+				}
+				switch v := event.(type) {
+				case *a2a.TaskStatusUpdateEvent:
+					taskID = v.TaskID
+				case *a2a.TaskArtifactUpdateEvent:
+					taskID = v.TaskID
+				case *a2a.Task:
+					taskID = a2a.TaskID(v.ID)
+				}
+				if taskID != "" {
+					break
+				}
+			}
+			if taskID == "" {
+				return false, "no task ID from stream"
+			}
+
+			subEventCount := 0
+			for _, err := range specClient.SubscribeToTask(subCtx, &a2a.SubscribeToTaskRequest{ID: taskID}) {
+				if err != nil {
+					if subEventCount > 0 {
+						break
+					}
+					return false, fmt.Sprintf("subscribe error: %v", err)
+				}
+				subEventCount++
+				if subEventCount >= 1 {
+					// Cancel the task to end the subscription
+					specClient.CancelTask(ctx, &a2a.CancelTaskRequest{ID: taskID})
+					break
+				}
+			}
+			if subEventCount >= 1 {
+				return true, fmt.Sprintf("taskId=%s, subscriptionEvents=%d", taskID, subEventCount)
+			}
+			return false, fmt.Sprintf("taskId=%s, no subscription events received", taskID)
+		}()
+		record("jsonrpc/subscribe-to-task", "Subscribe To Task", passed, detail, time.Since(start))
+	} else {
+		record("jsonrpc/subscribe-to-task", "Subscribe To Task", false, "skipped — no spec client", 0)
+	}
+
+	// 21. error-subscribe-not-found
+	if specClient != nil {
+		subCtx, subCancel := context.WithTimeout(ctx, 10*time.Second)
+		start := time.Now()
+		var gotErr bool
+		var errDetail string
+		for _, err := range specClient.SubscribeToTask(subCtx, &a2a.SubscribeToTaskRequest{ID: "00000000-0000-0000-0000-000000000000"}) {
+			if err != nil {
+				gotErr = true
+				errDetail = truncate(err.Error(), 100)
+				break
+			}
+			break // If we get an event without error, that's unexpected
+		}
+		dur := time.Since(start)
+		subCancel()
+		if gotErr {
+			record("jsonrpc/error-subscribe-not-found", "Subscribe Not Found Error", true,
+				fmt.Sprintf("got expected error: %s", errDetail), dur)
+		} else {
+			record("jsonrpc/error-subscribe-not-found", "Subscribe Not Found Error", false, "expected error, got nil or event", dur)
+		}
+	} else {
+		record("jsonrpc/error-subscribe-not-found", "Subscribe Not Found Error", false, "skipped — no spec client", 0)
+	}
+
+	// 22. stream-message-only
+	if specClient != nil {
+		start := time.Now()
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("message-only hello"))
+		eventCount := 0
+		var gotMessage bool
+		var streamErr error
+		for event, err := range specClient.SendStreamingMessage(ctx, &a2a.SendMessageRequest{Message: msg}) {
+			if err != nil {
+				streamErr = err
+				break
+			}
+			eventCount++
+			if _, ok := event.(*a2a.Message); ok {
+				gotMessage = true
+			}
+		}
+		dur := time.Since(start)
+		if streamErr != nil {
+			record("jsonrpc/stream-message-only", "Stream Message Only", false,
+				fmt.Sprintf("error: %v", streamErr), dur)
+		} else {
+			passed := eventCount == 1 && gotMessage
+			record("jsonrpc/stream-message-only", "Stream Message Only", passed,
+				fmt.Sprintf("events=%d, gotMessage=%v", eventCount, gotMessage), dur)
+		}
+	} else {
+		record("jsonrpc/stream-message-only", "Stream Message Only", false, "skipped — no spec client", 0)
+	}
+
+	// 23. stream-task-lifecycle
+	if specClient != nil {
+		start := time.Now()
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-lifecycle process"))
+		var gotTaskEvent bool
+		var lastState a2a.TaskState
+		var streamErr error
+		for event, err := range specClient.SendStreamingMessage(ctx, &a2a.SendMessageRequest{Message: msg}) {
+			if err != nil {
+				streamErr = err
+				break
+			}
+			switch v := event.(type) {
+			case *a2a.TaskStatusUpdateEvent:
+				gotTaskEvent = true
+				lastState = v.Status.State
+			case *a2a.Task:
+				gotTaskEvent = true
+				lastState = v.Status.State
+			}
+		}
+		dur := time.Since(start)
+		if streamErr != nil {
+			record("jsonrpc/stream-task-lifecycle", "Stream Task Lifecycle", false,
+				fmt.Sprintf("error: %v", streamErr), dur)
+		} else {
+			passed := gotTaskEvent && lastState == a2a.TaskStateCompleted
+			record("jsonrpc/stream-task-lifecycle", "Stream Task Lifecycle", passed,
+				fmt.Sprintf("gotTaskEvent=%v, lastState=%s", gotTaskEvent, lastState), dur)
+		}
+	} else {
+		record("jsonrpc/stream-task-lifecycle", "Stream Task Lifecycle", false, "skipped — no spec client", 0)
+	}
+
+	// 24. multi-turn-context-preserved
+	if specClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			msg1 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("multi-turn start"))
+			resp1, err := specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg1})
+			if err != nil {
+				return false, fmt.Sprintf("step1 error: %v", err)
+			}
+			task1, ok := resp1.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("step1: expected Task, got %T", resp1)
+			}
+			contextID := task1.ContextID
+			if contextID == "" {
+				return false, "step1: task has no ContextID"
+			}
+
+			msg2 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("follow-up"))
+			msg2.TaskID = task1.ID
+			resp2, err := specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg2})
+			if err != nil {
+				return false, fmt.Sprintf("step2 error: %v", err)
+			}
+			task2, ok := resp2.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("step2: expected Task, got %T", resp2)
+			}
+			if task2.ContextID != contextID {
+				return false, fmt.Sprintf("contextID mismatch: %s vs %s", contextID, task2.ContextID)
+			}
+			return true, fmt.Sprintf("taskId=%s, contextID=%s preserved", task1.ID, contextID)
+		}()
+		record("jsonrpc/multi-turn-context-preserved", "Multi-Turn Context Preserved", passed, detail, time.Since(start))
+	} else {
+		record("jsonrpc/multi-turn-context-preserved", "Multi-Turn Context Preserved", false, "skipped — no spec client", 0)
+	}
+
+	// 25. get-task-with-history
+	if specClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-lifecycle"))
+			resp, err := specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+			if err != nil {
+				return false, fmt.Sprintf("send error: %v", err)
+			}
+			task, ok := resp.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("expected Task, got %T", resp)
+			}
+			histLen := 10
+			got, err := specClient.GetTask(ctx, &a2a.GetTaskRequest{ID: task.ID, HistoryLength: &histLen})
+			if err != nil {
+				return false, fmt.Sprintf("getTask error: %v", err)
+			}
+			return true, fmt.Sprintf("taskId=%s, state=%s, historyLen=%d", got.ID, got.Status.State, len(got.History))
+		}()
+		record("jsonrpc/get-task-with-history", "Get Task With History", passed, detail, time.Since(start))
+	} else {
+		record("jsonrpc/get-task-with-history", "Get Task With History", false, "skipped — no spec client", 0)
+	}
+
+	// 26. get-task-after-failure
+	if specClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-failure"))
+			resp, err := specClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+			if err != nil {
+				return false, fmt.Sprintf("send error: %v", err)
+			}
+			task, ok := resp.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("expected Task, got %T", resp)
+			}
+			got, err := specClient.GetTask(ctx, &a2a.GetTaskRequest{ID: task.ID})
+			if err != nil {
+				return false, fmt.Sprintf("getTask error: %v", err)
+			}
+			isFailed := got.Status.State == a2a.TaskStateFailed
+			hasMessage := got.Status.Message != nil
+			return isFailed && hasMessage, fmt.Sprintf("state=%s, hasMessage=%v", got.Status.State, hasMessage)
+		}()
+		record("jsonrpc/get-task-after-failure", "Get Task After Failure", passed, detail, time.Since(start))
+	} else {
+		record("jsonrpc/get-task-after-failure", "Get Task After Failure", false, "skipped — no spec client", 0)
 	}
 
 	// ── HTTP+JSON REST Binding ──
@@ -940,10 +1281,9 @@ func main() {
 		riCtx, riCancel := context.WithTimeout(ctx, 15*time.Second)
 		start := time.Now()
 		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("long-running test"))
-		blocking := false
 		resp, err := restSpecClient.SendMessage(riCtx, &a2a.SendMessageRequest{
 			Message: msg,
-			Config:  &a2a.SendMessageConfig{Blocking: &blocking},
+			Config:  &a2a.SendMessageConfig{ReturnImmediately: true},
 		})
 		dur := time.Since(start)
 		riCancel()
@@ -969,6 +1309,345 @@ func main() {
 		}
 	} else {
 		record("rest/spec-return-immediately", "REST Return Immediately", false, "skipped — no REST spec client", 0)
+	}
+
+	// 15. rest/error-cancel-not-found
+	if restSpecClient != nil {
+		start := time.Now()
+		_, err := restSpecClient.CancelTask(ctx, &a2a.CancelTaskRequest{ID: "00000000-0000-0000-0000-000000000000"})
+		dur := time.Since(start)
+		if err != nil {
+			record("rest/error-cancel-not-found", "REST Cancel Not Found Error", true,
+				fmt.Sprintf("got expected error: %s", truncate(err.Error(), 100)), dur)
+		} else {
+			record("rest/error-cancel-not-found", "REST Cancel Not Found Error", false, "expected error, got nil", dur)
+		}
+	} else {
+		record("rest/error-cancel-not-found", "REST Cancel Not Found Error", false, "skipped — no REST spec client", 0)
+	}
+
+	// 16. rest/error-cancel-terminal
+	if restSpecClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-lifecycle"))
+			resp, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+			if err != nil {
+				return false, fmt.Sprintf("send error: %v", err)
+			}
+			task, ok := resp.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("expected Task, got %T", resp)
+			}
+			if task.Status.State != a2a.TaskStateCompleted {
+				return false, fmt.Sprintf("expected COMPLETED, got %s", task.Status.State)
+			}
+			_, err = restSpecClient.CancelTask(ctx, &a2a.CancelTaskRequest{ID: task.ID})
+			if err != nil {
+				isExpected := errors.Is(err, a2a.ErrTaskNotCancelable)
+				return true, fmt.Sprintf("got error (isTaskNotCancelable=%v): %s", isExpected, truncate(err.Error(), 80))
+			}
+			return false, "expected error canceling completed task, got nil"
+		}()
+		record("rest/error-cancel-terminal", "REST Cancel Terminal Error", passed, detail, time.Since(start))
+	} else {
+		record("rest/error-cancel-terminal", "REST Cancel Terminal Error", false, "skipped — no REST spec client", 0)
+	}
+
+	// 17. rest/error-send-terminal
+	if restSpecClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-lifecycle"))
+			resp, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+			if err != nil {
+				return false, fmt.Sprintf("send error: %v", err)
+			}
+			task, ok := resp.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("expected Task, got %T", resp)
+			}
+			if task.Status.State != a2a.TaskStateCompleted {
+				return false, fmt.Sprintf("expected COMPLETED, got %s", task.Status.State)
+			}
+			msg2 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("follow-up after done"))
+			msg2.TaskID = task.ID
+			_, err = restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg2})
+			if err != nil {
+				return true, fmt.Sprintf("got expected error: %s", truncate(err.Error(), 100))
+			}
+			return false, "expected error sending to completed task, got nil"
+		}()
+		record("rest/error-send-terminal", "REST Send Terminal Error", passed, detail, time.Since(start))
+	} else {
+		record("rest/error-send-terminal", "REST Send Terminal Error", false, "skipped — no REST spec client", 0)
+	}
+
+	// 18. rest/error-send-invalid-task
+	if restSpecClient != nil {
+		start := time.Now()
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("hello"))
+		msg.TaskID = "00000000-0000-0000-0000-000000000000"
+		_, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+		dur := time.Since(start)
+		if err != nil {
+			record("rest/error-send-invalid-task", "REST Send Invalid Task Error", true,
+				fmt.Sprintf("got expected error: %s", truncate(err.Error(), 100)), dur)
+		} else {
+			record("rest/error-send-invalid-task", "REST Send Invalid Task Error", false, "expected error, got nil", dur)
+		}
+	} else {
+		record("rest/error-send-invalid-task", "REST Send Invalid Task Error", false, "skipped — no REST spec client", 0)
+	}
+
+	// 19. rest/error-push-not-supported
+	if restSpecClient != nil {
+		start := time.Now()
+		_, err := restSpecClient.CreateTaskPushConfig(ctx, &a2a.CreateTaskPushConfigRequest{
+			TaskID: "00000000-0000-0000-0000-000000000000",
+			Config: a2a.PushConfig{URL: "https://example.com/webhook"},
+		})
+		dur := time.Since(start)
+		if err != nil {
+			isExpected := errors.Is(err, a2a.ErrPushNotificationNotSupported)
+			record("rest/error-push-not-supported", "REST Push Not Supported Error", true,
+				fmt.Sprintf("got error (isPushNotSupported=%v): %s", isExpected, truncate(err.Error(), 80)), dur)
+		} else {
+			record("rest/error-push-not-supported", "REST Push Not Supported Error", false, "expected error, got nil", dur)
+		}
+	} else {
+		record("rest/error-push-not-supported", "REST Push Not Supported Error", false, "skipped — no REST spec client", 0)
+	}
+
+	// 20. rest/subscribe-to-task
+	if restSpecClient != nil {
+		subCtx, subCancel := context.WithTimeout(ctx, 15*time.Second)
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			defer subCancel()
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-cancel"))
+			var taskID a2a.TaskID
+			for event, err := range restSpecClient.SendStreamingMessage(subCtx, &a2a.SendMessageRequest{Message: msg}) {
+				if err != nil {
+					return false, fmt.Sprintf("stream error: %v", err)
+				}
+				switch v := event.(type) {
+				case *a2a.TaskStatusUpdateEvent:
+					taskID = v.TaskID
+				case *a2a.TaskArtifactUpdateEvent:
+					taskID = v.TaskID
+				case *a2a.Task:
+					taskID = a2a.TaskID(v.ID)
+				}
+				if taskID != "" {
+					break
+				}
+			}
+			if taskID == "" {
+				return false, "no task ID from stream"
+			}
+
+			subEventCount := 0
+			for _, err := range restSpecClient.SubscribeToTask(subCtx, &a2a.SubscribeToTaskRequest{ID: taskID}) {
+				if err != nil {
+					if subEventCount > 0 {
+						break
+					}
+					return false, fmt.Sprintf("subscribe error: %v", err)
+				}
+				subEventCount++
+				if subEventCount >= 1 {
+					restSpecClient.CancelTask(ctx, &a2a.CancelTaskRequest{ID: taskID})
+					break
+				}
+			}
+			if subEventCount >= 1 {
+				return true, fmt.Sprintf("taskId=%s, subscriptionEvents=%d", taskID, subEventCount)
+			}
+			return false, fmt.Sprintf("taskId=%s, no subscription events received", taskID)
+		}()
+		record("rest/subscribe-to-task", "REST Subscribe To Task", passed, detail, time.Since(start))
+	} else {
+		record("rest/subscribe-to-task", "REST Subscribe To Task", false, "skipped — no REST spec client", 0)
+	}
+
+	// 21. rest/error-subscribe-not-found
+	if restSpecClient != nil {
+		subCtx, subCancel := context.WithTimeout(ctx, 10*time.Second)
+		start := time.Now()
+		var gotErr bool
+		var errDetail string
+		for _, err := range restSpecClient.SubscribeToTask(subCtx, &a2a.SubscribeToTaskRequest{ID: "00000000-0000-0000-0000-000000000000"}) {
+			if err != nil {
+				gotErr = true
+				errDetail = truncate(err.Error(), 100)
+				break
+			}
+			break
+		}
+		dur := time.Since(start)
+		subCancel()
+		if gotErr {
+			record("rest/error-subscribe-not-found", "REST Subscribe Not Found Error", true,
+				fmt.Sprintf("got expected error: %s", errDetail), dur)
+		} else {
+			record("rest/error-subscribe-not-found", "REST Subscribe Not Found Error", false, "expected error, got nil or event", dur)
+		}
+	} else {
+		record("rest/error-subscribe-not-found", "REST Subscribe Not Found Error", false, "skipped — no REST spec client", 0)
+	}
+
+	// 22. rest/stream-message-only
+	if restSpecClient != nil {
+		start := time.Now()
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("message-only hello"))
+		eventCount := 0
+		var gotMessage bool
+		var streamErr error
+		for event, err := range restSpecClient.SendStreamingMessage(ctx, &a2a.SendMessageRequest{Message: msg}) {
+			if err != nil {
+				streamErr = err
+				break
+			}
+			eventCount++
+			if _, ok := event.(*a2a.Message); ok {
+				gotMessage = true
+			}
+		}
+		dur := time.Since(start)
+		if streamErr != nil {
+			record("rest/stream-message-only", "REST Stream Message Only", false,
+				fmt.Sprintf("error: %v", streamErr), dur)
+		} else {
+			passed := eventCount == 1 && gotMessage
+			record("rest/stream-message-only", "REST Stream Message Only", passed,
+				fmt.Sprintf("events=%d, gotMessage=%v", eventCount, gotMessage), dur)
+		}
+	} else {
+		record("rest/stream-message-only", "REST Stream Message Only", false, "skipped — no REST spec client", 0)
+	}
+
+	// 23. rest/stream-task-lifecycle
+	if restSpecClient != nil {
+		start := time.Now()
+		msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-lifecycle process"))
+		var gotTaskEvent bool
+		var lastState a2a.TaskState
+		var streamErr error
+		for event, err := range restSpecClient.SendStreamingMessage(ctx, &a2a.SendMessageRequest{Message: msg}) {
+			if err != nil {
+				streamErr = err
+				break
+			}
+			switch v := event.(type) {
+			case *a2a.TaskStatusUpdateEvent:
+				gotTaskEvent = true
+				lastState = v.Status.State
+			case *a2a.Task:
+				gotTaskEvent = true
+				lastState = v.Status.State
+			}
+		}
+		dur := time.Since(start)
+		if streamErr != nil {
+			record("rest/stream-task-lifecycle", "REST Stream Task Lifecycle", false,
+				fmt.Sprintf("error: %v", streamErr), dur)
+		} else {
+			passed := gotTaskEvent && lastState == a2a.TaskStateCompleted
+			record("rest/stream-task-lifecycle", "REST Stream Task Lifecycle", passed,
+				fmt.Sprintf("gotTaskEvent=%v, lastState=%s", gotTaskEvent, lastState), dur)
+		}
+	} else {
+		record("rest/stream-task-lifecycle", "REST Stream Task Lifecycle", false, "skipped — no REST spec client", 0)
+	}
+
+	// 24. rest/multi-turn-context-preserved
+	if restSpecClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			msg1 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("multi-turn start"))
+			resp1, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg1})
+			if err != nil {
+				return false, fmt.Sprintf("step1 error: %v", err)
+			}
+			task1, ok := resp1.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("step1: expected Task, got %T", resp1)
+			}
+			contextID := task1.ContextID
+			if contextID == "" {
+				return false, "step1: task has no ContextID"
+			}
+
+			msg2 := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("follow-up"))
+			msg2.TaskID = task1.ID
+			resp2, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg2})
+			if err != nil {
+				return false, fmt.Sprintf("step2 error: %v", err)
+			}
+			task2, ok := resp2.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("step2: expected Task, got %T", resp2)
+			}
+			if task2.ContextID != contextID {
+				return false, fmt.Sprintf("contextID mismatch: %s vs %s", contextID, task2.ContextID)
+			}
+			return true, fmt.Sprintf("taskId=%s, contextID=%s preserved", task1.ID, contextID)
+		}()
+		record("rest/multi-turn-context-preserved", "REST Multi-Turn Context Preserved", passed, detail, time.Since(start))
+	} else {
+		record("rest/multi-turn-context-preserved", "REST Multi-Turn Context Preserved", false, "skipped — no REST spec client", 0)
+	}
+
+	// 25. rest/get-task-with-history
+	if restSpecClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-lifecycle"))
+			resp, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+			if err != nil {
+				return false, fmt.Sprintf("send error: %v", err)
+			}
+			task, ok := resp.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("expected Task, got %T", resp)
+			}
+			histLen := 10
+			got, err := restSpecClient.GetTask(ctx, &a2a.GetTaskRequest{ID: task.ID, HistoryLength: &histLen})
+			if err != nil {
+				return false, fmt.Sprintf("getTask error: %v", err)
+			}
+			return true, fmt.Sprintf("taskId=%s, state=%s, historyLen=%d", got.ID, got.Status.State, len(got.History))
+		}()
+		record("rest/get-task-with-history", "REST Get Task With History", passed, detail, time.Since(start))
+	} else {
+		record("rest/get-task-with-history", "REST Get Task With History", false, "skipped — no REST spec client", 0)
+	}
+
+	// 26. rest/get-task-after-failure
+	if restSpecClient != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			msg := a2a.NewMessage(a2a.MessageRoleUser, a2a.NewTextPart("task-failure"))
+			resp, err := restSpecClient.SendMessage(ctx, &a2a.SendMessageRequest{Message: msg})
+			if err != nil {
+				return false, fmt.Sprintf("send error: %v", err)
+			}
+			task, ok := resp.(*a2a.Task)
+			if !ok {
+				return false, fmt.Sprintf("expected Task, got %T", resp)
+			}
+			got, err := restSpecClient.GetTask(ctx, &a2a.GetTaskRequest{ID: task.ID})
+			if err != nil {
+				return false, fmt.Sprintf("getTask error: %v", err)
+			}
+			isFailed := got.Status.State == a2a.TaskStateFailed
+			hasMessage := got.Status.Message != nil
+			return isFailed && hasMessage, fmt.Sprintf("state=%s, hasMessage=%v", got.Status.State, hasMessage)
+		}()
+		record("rest/get-task-after-failure", "REST Get Task After Failure", passed, detail, time.Since(start))
+	} else {
+		record("rest/get-task-after-failure", "REST Get Task After Failure", false, "skipped — no REST spec client", 0)
 	}
 
 	// Summary
@@ -1067,5 +1746,3 @@ func truncate(s string, max int) string {
 	}
 	return s
 }
-
-

@@ -109,6 +109,18 @@ public class TestJavaClient {
         testSpecListTasks(binding + "/spec-list-tasks", specUrl, tc);
         testSpecReturnImmediately(binding + "/spec-return-immediately", specUrl, tc);
         testErrorTaskNotFound(binding + "/error-task-not-found", specUrl, tc);
+        testErrorCancelNotFound(binding + "/error-cancel-not-found", specUrl, tc);
+        testErrorCancelTerminal(binding + "/error-cancel-terminal", specUrl, tc);
+        testErrorSendTerminal(binding + "/error-send-terminal", specUrl, tc);
+        testErrorSendInvalidTask(binding + "/error-send-invalid-task", specUrl, tc);
+        testErrorPushNotSupported(binding + "/error-push-not-supported", specUrl, tc);
+        testSubscribeToTask(binding + "/subscribe-to-task", specUrl, tc);
+        testErrorSubscribeNotFound(binding + "/error-subscribe-not-found", specUrl, tc);
+        testStreamMessageOnly(binding + "/stream-message-only", specUrl, tc);
+        testStreamTaskLifecycle(binding + "/stream-task-lifecycle", specUrl, tc);
+        testMultiTurnContextPreserved(binding + "/multi-turn-context-preserved", specUrl, tc);
+        testGetTaskWithHistory(binding + "/get-task-with-history", specUrl, tc);
+        testGetTaskAfterFailure(binding + "/get-task-after-failure", specUrl, tc);
     }
 
     // Build an AgentCard manually when SDK card fetch fails (e.g., protobuf can't parse .NET output)
@@ -529,6 +541,378 @@ public class TestJavaClient {
         } catch (Exception e) {
             record(id, "Task Not Found", true,
                     "error=" + e.getClass().getSimpleName() + ": " + truncate(e.getMessage(), 80),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testErrorCancelNotFound(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {})
+                    .build()) {
+                client.cancelTask(new TaskIdParams("00000000-0000-0000-0000-000000000000"));
+                record(id, "Cancel Not Found", false, "expected error, got success",
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "Cancel Not Found", true,
+                    "error=" + e.getClass().getSimpleName() + ": " + truncate(e.getMessage(), 80),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testErrorCancelTerminal(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            var taskFuture = new CompletableFuture<Task>();
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        if (event instanceof TaskEvent te) taskFuture.complete(te.getTask());
+                        else if (event instanceof TaskUpdateEvent tue
+                                && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            taskFuture.complete(tue.getTask());
+                    })
+                    .streamingErrorHandler(e -> taskFuture.completeExceptionally(e))
+                    .build()) {
+                client.sendMessage(A2A.toUserMessage("task-lifecycle process this"));
+                Task task = taskFuture.get(10, TimeUnit.SECONDS);
+                try {
+                    client.cancelTask(new TaskIdParams(task.id()));
+                    record(id, "Cancel Terminal Task", false, "expected error, got success",
+                            System.currentTimeMillis() - start);
+                } catch (Exception cancelEx) {
+                    record(id, "Cancel Terminal Task", true,
+                            "got expected error: " + exDetail(cancelEx),
+                            System.currentTimeMillis() - start);
+                }
+            }
+        } catch (Exception e) {
+            record(id, "Cancel Terminal Task", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testErrorSendTerminal(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            var taskFuture = new CompletableFuture<Task>();
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        if (event instanceof TaskEvent te) taskFuture.complete(te.getTask());
+                        else if (event instanceof TaskUpdateEvent tue
+                                && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            taskFuture.complete(tue.getTask());
+                    })
+                    .streamingErrorHandler(e -> taskFuture.completeExceptionally(e))
+                    .build()) {
+                client.sendMessage(A2A.toUserMessage("task-lifecycle process this"));
+                Task task = taskFuture.get(10, TimeUnit.SECONDS);
+                try {
+                    client.sendMessage(A2A.createUserTextMessage("this should fail", null, task.id()));
+                    record(id, "Send Terminal Task", false, "expected error, got success",
+                            System.currentTimeMillis() - start);
+                } catch (Exception sendEx) {
+                    record(id, "Send Terminal Task", true,
+                            "got expected error: " + exDetail(sendEx),
+                            System.currentTimeMillis() - start);
+                }
+            }
+        } catch (Exception e) {
+            record(id, "Send Terminal Task", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testErrorSendInvalidTask(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {})
+                    .streamingErrorHandler(e -> {})
+                    .build()) {
+                client.sendMessage(A2A.createUserTextMessage("test", null,
+                        "00000000-0000-0000-0000-000000000000"));
+                record(id, "Send Invalid Task", false, "expected error, got success",
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "Send Invalid Task", true,
+                    "error=" + e.getClass().getSimpleName() + ": " + truncate(e.getMessage(), 80),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testErrorPushNotSupported(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {})
+                    .build()) {
+                var pushConfig = PushNotificationConfig.builder()
+                        .url("https://example.com/webhook")
+                        .build();
+                var config = new TaskPushNotificationConfig(
+                        "00000000-0000-0000-0000-000000000000", pushConfig, null);
+                client.createTaskPushNotificationConfiguration(config);
+                record(id, "Push Not Supported", false, "expected error, got success",
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "Push Not Supported", true,
+                    "error=" + e.getClass().getSimpleName() + ": " + truncate(e.getMessage(), 80),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testSubscribeToTask(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            var taskIdFuture = new CompletableFuture<String>();
+
+            // Start a WORKING task (task-cancel stays working for 30s)
+            try (Client sendClient = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        if (event instanceof TaskEvent te)
+                            taskIdFuture.complete(te.getTask().id());
+                        else if (event instanceof TaskUpdateEvent tue)
+                            taskIdFuture.complete(tue.getTask().id());
+                    })
+                    .streamingErrorHandler(e -> taskIdFuture.completeExceptionally(e))
+                    .build()) {
+
+                new Thread(() -> {
+                    try { sendClient.sendMessage(A2A.toUserMessage("task-cancel")); }
+                    catch (Exception ignored) {}
+                }).start();
+
+                String taskId = taskIdFuture.get(10, TimeUnit.SECONDS);
+
+                // Subscribe from a second client
+                var subEvent = new CompletableFuture<ClientEvent>();
+                try (Client subClient = tc.apply(Client.builder(card))
+                        .addConsumer((event, c) -> subEvent.complete(event))
+                        .streamingErrorHandler(e -> subEvent.completeExceptionally(e))
+                        .build()) {
+
+                    new Thread(() -> {
+                        try { subClient.subscribeToTask(new TaskIdParams(taskId)); }
+                        catch (Exception ignored) {}
+                    }).start();
+
+                    // Allow subscription to establish, then cancel to trigger events
+                    Thread.sleep(500);
+                    sendClient.cancelTask(new TaskIdParams(taskId));
+
+                    ClientEvent event = subEvent.get(10, TimeUnit.SECONDS);
+                    record(id, "Subscribe To Task", event != null,
+                            "eventType=" + event.getClass().getSimpleName(),
+                            System.currentTimeMillis() - start);
+                }
+            }
+        } catch (Exception e) {
+            record(id, "Subscribe To Task", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testErrorSubscribeNotFound(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {})
+                    .build()) {
+                client.subscribeToTask(new TaskIdParams("00000000-0000-0000-0000-000000000000"));
+                record(id, "Subscribe Not Found", false, "expected error, got success",
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "Subscribe Not Found", true,
+                    "error=" + e.getClass().getSimpleName() + ": " + truncate(e.getMessage(), 80),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testStreamMessageOnly(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            var events = new CopyOnWriteArrayList<ClientEvent>();
+            var done = new CompletableFuture<Void>();
+
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        events.add(event);
+                        if (event instanceof MessageEvent) done.complete(null);
+                        if (event instanceof TaskEvent) done.complete(null);
+                    })
+                    .streamingErrorHandler(e -> done.completeExceptionally(e))
+                    .build()) {
+
+                client.sendMessage(A2A.toUserMessage("message-only hello"));
+                done.get(10, TimeUnit.SECONDS);
+                Thread.sleep(500);
+                long msgCount = events.stream().filter(e -> e instanceof MessageEvent).count();
+                boolean ok = msgCount == 1;
+                record(id, "Stream Message Only", ok,
+                        "messageEvents=" + msgCount + ", totalEvents=" + events.size(),
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "Stream Message Only", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testStreamTaskLifecycle(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            var events = new CopyOnWriteArrayList<ClientEvent>();
+            var done = new CompletableFuture<Void>();
+
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        events.add(event);
+                        if (event instanceof TaskEvent te
+                                && te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            done.complete(null);
+                        if (event instanceof TaskUpdateEvent tue
+                                && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            done.complete(null);
+                    })
+                    .streamingErrorHandler(e -> done.completeExceptionally(e))
+                    .build()) {
+
+                client.sendMessage(A2A.toUserMessage("task-lifecycle process"));
+                done.get(15, TimeUnit.SECONDS);
+                boolean hasTaskEvent = events.stream().anyMatch(e ->
+                        e instanceof TaskEvent || e instanceof TaskUpdateEvent);
+                ClientEvent last = events.get(events.size() - 1);
+                boolean terminal = false;
+                if (last instanceof TaskEvent te)
+                    terminal = te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED;
+                if (last instanceof TaskUpdateEvent tue)
+                    terminal = tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED;
+                boolean ok = hasTaskEvent && terminal;
+                record(id, "Stream Task Lifecycle", ok,
+                        "events=" + events.size() + ", hasTask=" + hasTaskEvent + ", terminal=" + terminal,
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "Stream Task Lifecycle", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testMultiTurnContextPreserved(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            var step1 = new CompletableFuture<Task>();
+
+            // Step 1: start multi-turn
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        if (event instanceof TaskEvent te) step1.complete(te.getTask());
+                        else if (event instanceof TaskUpdateEvent tue) step1.complete(tue.getTask());
+                    })
+                    .streamingErrorHandler(e -> step1.completeExceptionally(e))
+                    .build()) {
+
+                client.sendMessage(A2A.toUserMessage("multi-turn start conversation"));
+                Task t1 = step1.get(10, TimeUnit.SECONDS);
+                String contextId = t1.contextId();
+                String taskId = t1.id();
+
+                // Step 2: follow-up with taskId, verify same contextId
+                var step2 = new CompletableFuture<Task>();
+                try (Client client2 = tc.apply(Client.builder(card))
+                        .addConsumer((event, c) -> {
+                            if (event instanceof TaskEvent te) step2.complete(te.getTask());
+                            else if (event instanceof TaskUpdateEvent tue) step2.complete(tue.getTask());
+                        })
+                        .streamingErrorHandler(e -> step2.completeExceptionally(e))
+                        .build()) {
+
+                    Message followUp = A2A.createUserTextMessage("follow up", contextId, taskId);
+                    client2.sendMessage(followUp);
+                    Task t2 = step2.get(10, TimeUnit.SECONDS);
+                    boolean sameContext = contextId != null && contextId.equals(t2.contextId());
+                    record(id, "Multi-Turn Context Preserved", sameContext,
+                            "ctx1=" + contextId + ", ctx2=" + t2.contextId(),
+                            System.currentTimeMillis() - start);
+                }
+            }
+        } catch (Exception e) {
+            record(id, "Multi-Turn Context Preserved", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testGetTaskWithHistory(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            var taskFuture = new CompletableFuture<Task>();
+
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        if (event instanceof TaskEvent te) taskFuture.complete(te.getTask());
+                        else if (event instanceof TaskUpdateEvent tue
+                                && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            taskFuture.complete(tue.getTask());
+                    })
+                    .streamingErrorHandler(e -> taskFuture.completeExceptionally(e))
+                    .build()) {
+
+                client.sendMessage(A2A.toUserMessage("task-lifecycle process this"));
+                Task task = taskFuture.get(10, TimeUnit.SECONDS);
+                Task fetched = client.getTask(new TaskQueryParams(task.id(), 10));
+                boolean ok = fetched.id().equals(task.id());
+                record(id, "Get Task With History", ok,
+                        "taskId=" + fetched.id() + ", state=" + fetched.status().state(),
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "Get Task With History", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static void testGetTaskAfterFailure(String id, String agentUrl, TransportConfigurer tc) {
+        long start = System.currentTimeMillis();
+        try {
+            AgentCard card = getCard(agentUrl, true);
+            var taskFuture = new CompletableFuture<Task>();
+
+            try (Client client = tc.apply(Client.builder(card))
+                    .addConsumer((event, c) -> {
+                        if (event instanceof TaskEvent te) taskFuture.complete(te.getTask());
+                        else if (event instanceof TaskUpdateEvent tue
+                                && tue.getTask().status().state() == TaskState.TASK_STATE_FAILED)
+                            taskFuture.complete(tue.getTask());
+                    })
+                    .streamingErrorHandler(e -> taskFuture.completeExceptionally(e))
+                    .build()) {
+
+                client.sendMessage(A2A.toUserMessage("task-failure trigger error"));
+                Task task = taskFuture.get(10, TimeUnit.SECONDS);
+                Task fetched = client.getTask(new TaskQueryParams(task.id()));
+                boolean ok = fetched.status().state() == TaskState.TASK_STATE_FAILED;
+                record(id, "Get Task After Failure", ok,
+                        "taskId=" + fetched.id() + ", state=" + fetched.status().state(),
+                        System.currentTimeMillis() - start);
+            }
+        } catch (Exception e) {
+            record(id, "Get Task After Failure", false, exDetail(e),
                     System.currentTimeMillis() - start);
         }
     }

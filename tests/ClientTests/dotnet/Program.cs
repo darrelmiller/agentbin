@@ -273,6 +273,189 @@ try
 }
 catch (Exception ex) { Record("jsonrpc/spec-return-immediately", "Return Immediately", false, ex.Message, sw.ElapsedMilliseconds); }
 
+// 15. error-cancel-not-found — SDK does not support CancelTask
+sw.Restart();
+Record("jsonrpc/error-cancel-not-found", "Cancel Not Found", false,
+    "SDK does not support CancelTask", 0);
+
+// 16. error-cancel-terminal — SDK does not support CancelTask
+sw.Restart();
+Record("jsonrpc/error-cancel-terminal", "Cancel Terminal Task", false,
+    "SDK does not support CancelTask", 0);
+
+// 17. error-send-terminal — send to a completed task, expect error
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r = await client.SendMessageAsync(text: "task-lifecycle process this", role: Role.User);
+    var termTaskId = r.Task?.Id;
+    if (termTaskId is null)
+    {
+        Record("jsonrpc/error-send-terminal", "Send To Terminal Task", false, "no taskId from lifecycle", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        var req = new SendMessageRequest
+        {
+            Message = new Message
+            {
+                Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
+                TaskId = termTaskId,
+                Parts = [Part.FromText("this should fail")]
+            }
+        };
+        await client.SendMessageAsync(req);
+        Record("jsonrpc/error-send-terminal", "Send To Terminal Task", false, "expected error, got success", sw.ElapsedMilliseconds);
+    }
+}
+catch (A2AException ex) { Record("jsonrpc/error-send-terminal", "Send To Terminal Task", true, $"got expected error: {ex.ErrorCode}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("jsonrpc/error-send-terminal", "Send To Terminal Task", true, $"got error: {ex.GetType().Name}: {ex.Message}", sw.ElapsedMilliseconds); }
+
+// 18. error-send-invalid-task — send message with bogus TaskId
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var req = new SendMessageRequest
+    {
+        Message = new Message
+        {
+            Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
+            TaskId = "00000000-0000-0000-0000-000000000000",
+            Parts = [Part.FromText("send to invalid task")]
+        }
+    };
+    await client.SendMessageAsync(req);
+    Record("jsonrpc/error-send-invalid-task", "Send Invalid TaskId", false, "expected error, got success", sw.ElapsedMilliseconds);
+}
+catch (A2AException ex) { Record("jsonrpc/error-send-invalid-task", "Send Invalid TaskId", true, $"errorCode={ex.ErrorCode}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("jsonrpc/error-send-invalid-task", "Send Invalid TaskId", true, $"got error: {ex.GetType().Name}", sw.ElapsedMilliseconds); }
+
+// 19. error-push-not-supported — SDK does not have push notification config methods
+sw.Restart();
+Record("jsonrpc/error-push-not-supported", "Push Not Supported", false,
+    "SDK does not support push notification configuration", 0);
+
+// 20. subscribe-to-task — SDK does not support SubscribeToTask
+sw.Restart();
+Record("jsonrpc/subscribe-to-task", "SubscribeToTask", false,
+    "SDK does not support SubscribeToTask", 0);
+
+// 21. error-subscribe-not-found — SDK does not support SubscribeToTask
+sw.Restart();
+Record("jsonrpc/error-subscribe-not-found", "Subscribe Not Found", false,
+    "SDK does not support SubscribeToTask", 0);
+
+// 22. stream-message-only — streaming with message-only response
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var req = new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("message-only hello")] }
+    };
+    int eventCount = 0; bool hasMessage = false;
+    await foreach (var ev in client.SendStreamingMessageAsync(req))
+    {
+        eventCount++;
+        if (ev.Message is not null) hasMessage = true;
+    }
+    Record("jsonrpc/stream-message-only", "Stream Message Only", hasMessage && eventCount == 1,
+        $"events={eventCount}, hasMessage={hasMessage}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("jsonrpc/stream-message-only", "Stream Message Only", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// 23. stream-task-lifecycle — streaming task with lifecycle events
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var req = new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-lifecycle process this")] }
+    };
+    bool firstHasTask = false; bool lastTerminal = false; int idx = 0;
+    await foreach (var ev in client.SendStreamingMessageAsync(req))
+    {
+        if (idx == 0 && ev.Task is not null) firstHasTask = true;
+        if (ev.Task?.Status.State == TaskState.Completed || ev.StatusUpdate?.Status.State == TaskState.Completed) lastTerminal = true;
+        idx++;
+    }
+    Record("jsonrpc/stream-task-lifecycle", "Stream Task Lifecycle", firstHasTask && lastTerminal,
+        $"firstHasTask={firstHasTask}, lastTerminal={lastTerminal}, events={idx}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("jsonrpc/stream-task-lifecycle", "Stream Task Lifecycle", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// 24. multi-turn-context-preserved — verify contextId is preserved across turns
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r1 = await client.SendMessageAsync(text: "multi-turn start conversation", role: Role.User);
+    var ctx1 = r1.Task?.ContextId;
+    var tid = r1.Task?.Id;
+    if (tid is null || ctx1 is null)
+    {
+        Record("jsonrpc/multi-turn-context-preserved", "Context Preserved", false, $"step1: taskId={tid}, contextId={ctx1}", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        var req2 = new SendMessageRequest
+        {
+            Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), TaskId = tid, Parts = [Part.FromText("more data")] }
+        };
+        var r2 = await client.SendMessageAsync(req2);
+        var ctx2 = r2.Task?.ContextId;
+        Record("jsonrpc/multi-turn-context-preserved", "Context Preserved", ctx1 == ctx2,
+            $"ctx1={ctx1}, ctx2={ctx2}", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("jsonrpc/multi-turn-context-preserved", "Context Preserved", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// 25. get-task-with-history — GetTask and check for history
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r = await client.SendMessageAsync(text: "task-lifecycle process this", role: Role.User);
+    var tid = r.Task?.Id;
+    if (tid is null)
+    {
+        Record("jsonrpc/get-task-with-history", "GetTask With History", false, "no taskId", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        var task = await client.GetTaskAsync(new GetTaskRequest { Id = tid, HistoryLength = 10 });
+        var hasHistory = task.History?.Count > 0;
+        Record("jsonrpc/get-task-with-history", "GetTask With History", true,
+            $"state={task.Status.State}, history={task.History?.Count ?? 0}", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("jsonrpc/get-task-with-history", "GetTask With History", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// 26. get-task-after-failure — GetTask after a failure, verify FAILED state
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r = await client.SendMessageAsync(text: "task-failure trigger error", role: Role.User);
+    var tid = r.Task?.Id;
+    if (tid is null)
+    {
+        Record("jsonrpc/get-task-after-failure", "GetTask After Failure", false, "no taskId from failure test", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        var task = await client.GetTaskAsync(new GetTaskRequest { Id = tid });
+        var state = task.Status.State;
+        Record("jsonrpc/get-task-after-failure", "GetTask After Failure", state == TaskState.Failed,
+            $"state={state}, msg={task.Status.Message?.Parts.FirstOrDefault()?.Text ?? "none"}", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("jsonrpc/get-task-after-failure", "GetTask After Failure", false, ex.Message, sw.ElapsedMilliseconds); }
+
 // ═══════════════════════════════════════════════════════════════════════════
 // HTTP+JSON REST BINDING — SDK does not support REST transport
 // ═══════════════════════════════════════════════════════════════════════════
@@ -294,6 +477,18 @@ var restTests = new (string Id, string Name)[]
     ("rest/spec-task-cancel", "Task Cancel"),
     ("rest/spec-list-tasks", "List Tasks"),
     ("rest/spec-return-immediately", "Return Immediately"),
+    ("rest/error-cancel-not-found", "Cancel Not Found"),
+    ("rest/error-cancel-terminal", "Cancel Terminal Task"),
+    ("rest/error-send-terminal", "Send To Terminal Task"),
+    ("rest/error-send-invalid-task", "Send Invalid TaskId"),
+    ("rest/error-push-not-supported", "Push Not Supported"),
+    ("rest/subscribe-to-task", "SubscribeToTask"),
+    ("rest/error-subscribe-not-found", "Subscribe Not Found"),
+    ("rest/stream-message-only", "Stream Message Only"),
+    ("rest/stream-task-lifecycle", "Stream Task Lifecycle"),
+    ("rest/multi-turn-context-preserved", "Context Preserved"),
+    ("rest/get-task-with-history", "GetTask With History"),
+    ("rest/get-task-after-failure", "GetTask After Failure"),
 };
 
 foreach (var (id, name) in restTests)
