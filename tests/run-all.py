@@ -105,7 +105,7 @@ CLIENTS = {
         "cmd": [sys.executable, "test_python_client.py"],
         "icon": "&#9673;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/python/test_python_client.py",
-        "sdk_url": "https://pypi.org/project/a2a-sdk/",
+        "sdk_url": "https://pypi.org/project/a2a-sdk/1.0.0a0/",
     },
     "java": {
         "name": "Java",
@@ -241,6 +241,25 @@ KNOWN_FAILURES: dict[tuple[str, str], str] = {
     ("java", "rest/spec-list-tasks"):
         "Known: Java SDK listTasks fails with Task 'id' null — "
         "protobuf deserialization issue when parsing task list.",
+
+    # Python SDK — REST subscribe returns 0 events, cancel metadata not echoed via REST
+    ("python", "rest/subscribe-to-task"):
+        "Known: Python SDK REST subscribe returns 0 events. "
+        "Possible server or SDK issue with REST SSE subscription.",
+    ("python", "rest/spec-cancel-with-metadata"):
+        "Known: Python SDK REST cancel succeeds but metadata keys are empty. "
+        "REST binding does not echo cancel metadata back in response.",
+
+    # Python SDK — v0.3 method name mismatch
+    ("python", "v03/spec03-send-message"):
+        "Known: Python SDK sends v1.0 method names (message/send) to v0.3 agent "
+        "which only accepts v0.3 method names (tasks/send). SDK does not fall back.",
+    ("python", "v03/spec03-task-lifecycle"):
+        "Known: Python SDK sends v1.0 method names to v0.3 agent. "
+        "Same root cause as spec03-send-message.",
+    ("python", "v03/spec03-streaming"):
+        "Known: Python SDK sends v1.0 method names to v0.3 agent. "
+        "Same root cause as spec03-send-message.",
 
     # JS SDK — protobuf-based method names and field names don't match .NET server
     ("js", "jsonrpc/spec-list-tasks"):

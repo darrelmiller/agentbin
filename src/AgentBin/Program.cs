@@ -16,8 +16,11 @@ builder.Services.AddCors(options =>
               .WithExposedHeaders("A2A-Version"));
 });
 
-// Determine base URL from environment or default
-var baseUrl = builder.Configuration["BASE_URL"] ?? "http://localhost:5000";
+// Determine base URL from environment or listening URL
+var baseUrl = builder.Configuration["BASE_URL"]
+    ?? builder.Configuration["urls"]?.Split(';').FirstOrDefault()
+    ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?.Split(';').FirstOrDefault()
+    ?? "http://localhost:5000";
 
 // Register the SpecAgent via the easy-path DI pattern
 var specCard = SpecAgent.GetAgentCard($"{baseUrl}/spec");
