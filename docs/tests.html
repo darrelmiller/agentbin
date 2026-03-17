@@ -90,6 +90,42 @@
     <div class="toc-group-title">Error Handling</div>
     <ul class="toc-list">
       <li><a href="#error-task-not-found">Task Not Found Error</a></li>
+      <li><a href="#error-cancel-not-found">Cancel Not Found</a></li>
+      <li><a href="#error-cancel-terminal">Cancel Terminal Task</a></li>
+      <li><a href="#error-send-terminal">Send To Terminal Task</a></li>
+      <li><a href="#error-send-invalid-task">Send Invalid TaskId</a></li>
+      <li><a href="#error-push-not-supported">Push Not Supported</a></li>
+      <li><a href="#error-subscribe-not-found">Subscribe Not Found</a></li>
+    </ul>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-title">Streaming</div>
+    <ul class="toc-list">
+      <li><a href="#subscribe-to-task">SubscribeToTask</a></li>
+      <li><a href="#stream-message-only">Stream Message Only</a></li>
+      <li><a href="#stream-task-lifecycle">Stream Task Lifecycle</a></li>
+    </ul>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-title">Multi-Turn</div>
+    <ul class="toc-list">
+      <li><a href="#multi-turn-context-preserved">Context Preserved</a></li>
+    </ul>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-title">GetTask</div>
+    <ul class="toc-list">
+      <li><a href="#get-task-with-history">GetTask With History</a></li>
+      <li><a href="#get-task-after-failure">GetTask After Failure</a></li>
+    </ul>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-title">v0.3 Backward Compatibility</div>
+    <ul class="toc-list">
+      <li><a href="#spec03-agent-card">v0.3 Agent Card</a></li>
+      <li><a href="#spec03-send-message">v0.3 Send Message</a></li>
+      <li><a href="#spec03-task-lifecycle">v0.3 Task Lifecycle</a></li>
+      <li><a href="#spec03-streaming">v0.3 Streaming</a></li>
     </ul>
   </div>
 </div>
@@ -423,6 +459,343 @@
       <li><code>error.code</code> is <code>-32001</code> (TaskNotFoundError)</li>
       <li><code>error.message</code> is a descriptive string</li>
       <li>For REST: HTTP status is <code>404</code></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ TCK-Inspired Error Handling ═══ -->
+
+<div class="scenario" id="error-cancel-not-found">
+  <h2>Cancel Not Found</h2>
+  <div class="test-id">error-cancel-not-found</div>
+  <div class="description">
+    Call <code>CancelTask</code> with a non-existent task ID. The agent MUST return a
+    <code>TaskNotFoundError</code> (code <code>-32001</code>).
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">error</span><span class="tag">cancel</span><span class="tag">not-found</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response contains <code>error.code</code> = <code>-32001</code></li>
+      <li>Agents reject cancel requests for unknown tasks</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="error-cancel-terminal">
+  <h2>Cancel Terminal Task</h2>
+  <div class="test-id">error-cancel-terminal</div>
+  <div class="description">
+    Complete a task (via <code>task-lifecycle</code>), then attempt to cancel it. The agent SHOULD
+    return an error since the task is already in a terminal state.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">error</span><span class="tag">cancel</span><span class="tag">terminal</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Canceling a completed task returns an error</li>
+      <li>Terminal tasks cannot be modified</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="error-send-terminal">
+  <h2>Send To Terminal Task</h2>
+  <div class="test-id">error-send-terminal</div>
+  <div class="description">
+    Complete a task, then send a new message with the same <code>taskId</code>. The agent SHOULD
+    return an error because the task is already in a terminal state.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">error</span><span class="tag">send</span><span class="tag">terminal</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Sending to a completed task returns an error</li>
+      <li>Task immutability after terminal state</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="error-send-invalid-task">
+  <h2>Send Invalid TaskId</h2>
+  <div class="test-id">error-send-invalid-task</div>
+  <div class="description">
+    Send a message with a <code>taskId</code> that doesn't exist. The agent MUST return a
+    <code>TaskNotFoundError</code>.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">error</span><span class="tag">send</span><span class="tag">invalid-task</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response error code is <code>-32001</code> (TaskNotFoundError)</li>
+      <li>Agents reject messages to non-existent tasks</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="error-push-not-supported">
+  <h2>Push Not Supported</h2>
+  <div class="test-id">error-push-not-supported</div>
+  <div class="description">
+    Call <code>SetPushNotificationConfig</code> on an agent that does not advertise push notification
+    support. The agent MUST return a <code>PushNotificationsNotSupportedError</code> (code <code>-32003</code>).
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">error</span><span class="tag">push</span><span class="tag">not-supported</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response error code is <code>-32003</code></li>
+      <li>Agents correctly reject unsupported capabilities</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="error-subscribe-not-found">
+  <h2>Subscribe Not Found</h2>
+  <div class="test-id">error-subscribe-not-found</div>
+  <div class="description">
+    Call <code>SubscribeToTask</code> with a non-existent task ID. The agent MUST return a
+    <code>TaskNotFoundError</code>.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">error</span><span class="tag">subscribe</span><span class="tag">not-found</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Response error or SSE stream contains error for non-existent task</li>
+      <li>Subscription to unknown tasks is properly rejected</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ Streaming ═══ -->
+
+<div class="scenario" id="subscribe-to-task">
+  <h2>SubscribeToTask</h2>
+  <div class="test-id">subscribe-to-task</div>
+  <div class="description">
+    Create a task via <code>SendMessage</code> (with <code>task-lifecycle</code> skill), then call
+    <code>SubscribeToTask</code> with the returned <code>taskId</code>. Verifies that the agent
+    returns the current task state via SSE.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">streaming</span><span class="tag">subscribe</span><span class="tag">sse</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>SSE stream returns at least one event</li>
+      <li>Event contains the task in a terminal state</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="stream-message-only">
+  <h2>Stream Message Only</h2>
+  <div class="test-id">stream-message-only</div>
+  <div class="description">
+    Stream a <code>message-only</code> request. The agent returns a message event (no task created)
+    via SSE.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">streaming</span><span class="tag">message-only</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>SSE stream returns at least one message event</li>
+      <li>No task is created for message-only interactions</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="stream-task-lifecycle">
+  <h2>Stream Task Lifecycle</h2>
+  <div class="test-id">stream-task-lifecycle</div>
+  <div class="description">
+    Stream a <code>task-lifecycle</code> request. The agent streams status updates and artifact
+    chunks as the task progresses through submitted → working → completed.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">streaming</span><span class="tag">task-lifecycle</span><span class="tag">sse</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>SSE stream contains multiple events</li>
+      <li>Final event has a task in terminal state with artifacts</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ Multi-Turn ═══ -->
+
+<div class="scenario" id="multi-turn-context-preserved">
+  <h2>Context Preserved</h2>
+  <div class="test-id">multi-turn-context-preserved</div>
+  <div class="description">
+    Start a multi-turn conversation, then send a follow-up message with the same <code>taskId</code>.
+    Verify the task context (taskId) is preserved across turns.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">multi-turn</span><span class="tag">context</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Both responses share the same <code>taskId</code></li>
+      <li>Context is maintained across message exchanges</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ GetTask ═══ -->
+
+<div class="scenario" id="get-task-with-history">
+  <h2>GetTask With History</h2>
+  <div class="test-id">get-task-with-history</div>
+  <div class="description">
+    Complete a task, then call <code>GetTask</code> with <code>historyLength</code> to retrieve
+    the task with its message history.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">get-task</span><span class="tag">history</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Task is returned in completed state</li>
+      <li>History contains the expected messages</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="get-task-after-failure">
+  <h2>GetTask After Failure</h2>
+  <div class="test-id">get-task-after-failure</div>
+  <div class="description">
+    Trigger a task failure (via <code>task-failure</code> skill), then call <code>GetTask</code>.
+    The task MUST be in the <code>failed</code> state.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec</span>
+    <span><span class="tag">get-task</span><span class="tag">failure</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Task state is <code>failed</code></li>
+      <li>Failed state is persisted and retrievable</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══ v0.3 Backward Compatibility ═══ -->
+
+<div class="scenario" id="spec03-agent-card">
+  <h2>v0.3 Agent Card</h2>
+  <div class="test-id">spec03-agent-card</div>
+  <div class="description">
+    Fetch the agent card at <code>/spec03/.well-known/agent-card.json</code>. This endpoint serves a
+    native v0.3-format card with <code>url</code> and <code>protocolVersion: "0.3.0"</code> fields
+    instead of <code>supportedInterfaces</code>. Verifies that the card format is correct v0.3.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec (v0.3)</span>
+    <span><span class="tag">v0.3</span><span class="tag">discovery</span><span class="tag">backward-compat</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li><code>protocolVersion</code> = <code>"0.3.0"</code></li>
+      <li><code>url</code> field is present (v0.3 format)</li>
+      <li>No <code>supportedInterfaces</code> array</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec03-send-message">
+  <h2>v0.3 Send Message</h2>
+  <div class="test-id">spec03-send-message</div>
+  <div class="description">
+    Use the SDK client to discover the <code>/spec03</code> agent (which serves a v0.3 card) and
+    send a <code>message-only hello</code> message. Tests whether the SDK can detect a v0.3 agent
+    and fall back to the v0.3 protocol automatically.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec (v0.3)</span>
+    <span><span class="tag">v0.3</span><span class="tag">send-message</span><span class="tag">fallback</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>SDK can parse a v0.3 agent card</li>
+      <li>SDK sends request using v0.3 method names (or negotiates correctly)</li>
+      <li>Response contains the echoed message content</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec03-task-lifecycle">
+  <h2>v0.3 Task Lifecycle</h2>
+  <div class="test-id">spec03-task-lifecycle</div>
+  <div class="description">
+    Send <code>task-lifecycle process</code> to the v0.3 agent via the SDK. Tests whether the SDK
+    can complete a full task lifecycle (submitted → working → completed) when talking to a v0.3 agent.
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec (v0.3)</span>
+    <span><span class="tag">v0.3</span><span class="tag">task-lifecycle</span><span class="tag">fallback</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>Task reaches <code>completed</code> state</li>
+      <li>Task has at least one artifact</li>
+      <li>SDK handles v0.3 state names and role mappings</li>
+    </ul>
+  </div>
+</div>
+
+<div class="scenario" id="spec03-streaming">
+  <h2>v0.3 Streaming</h2>
+  <div class="test-id">spec03-streaming</div>
+  <div class="description">
+    Stream <code>streaming generate</code> to the v0.3 agent via the SDK. Tests whether the SDK can
+    handle SSE streaming with v0.3 protocol (method name <code>message/stream</code>, v0.3 state names).
+  </div>
+  <div class="meta">
+    <span><strong>Agent:</strong> Spec (v0.3)</span>
+    <span><span class="tag">v0.3</span><span class="tag">streaming</span><span class="tag">sse</span><span class="tag">fallback</span></span>
+  </div>
+  <div class="verifies">
+    <h3>Verifies</h3>
+    <ul>
+      <li>SSE stream returns multiple events</li>
+      <li>Stream completes with artifact data</li>
+      <li>SDK handles v0.3 SSE event format</li>
     </ul>
   </div>
 </div>

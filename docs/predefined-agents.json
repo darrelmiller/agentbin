@@ -14,5 +14,13 @@
     "url": "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/echo",
     "authType": "none",
     "tags": ["a2a", "echo", "test"]
+  },
+  {
+    "id": "spec03-agent",
+    "name": "SpecAgent (v0.3)",
+    "description": "Same SpecAgent but serves a v0.3-format agent card. Tests SDK backward compatibility with protocolVersion 0.3.0. JSON-RPC only, no REST binding.",
+    "url": "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec03",
+    "authType": "none",
+    "tags": ["a2a", "spec", "v0.3", "backward-compat", "test"]
   }
 ]
