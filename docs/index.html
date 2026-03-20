@@ -111,7 +111,7 @@
       <p>Discover the agent card, then send a message:</p>
       <pre style="background:var(--bg);padding:1rem;border-radius:8px;overflow-x:auto;font-size:0.85rem;margin-top:0.5rem;"><code># JSON-RPC: Get agent card
 curl -H "A2A-Version: 1.0" \
-  https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec/.well-known/agent.json
+  https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec/.well-known/agent-card.json
 
 # REST: Send a message
 curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
@@ -156,11 +156,11 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
           <div class="desc">JSON-RPC 2.0 endpoint for SpecAgent</div>
         </div>
         <div class="endpoint">
-          <h3>GET /echo/.well-known/agent.json</h3>
+          <h3>GET /echo/.well-known/agent-card.json</h3>
           <div class="desc">EchoAgent agent card</div>
         </div>
         <div class="endpoint">
-          <h3>GET /spec/.well-known/agent.json</h3>
+          <h3>GET /spec/.well-known/agent-card.json</h3>
           <div class="desc">SpecAgent agent card</div>
         </div>
         <div class="endpoint">
