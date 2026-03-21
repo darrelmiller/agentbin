@@ -1624,28 +1624,8 @@ ALL_TESTS = [
 ]
 
 
-async def main():
-    print(f"\n{'='*64}")
-    print(f"  A2A Python SDK Integration Tests  ({_SDK_SOURCE})")
-    print(f"  Target: {BASE_URL}")
-    print(f"{'='*64}\n")
-
-    for test_id, fn in ALL_TESTS:
-        try:
-            await fn()
-        except Exception as exc:
-            ms = 0
-            record(test_id, test_id, False, f"EXCEPTION: {exc}", ms)
-            traceback.print_exc()
-
-    # Console summary
-    passed = sum(1 for r in RESULTS if r["passed"])
-    failed = sum(1 for r in RESULTS if not r["passed"])
-    print(f"\n{'='*64}")
-    print(f"  TOTAL: {passed} passed, {failed} failed, {len(RESULTS)} total")
-    print(f"{'='*64}\n")
-
-    # Write results.json alongside this script
+def _write_results(results_path: str):
+    """Write results.json — called in finally block so it's always written."""
     output = {
         "client": "python",
         "sdk": _SDK_SOURCE,
@@ -1654,9 +1634,42 @@ async def main():
         "baseUrl": BASE_URL,
         "results": RESULTS,
     }
-    results_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results.json")
     with open(results_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2)
+
+
+async def main():
+    print(f"\n{'='*64}")
+    print(f"  A2A Python SDK Integration Tests  ({_SDK_SOURCE})")
+    print(f"  Target: {BASE_URL}")
+    print(f"{'='*64}\n")
+
+    results_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results.json")
+
+    try:
+        for test_id, fn in ALL_TESTS:
+            try:
+                await asyncio.wait_for(fn(), timeout=30.0)
+            except asyncio.TimeoutError:
+                record(test_id, test_id, False, "TIMEOUT: test exceeded 30s", 30000)
+            except KeyboardInterrupt:
+                raise
+            except BaseException as exc:
+                ms = 0
+                record(test_id, test_id, False, f"EXCEPTION: {exc}", ms)
+                traceback.print_exc()
+            sys.stdout.flush()
+    finally:
+        # Always write results.json, even on early exit
+        _write_results(results_path)
+
+    # Console summary
+    passed = sum(1 for r in RESULTS if r["passed"])
+    failed = sum(1 for r in RESULTS if not r["passed"])
+    print(f"\n{'='*64}")
+    print(f"  TOTAL: {passed} passed, {failed} failed, {len(RESULTS)} total")
+    print(f"{'='*64}\n")
+
     print(f"  Results written to {results_path}\n")
 
     return 0 if failed == 0 else 1
