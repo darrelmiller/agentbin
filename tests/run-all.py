@@ -86,7 +86,6 @@ CLIENTS = {
     "dotnet": {
         "name": ".NET",
         "dir": "dotnet",
-        "cmd": ["dotnet", "run", "--"],
         "icon": "&#9726;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/dotnet/Program.cs",
         "sdk_url": "https://www.nuget.org/packages/A2A/",
@@ -94,7 +93,6 @@ CLIENTS = {
     "go": {
         "name": "Go",
         "dir": "go",
-        "cmd": ["go", "run", "."],
         "icon": "&#9671;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/go/main.go",
         "sdk_url": "https://pkg.go.dev/github.com/a2aproject/a2a-go/v2",
@@ -102,7 +100,6 @@ CLIENTS = {
     "python": {
         "name": "Python",
         "dir": "python",
-        "cmd": [sys.executable, "test_python_client.py"],
         "icon": "&#9673;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/python/test_python_client.py",
         "sdk_url": "https://pypi.org/project/a2a-sdk/1.0.0a0/",
@@ -110,7 +107,6 @@ CLIENTS = {
     "java": {
         "name": "Java",
         "dir": "java",
-        "cmd_fn": lambda url: ["mvn", "-q", "compile", "exec:java", f"-Dexec.args={url}"],
         "icon": "&#9672;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/java/src/main/java/agentbin/TestJavaClient.java",
         "sdk_url": "https://github.com/a2aproject/a2a-java",
@@ -118,7 +114,6 @@ CLIENTS = {
     "js": {
         "name": "JavaScript",
         "dir": "js",
-        "cmd": ["node", "test_js_client.mjs"],
         "icon": "&#9724;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/js/test_js_client.mjs",
         "sdk_url": "https://github.com/a2aproject/a2a-js",
@@ -127,12 +122,18 @@ CLIENTS = {
 
 
 def run_client(client_id: str, base_url: str) -> dict | None:
+    """Run a client's standalone run.py script to execute tests and produce results.json."""
     info = CLIENTS[client_id]
     cwd = CLIENTS_DIR / info["dir"]
-    if "cmd_fn" in info:
-        cmd = info["cmd_fn"](base_url)
+    run_script = cwd / "run.py"
+
+    # Each client owns its own run.py; fall back to legacy commands if missing
+    if run_script.exists():
+        cmd = [sys.executable, str(run_script), base_url]
     else:
-        cmd = info["cmd"] + [base_url]
+        print(f"  ⚠ No run.py found for {info['name']} — skipping")
+        return None
+
     print(f"\n{'='*60}")
     print(f"  Running {info['icon']} {info['name']} client tests...")
     print(f"  cwd: {cwd}")
@@ -140,10 +141,8 @@ def run_client(client_id: str, base_url: str) -> dict | None:
     print(f"{'='*60}\n")
 
     try:
-        # shell=True needed on Windows for .cmd/.bat wrappers (e.g. mvn.cmd)
-        use_shell = sys.platform == "win32"
         result = subprocess.run(
-            cmd, cwd=str(cwd), capture_output=False, timeout=300, shell=use_shell
+            cmd, cwd=str(cwd), capture_output=False, timeout=300
         )
         results_file = cwd / "results.json"
         if results_file.exists():
@@ -153,7 +152,7 @@ def run_client(client_id: str, base_url: str) -> dict | None:
             print(f"  ⚠ No results.json found for {info['name']}")
             return None
     except subprocess.TimeoutExpired:
-        print(f"  ⚠ {info['name']} timed out after 120s")
+        print(f"  ⚠ {info['name']} timed out after 300s")
         return None
     except FileNotFoundError:
         print(f"  ⚠ {info['name']} runtime not found ({cmd[0]})")

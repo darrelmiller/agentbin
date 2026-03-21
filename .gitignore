@@ -29,6 +29,8 @@ tests/ClientTests/*/results.json
 # Go binaries
 tests/ClientTests/go/agentbin-test.exe
 tests/ClientTests/go/agentbin-test
+tests/ClientTests/go/test_go_client.exe
+tests/ClientTests/go/test_go_client
 
 *.class
 __pycache__/
