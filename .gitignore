@@ -34,3 +34,10 @@ tests/ClientTests/go/agentbin-test
 __pycache__/
 tests/ClientTests/java/target/
 tests/ClientTests/java/results.json
+# Squad: ignore runtime state (logs, inbox, sessions)
+.squad/orchestration-log/
+.squad/log/
+.squad/decisions/inbox/
+.squad/sessions/
+# Squad: SubSquad activation file (local to this machine)
+.squad-workstream
