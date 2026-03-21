@@ -216,7 +216,7 @@ try
 }
 catch (Exception ex) { Record("jsonrpc/spec-multi-turn", "Multi-Turn", false, ex.Message, sw.ElapsedMilliseconds); }
 
-// 12. spec-task-cancel — cancel a running task via streaming
+// 12. spec-task-cancel — start a long-running task via streaming, then cancel it
 try
 {
     sw.Restart();
@@ -230,16 +230,25 @@ try
         }
     };
     string? cancelTaskId = null;
-    using var streamCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-    await foreach (var ev in client.SendStreamingMessageAsync(cancelReq).WithCancellation(streamCts.Token))
+    using var cancelCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+    await foreach (var ev in client.SendStreamingMessageAsync(cancelReq).WithCancellation(cancelCts.Token))
     {
         cancelTaskId = ev.Task?.Id ?? ev.StatusUpdate?.TaskId ?? ev.ArtifactUpdate?.TaskId;
         if (cancelTaskId is not null) break;
     }
-    Record("jsonrpc/spec-task-cancel", "Task Cancel", false,
-        "SDK does not support CancelTask — method not available in A2A .NET SDK", sw.ElapsedMilliseconds);
+    if (cancelTaskId is null)
+    {
+        Record("jsonrpc/spec-task-cancel", "Task Cancel", false, "no taskId from streaming", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        await client.CancelTaskAsync(new CancelTaskRequest { Id = cancelTaskId });
+        var fetched = await client.GetTaskAsync(new GetTaskRequest { Id = cancelTaskId });
+        Record("jsonrpc/spec-task-cancel", "Task Cancel",
+            fetched.Status.State == TaskState.Canceled,
+            $"taskId={cancelTaskId}, state={fetched.Status.State}", sw.ElapsedMilliseconds);
+    }
 }
-catch (OperationCanceledException) { Record("jsonrpc/spec-task-cancel", "Task Cancel", false, "SDK does not support CancelTask — method not available in A2A .NET SDK", sw.ElapsedMilliseconds); }
 catch (Exception ex) { Record("jsonrpc/spec-task-cancel", "Task Cancel", false, ex.Message, sw.ElapsedMilliseconds); }
 
 // 12b. spec-cancel-with-metadata — cancel a running task with metadata
@@ -262,16 +271,39 @@ try
         cancelMetaTaskId = ev.Task?.Id ?? ev.StatusUpdate?.TaskId ?? ev.ArtifactUpdate?.TaskId;
         if (cancelMetaTaskId is not null) break;
     }
-    Record("jsonrpc/spec-cancel-with-metadata", "Cancel With Metadata", false,
-        "SDK does not support CancelTask with metadata — method not available in A2A .NET SDK", sw.ElapsedMilliseconds);
+    if (cancelMetaTaskId is null)
+    {
+        Record("jsonrpc/spec-cancel-with-metadata", "Cancel With Metadata", false, "no taskId", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        var cancelResult = await client.CancelTaskAsync(new CancelTaskRequest
+        {
+            Id = cancelMetaTaskId,
+            Metadata = new Dictionary<string, System.Text.Json.JsonElement>
+            {
+                ["reason"] = JsonSerializer.SerializeToElement("test-cancel-reason"),
+                ["requestedBy"] = JsonSerializer.SerializeToElement("dotnet-sdk")
+            }
+        });
+        var metaKeys = cancelResult.Metadata?.Keys.ToList() ?? [];
+        var hasMetadata = metaKeys.Contains("reason") && metaKeys.Contains("requestedBy");
+        Record("jsonrpc/spec-cancel-with-metadata", "Cancel With Metadata", cancelResult.Status.State == TaskState.Canceled,
+            $"taskId={cancelMetaTaskId}, state={cancelResult.Status.State}, metadataKeys=[{string.Join(",", metaKeys)}]", sw.ElapsedMilliseconds);
+    }
 }
-catch (OperationCanceledException) { Record("jsonrpc/spec-cancel-with-metadata", "Cancel With Metadata", false, "SDK does not support CancelTask with metadata — method not available in A2A .NET SDK", sw.ElapsedMilliseconds); }
 catch (Exception ex) { Record("jsonrpc/spec-cancel-with-metadata", "Cancel With Metadata", false, ex.Message, sw.ElapsedMilliseconds); }
 
-// 13. spec-list-tasks — SDK does not support ListTasks
-sw.Restart();
-Record("jsonrpc/spec-list-tasks", "List Tasks", false,
-    "SDK does not support ListTasks — method not available in A2A .NET SDK", sw.ElapsedMilliseconds);
+// 13. spec-list-tasks — list tasks via SDK
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var listResponse = await client.ListTasksAsync(new ListTasksRequest { PageSize = 10 });
+    Record("jsonrpc/spec-list-tasks", "List Tasks", listResponse.Tasks.Count >= 1,
+        $"tasks={listResponse.Tasks.Count}, totalSize={listResponse.TotalSize}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("jsonrpc/spec-list-tasks", "List Tasks", false, ex.Message, sw.ElapsedMilliseconds); }
 
 // 14. spec-return-immediately — test non-blocking configuration via SDK
 try
@@ -299,15 +331,36 @@ try
 }
 catch (Exception ex) { Record("jsonrpc/spec-return-immediately", "Return Immediately", false, ex.Message, sw.ElapsedMilliseconds); }
 
-// 15. error-cancel-not-found — SDK does not support CancelTask
-sw.Restart();
-Record("jsonrpc/error-cancel-not-found", "Cancel Not Found", false,
-    "SDK does not support CancelTask", 0);
+// 15. error-cancel-not-found — cancel a non-existent task
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    await client.CancelTaskAsync(new CancelTaskRequest { Id = "00000000-0000-0000-0000-000000000000" });
+    Record("jsonrpc/error-cancel-not-found", "Cancel Not Found", false, "expected error, got success", sw.ElapsedMilliseconds);
+}
+catch (A2AException ex) { Record("jsonrpc/error-cancel-not-found", "Cancel Not Found", true, $"errorCode={ex.ErrorCode}: {ex.Message}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("jsonrpc/error-cancel-not-found", "Cancel Not Found", true, $"got error: {ex.GetType().Name}: {ex.Message}", sw.ElapsedMilliseconds); }
 
-// 16. error-cancel-terminal — SDK does not support CancelTask
-sw.Restart();
-Record("jsonrpc/error-cancel-terminal", "Cancel Terminal Task", false,
-    "SDK does not support CancelTask", 0);
+// 16. error-cancel-terminal — cancel an already-completed task
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r = await client.SendMessageAsync(text: "task-lifecycle process this", role: Role.User);
+    var termCancelTaskId = r.Task?.Id;
+    if (termCancelTaskId is null)
+    {
+        Record("jsonrpc/error-cancel-terminal", "Cancel Terminal Task", false, "no taskId", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        await client.CancelTaskAsync(new CancelTaskRequest { Id = termCancelTaskId });
+        Record("jsonrpc/error-cancel-terminal", "Cancel Terminal Task", false, "expected error, got success", sw.ElapsedMilliseconds);
+    }
+}
+catch (A2AException ex) { Record("jsonrpc/error-cancel-terminal", "Cancel Terminal Task", true, $"errorCode={ex.ErrorCode}: {ex.Message}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("jsonrpc/error-cancel-terminal", "Cancel Terminal Task", true, $"got error: {ex.GetType().Name}: {ex.Message}", sw.ElapsedMilliseconds); }
 
 // 17. error-send-terminal — send to a completed task, expect error
 try
@@ -358,20 +411,72 @@ try
 catch (A2AException ex) { Record("jsonrpc/error-send-invalid-task", "Send Invalid TaskId", true, $"errorCode={ex.ErrorCode}", sw.ElapsedMilliseconds); }
 catch (Exception ex) { Record("jsonrpc/error-send-invalid-task", "Send Invalid TaskId", true, $"got error: {ex.GetType().Name}", sw.ElapsedMilliseconds); }
 
-// 19. error-push-not-supported — SDK does not have push notification config methods
-sw.Restart();
-Record("jsonrpc/error-push-not-supported", "Push Not Supported", false,
-    "SDK does not support push notification configuration", 0);
+// 19. error-push-not-supported — attempt push notification config, expect error
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    await client.CreateTaskPushNotificationConfigAsync(new CreateTaskPushNotificationConfigRequest
+    {
+        TaskId = "00000000-0000-0000-0000-000000000000",
+        ConfigId = "test-config",
+        Config = new PushNotificationConfig { Url = "https://example.com/webhook" }
+    });
+    Record("jsonrpc/error-push-not-supported", "Push Not Supported", false, "expected error, got success", sw.ElapsedMilliseconds);
+}
+catch (A2AException ex) { Record("jsonrpc/error-push-not-supported", "Push Not Supported", true, $"errorCode={ex.ErrorCode}: {ex.Message}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("jsonrpc/error-push-not-supported", "Push Not Supported", true, $"got error: {ex.GetType().Name}: {ex.Message}", sw.ElapsedMilliseconds); }
 
-// 20. subscribe-to-task — SDK does not support SubscribeToTask
-sw.Restart();
-Record("jsonrpc/subscribe-to-task", "SubscribeToTask", false,
-    "SDK does not support SubscribeToTask", 0);
+// 20. subscribe-to-task — start a long-running task, then subscribe to its events
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var subReq = new SendMessageRequest
+    {
+        Message = new Message
+        {
+            Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
+            Parts = [Part.FromText("task-cancel start")]
+        },
+        Configuration = new SendMessageConfiguration { Blocking = false }
+    };
+    var subResponse = await client.SendMessageAsync(subReq);
+    var subTaskId = subResponse.Task?.Id;
+    if (subTaskId is null)
+    {
+        Record("jsonrpc/subscribe-to-task", "SubscribeToTask", false, "no taskId from non-blocking send", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        int subEvtCount = 0;
+        using var subCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        await foreach (var ev in client.SubscribeToTaskAsync(new SubscribeToTaskRequest { Id = subTaskId }).WithCancellation(subCts.Token))
+        {
+            subEvtCount++;
+            var evState = ev.Task?.Status.State ?? ev.StatusUpdate?.Status.State;
+            if (evState == TaskState.Completed || evState == TaskState.Failed || evState == TaskState.Canceled)
+                break;
+        }
+        Record("jsonrpc/subscribe-to-task", "SubscribeToTask", subEvtCount >= 1,
+            $"taskId={subTaskId}, events={subEvtCount}", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("jsonrpc/subscribe-to-task", "SubscribeToTask", false, ex.Message, sw.ElapsedMilliseconds); }
 
-// 21. error-subscribe-not-found — SDK does not support SubscribeToTask
-sw.Restart();
-Record("jsonrpc/error-subscribe-not-found", "Subscribe Not Found", false,
-    "SDK does not support SubscribeToTask", 0);
+// 21. error-subscribe-not-found — subscribe to a non-existent task
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    await foreach (var ev in client.SubscribeToTaskAsync(new SubscribeToTaskRequest { Id = "00000000-0000-0000-0000-000000000000" }))
+    {
+        break; // shouldn't reach here
+    }
+    Record("jsonrpc/error-subscribe-not-found", "Subscribe Not Found", false, "expected error, got events", sw.ElapsedMilliseconds);
+}
+catch (A2AException ex) { Record("jsonrpc/error-subscribe-not-found", "Subscribe Not Found", true, $"errorCode={ex.ErrorCode}: {ex.Message}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("jsonrpc/error-subscribe-not-found", "Subscribe Not Found", true, $"got error: {ex.GetType().Name}: {ex.Message}", sw.ElapsedMilliseconds); }
 
 // 22. stream-message-only — streaming with message-only response
 try

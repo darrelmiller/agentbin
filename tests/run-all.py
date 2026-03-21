@@ -182,16 +182,13 @@ KNOWN_FAILURES: dict[tuple[str, str], str] = {
         "Known: .NET A2A server does not implement returnImmediately. "
         "The SDK blocks until the task completes instead of returning early.",
 
-    # .NET SDK missing methods — CancelTask, ListTasks, and REST transport
-    ("dotnet", "jsonrpc/spec-task-cancel"):
-        "Known: .NET A2A SDK does not expose CancelTaskAsync. "
-        "Method not yet available in the SDK.",
-    ("dotnet", "jsonrpc/spec-list-tasks"):
-        "Known: .NET A2A SDK does not expose ListTasksAsync. "
-        "Method not yet available in the SDK.",
+    # .NET SDK — REST transport not available, subscribe-to-task server error
     ("dotnet", "rest/"):
         "Known: .NET A2A SDK does not support REST (HTTP+JSON) transport. "
         "Only JSON-RPC binding is available.",
+    ("dotnet", "jsonrpc/subscribe-to-task"):
+        "Known: SubscribeToTask returns 'internal error during streaming' — "
+        "server-side issue with resubscription to completed tasks.",
 
     # Java SDK protobuf agent card deserialization
     ("java", "agent-card-echo"):
