@@ -1,0 +1,7 @@
+# A2A Python SDK test client dependencies
+# NOTE: a2a-sdk 1.0.0a0 is a pre-release not yet on PyPI.
+# It was built from the local repo at D:\github\a2aproject\a2a-python
+# and installed via: pip install D:\github\a2aproject\a2a-python
+# When a stable 1.0 lands on PyPI, pin to that version here.
+a2a-sdk>=1.0.0a0
+httpx>=0.27.0

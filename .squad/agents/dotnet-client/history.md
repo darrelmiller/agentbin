@@ -34,3 +34,23 @@
 **Fix:** Clear the NuGet cache (`dotnet nuget locals all --clear`) and restore to get the genuine NuGet.org package. Ensure `nuget.config` doesn't include local `nupkgs/` as a source.
 
 **Minor pipeline concern:** The GitHub release tag `v1.0.0-preview1` doesn't match the source version `1.0.0-preview` — the tag has a trailing "1" that the package does not. This is a naming inconsistency in the release process, not a functional bug.
+
+### Standalone test runner created (2026-07-25)
+
+- Created `tests/ClientTests/dotnet/run.py` — standalone runner that builds with `dotnet build` then runs the compiled exe directly (per charter: never `dotnet run`).
+- Usage: `python run.py [base_url]` — default base URL is the Azure Container Apps endpoint.
+- Produces `results.json` in the same directory and prints pass/fail summary.
+- `run-all.py` still uses `["dotnet", "run", "--"]` (line 89) — should be updated to match.
+
+### SDK dependency audit (2026-07-25)
+
+- **.csproj references:** `A2A 1.0.0-preview` (no A2A.AspNetCore — not needed for client tests).
+- **NuGet source:** `nuget.config` points only to `nuget.org` — using published NuGet, NOT local nupkgs.
+- **Latest published on NuGet.org:** `1.0.0-preview` — matches .csproj. Up to date with published.
+- **Local nupkgs/ folder:** Contains `A2A.1.0.0-alpha.nupkg` and `A2A.AspNetCore.1.0.0-alpha.nupkg` — very stale (alpha vs preview), dated March 13. These are NOT being consumed.
+- **Local SDK repo (`a2a-dotnet`):** `src/Directory.Build.props` has `<Version>1.0.0-preview2</Version>`. A `dotnet pack` would produce `1.0.0-preview2` — newer than what's on NuGet.org.
+- **Gap:** NuGet.org has `1.0.0-preview`, local repo would produce `1.0.0-preview2`. The `1.0.0-preview2` release has not been published to NuGet.org yet.
+
+### ⚠ Cross-Team Alert: JS SDK Breaking Change (2026-03-22)
+
+**Alert from TypeScript agent:** The @a2a-js/sdk dependency (epic/1.0_breaking_changes branch) has removed `JsonRpcTransport` from client exports (commit c29f4f8 "Remove JSON-RPC Client #353"). The JS test client will break when `npm install` is run because it imports `JsonRpcTransport`. Additionally, commit a886b1a switched codebase to proto-based types (may require more import changes). The JSON-RPC transport removal appears intentional (architectural decision in the SDK), so tests should likely be adapted to REST-only rather than pinned. No action needed for DotNet client — this is informational cross-team awareness.
