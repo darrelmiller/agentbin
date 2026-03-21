@@ -30,6 +30,17 @@
 - Directive: "We should be smoke testing agents after every publish"
 - Implementation: See Post-Deployment Smoke Testing decision above
 
+### Deployment Ownership: Spec Agent (2026-03-21)
+**Status:** Implemented | **Author:** Darrel (via Copilot)
+
+- Deployment to Azure Container Apps is owned by Spec agent
+- Deploy commands: `az acr build --registry agentbinacr --image agentbin:latest .` then `az containerapp update -n agentbin -g agentbin-rg`
+- Azure subscription: "Visual Studio Enterprise" — must be selected via `az account set`
+- Process documented in Spec charter (`.squad/agents/v1-agents/charter.md`)
+- Post-deployment: run smoke tests via `python tests/smoke-test.py`
+- Cost: ~$5-6/month (ACR Basic + scale-to-zero Container App)
+- Ensures deployment is repeatable and not ad-hoc
+
 ## Governance
 
 - All meaningful changes require team consensus

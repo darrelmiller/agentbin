@@ -32,6 +32,43 @@
 - Server uses A2A NuGet 1.0.0-preview packages from `nupkgs/` folder
 - Agent cards use SupportedInterfaces (v1.0) but serialize backward-compatible (v0.3 shape)
 
+## Deployment
+
+I own the deployment pipeline for agentbin to Azure Container Apps.
+
+### Prerequisites
+- Azure CLI (`az`) authenticated
+- Azure subscription: **Visual Studio Enterprise** — switch with `az account set --subscription "Visual Studio Enterprise"`
+
+### Resources
+- **Resource Group:** agentbin-rg
+- **Container Registry:** agentbinacr (Basic SKU, agentbinacr.azurecr.io)
+- **Container App:** agentbin (Consumption tier, scale 0→3)
+- **Environment:** agentbin-env (East US)
+- **FQDN:** https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io
+
+### Deploy Steps
+1. Build & push image (cloud build, no local Docker needed):
+   ```
+   az acr build --registry agentbinacr --image agentbin:latest .
+   ```
+2. Update container app to pull new image:
+   ```
+   az containerapp update -n agentbin -g agentbin-rg --image agentbinacr.azurecr.io/agentbin:latest
+   ```
+3. Verify deployment with smoke tests:
+   ```
+   python tests/smoke-test.py
+   ```
+
+### Cost
+- ~$5-6/month (ACR Basic is the main fixed cost; Container App scales to zero when idle)
+- No CI/CD workflow exists yet — deploys are manual via `az` CLI
+
+### Post-Deploy Verification
+- Run `python tests/smoke-test.py` to validate all agent endpoints
+- Check: /health, /.well-known/agent-card.json, /echo/.well-known/agent-card.json, /spec03/.well-known/agent-card.json
+
 ## Boundaries
 
 **I handle:** Server-side agent implementation, agent card configuration, A2A server SDK usage, deployment config, server bugs.

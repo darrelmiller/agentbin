@@ -9,3 +9,12 @@
 - return-immediately (Blocking=false) not implemented on server
 - subscribe-to-task has "internal error during streaming" bug
 - Deployed to Azure Container Apps
+
+## Learnings
+
+### 2026-03-21: Deployment ownership established
+- Deployment to Azure Container Apps is now my responsibility
+- ACR: agentbinacr, Resource Group: agentbin-rg, Subscription: Visual Studio Enterprise
+- Deploy: `az acr build` then `az containerapp update`
+- Post-deploy: run smoke tests (`python tests/smoke-test.py`)
+- Cost: ~$5-6/month (ACR Basic + scale-to-zero Container App)
