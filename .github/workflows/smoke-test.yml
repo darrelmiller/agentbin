@@ -1,0 +1,42 @@
+name: Smoke Test — Agent Health Check
+
+on:
+  # Run manually from Actions tab
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'AgentBin base URL'
+        required: false
+        default: 'https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io'
+
+  # Can be called by a deploy workflow after publish completes
+  workflow_call:
+    inputs:
+      base_url:
+        description: 'AgentBin base URL'
+        required: false
+        type: string
+        default: 'https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io'
+
+  # Daily health check
+  schedule:
+    - cron: '0 8 * * *'  # 8 AM UTC daily
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run smoke tests
+        env:
+          BASE_URL: ${{ inputs.base_url || 'https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io' }}
+        run: python tests/smoke-test.py "$BASE_URL"
