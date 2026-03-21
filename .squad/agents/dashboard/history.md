@@ -9,3 +9,25 @@
 - Dashboard shows 5 languages: .NET, Go, Python, Java, JS
 - Each has JSON-RPC (27 tests), REST (27 tests), v0.3 (4 tests) = 58 total per client
 - Known failures annotated with explanations in KNOWN_FAILURES dict
+
+## Learnings
+
+### 2026-03-21 — Smoke test creation
+- Created `tests/smoke-test.py` — post-deployment health check for all hosted agents
+- Uses only stdlib (urllib, json) — no pip dependencies needed
+- Accepts base URL as CLI argument for testing different environments
+- Checks: /health, root agent-card catalog, /echo agent card, /spec03 v0.3 agent card
+- Validates JSON structure: array shape, v1.0 supportedInterfaces, protocolVersion, skills
+- Exits non-zero on any failure (CI-friendly)
+- Created `.github/workflows/smoke-test.yml` — supports workflow_dispatch, workflow_call, and daily cron
+- workflow_call input allows chaining from a future deploy workflow
+- **Finding:** /spec03/.well-known/agent-card.json returns 404 on live deployment despite being in Program.cs — deployment is behind source code
+- Agent card endpoints: root returns array, individual agents at /echo/ and /spec03/ paths
+- The root catalog currently serves 2 agents (spec + echo); will be 3 once spec03 deploys
+
+### 2026-03-21 — Spec03 stale deployment discovery
+- Post-deploy testing revealed spec03 agent is broken in production
+- Investigation by Legacy agent confirmed source code is correct but deployed container is stale
+- This incident validates the need for automated smoke testing after every publish
+- User directive captured: "We should be smoke testing agents after every publish"
+- Smoke test framework enables rapid catch of deployment gaps before users discover them
