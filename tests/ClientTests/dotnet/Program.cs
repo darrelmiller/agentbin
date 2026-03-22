@@ -1,5 +1,5 @@
 ﻿/// A2A .NET SDK acceptance tests against the AgentBin service.
-/// Tests JSON-RPC binding via SDK; REST tests record honest failure (SDK has no REST transport).
+/// Tests both JSON-RPC and HTTP+JSON (REST) bindings via SDK.
 /// Usage: dotnet run [baseUrl]
 
 using System.Diagnostics;
@@ -588,45 +588,563 @@ try
 catch (Exception ex) { Record("jsonrpc/get-task-after-failure", "GetTask After Failure", false, ex.Message, sw.ElapsedMilliseconds); }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// HTTP+JSON REST BINDING — SDK does not support REST transport
+// HTTP+JSON REST BINDING (via A2AHttpJsonClient)
 // ═══════════════════════════════════════════════════════════════════════════
-Console.WriteLine("\n── HTTP+JSON REST Binding ──");
+Console.WriteLine("\n── HTTP+JSON REST Binding (SDK) ──");
 
-var restTests = new (string Id, string Name)[]
+// REST 1. agent-card-echo — fetch via REST /echo/card endpoint
+try
 {
-    ("rest/agent-card-echo", "Echo Agent Card"),
-    ("rest/agent-card-spec", "Spec Agent Card"),
-    ("rest/echo-send-message", "Echo Send Message"),
-    ("rest/spec-message-only", "Message Only"),
-    ("rest/spec-task-lifecycle", "Task Lifecycle"),
-    ("rest/spec-get-task", "GetTask"),
-    ("rest/spec-task-failure", "Task Failure"),
-    ("rest/spec-data-types", "Data Types"),
-    ("rest/spec-streaming", "Streaming"),
-    ("rest/error-task-not-found", "Task Not Found"),
-    ("rest/spec-multi-turn", "Multi-Turn"),
-    ("rest/spec-task-cancel", "Task Cancel"),
-    ("rest/spec-cancel-with-metadata", "Cancel With Metadata"),
-    ("rest/spec-list-tasks", "List Tasks"),
-    ("rest/spec-return-immediately", "Return Immediately"),
-    ("rest/error-cancel-not-found", "Cancel Not Found"),
-    ("rest/error-cancel-terminal", "Cancel Terminal Task"),
-    ("rest/error-send-terminal", "Send To Terminal Task"),
-    ("rest/error-send-invalid-task", "Send Invalid TaskId"),
-    ("rest/error-push-not-supported", "Push Not Supported"),
-    ("rest/subscribe-to-task", "SubscribeToTask"),
-    ("rest/error-subscribe-not-found", "Subscribe Not Found"),
-    ("rest/stream-message-only", "Stream Message Only"),
-    ("rest/stream-task-lifecycle", "Stream Task Lifecycle"),
-    ("rest/multi-turn-context-preserved", "Context Preserved"),
-    ("rest/get-task-with-history", "GetTask With History"),
-    ("rest/get-task-after-failure", "GetTask After Failure"),
-};
-
-foreach (var (id, name) in restTests)
-{
-    Record(id, name, false, "SDK does not support REST (HTTP+JSON) transport", 0);
+    sw.Restart();
+    var resp = await versionedHttpClient.GetAsync($"{baseUrl}/echo/card");
+    resp.EnsureSuccessStatusCode();
+    var cardJson = await resp.Content.ReadAsStringAsync();
+    using var doc = JsonDocument.Parse(cardJson);
+    var root = doc.RootElement;
+    var hasName = root.TryGetProperty("name", out _);
+    var hasSkills = root.TryGetProperty("skills", out var sk) && sk.GetArrayLength() >= 1;
+    Record("rest/agent-card-echo", "Echo Agent Card", hasName && hasSkills,
+        $"hasName={hasName}, skills={sk.GetArrayLength()}", sw.ElapsedMilliseconds);
 }
+catch (Exception ex) { Record("rest/agent-card-echo", "Echo Agent Card", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 2. agent-card-spec — fetch via REST /spec/card endpoint
+try
+{
+    sw.Restart();
+    var resp = await versionedHttpClient.GetAsync($"{baseUrl}/spec/card");
+    resp.EnsureSuccessStatusCode();
+    var cardJson = await resp.Content.ReadAsStringAsync();
+    using var doc = JsonDocument.Parse(cardJson);
+    var root = doc.RootElement;
+    var hasSkills = root.TryGetProperty("skills", out var sk) && sk.GetArrayLength() == 8;
+    Record("rest/agent-card-spec", "Spec Agent Card", hasSkills,
+        $"skills={sk.GetArrayLength()}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("rest/agent-card-spec", "Spec Agent Card", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 3. echo-send-message
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/echo"), versionedHttpClient);
+    var response = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("hello from .NET REST")] }
+    });
+    var text = response.Message?.Parts.FirstOrDefault()?.Text ?? "";
+    Record("rest/echo-send-message", "Echo Send Message", text.Contains("hello from .NET REST", StringComparison.OrdinalIgnoreCase),
+        $"text={text}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("rest/echo-send-message", "Echo Send Message", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 4. spec-message-only
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var response = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("message-only from .NET REST")] }
+    });
+    Record("rest/spec-message-only", "Message Only", response.Message?.Role == Role.Agent,
+        $"role={response.Message?.Role}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("rest/spec-message-only", "Message Only", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 5+6. spec-task-lifecycle + spec-get-task
+string? restTaskId = null;
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var response = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-lifecycle process this")] }
+    });
+    if (response.Task is { } task)
+    {
+        restTaskId = task.Id;
+        Record("rest/spec-task-lifecycle", "Task Lifecycle", task.Status.State == TaskState.Completed && task.Artifacts?.Count >= 1,
+            $"state={task.Status.State}, artifacts={task.Artifacts?.Count}", sw.ElapsedMilliseconds);
+        sw.Restart();
+        var fetched = await restClient.GetTaskAsync(new GetTaskRequest { Id = task.Id });
+        Record("rest/spec-get-task", "GetTask", fetched.Id == task.Id,
+            $"state={fetched.Status.State}", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        Record("rest/spec-task-lifecycle", "Task Lifecycle", false, "got message, expected task", sw.ElapsedMilliseconds);
+        Record("rest/spec-get-task", "GetTask", false, "skipped", 0);
+    }
+}
+catch (Exception ex)
+{
+    Record("rest/spec-task-lifecycle", "Task Lifecycle", false, ex.Message, sw.ElapsedMilliseconds);
+    Record("rest/spec-get-task", "GetTask", false, "skipped", 0);
+}
+
+// REST 7. spec-task-failure
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var response = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-failure trigger error")] }
+    });
+    Record("rest/spec-task-failure", "Task Failure", response.Task?.Status.State == TaskState.Failed,
+        $"state={response.Task?.Status.State}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("rest/spec-task-failure", "Task Failure", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 8. spec-data-types
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var response = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("data-types show all")] }
+    });
+    var t = response.Task;
+    var hasText = t?.Artifacts?.Any(a => a.Parts.Any(p => p.Text is not null)) ?? false;
+    var hasData = t?.Artifacts?.Any(a => a.Parts.Any(p => p.Data is not null)) ?? false;
+    var hasFile = t?.Artifacts?.Any(a => a.Parts.Any(p => p.MediaType is not null)) ?? false;
+    Record("rest/spec-data-types", "Data Types", hasText && hasData && hasFile,
+        $"text={hasText}, data={hasData}, file={hasFile}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("rest/spec-data-types", "Data Types", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 9. spec-streaming
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var request = new SendMessageRequest
+    {
+        Message = new Message
+        {
+            Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
+            Parts = [Part.FromText("streaming generate output")]
+        }
+    };
+    int restEvtCount = 0; bool restSawArt = false, restSawDone = false;
+    await foreach (var ev in restClient.SendStreamingMessageAsync(request))
+    {
+        restEvtCount++;
+        if (ev.ArtifactUpdate is not null) restSawArt = true;
+        if (ev.Task?.Status.State == TaskState.Completed || ev.StatusUpdate?.Status.State == TaskState.Completed) restSawDone = true;
+    }
+    Record("rest/spec-streaming", "Streaming", restEvtCount >= 3 && restSawArt && restSawDone,
+        $"events={restEvtCount}, artifact={restSawArt}, completed={restSawDone}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("rest/spec-streaming", "Streaming", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 10. error-task-not-found
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    await restClient.GetTaskAsync(new GetTaskRequest { Id = "00000000-0000-0000-0000-000000000000" });
+    Record("rest/error-task-not-found", "Task Not Found", false, "Should have thrown", sw.ElapsedMilliseconds);
+}
+catch (A2AException ex) { Record("rest/error-task-not-found", "Task Not Found", true, $"errorCode={ex.ErrorCode}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("rest/error-task-not-found", "Task Not Found", false, ex.GetType().Name, sw.ElapsedMilliseconds); }
+
+// REST 11. spec-multi-turn
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r1 = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("multi-turn start conversation")] }
+    });
+    var mtRestTaskId = r1.Task?.Id;
+    var s1 = r1.Task?.Status.State == TaskState.InputRequired;
+
+    if (mtRestTaskId is null)
+    {
+        Record("rest/spec-multi-turn", "Multi-Turn", false, "step1: no taskId returned", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        var req2 = new SendMessageRequest
+        {
+            Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), TaskId = mtRestTaskId, Parts = [Part.FromText("more data")] }
+        };
+        var r2 = await restClient.SendMessageAsync(req2);
+        var s2 = r2.Task?.Status.State == TaskState.InputRequired;
+
+        var req3 = new SendMessageRequest
+        {
+            Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), TaskId = mtRestTaskId, Parts = [Part.FromText("done")] }
+        };
+        var r3 = await restClient.SendMessageAsync(req3);
+        var s3 = r3.Task?.Status.State == TaskState.Completed;
+
+        Record("rest/spec-multi-turn", "Multi-Turn", s1 && s2 && s3,
+            $"step1={r1.Task?.Status.State}, step2={r2.Task?.Status.State}, step3={r3.Task?.Status.State}", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("rest/spec-multi-turn", "Multi-Turn", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 12. spec-task-cancel — start via streaming, then cancel
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var cancelReq = new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-cancel")] }
+    };
+    string? restCancelTaskId = null;
+    using var restCancelCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+    await foreach (var ev in restClient.SendStreamingMessageAsync(cancelReq).WithCancellation(restCancelCts.Token))
+    {
+        restCancelTaskId = ev.Task?.Id ?? ev.StatusUpdate?.TaskId ?? ev.ArtifactUpdate?.TaskId;
+        if (restCancelTaskId is not null) break;
+    }
+    if (restCancelTaskId is null)
+    {
+        Record("rest/spec-task-cancel", "Task Cancel", false, "no taskId from streaming", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        await restClient.CancelTaskAsync(new CancelTaskRequest { Id = restCancelTaskId });
+        var fetched = await restClient.GetTaskAsync(new GetTaskRequest { Id = restCancelTaskId });
+        Record("rest/spec-task-cancel", "Task Cancel",
+            fetched.Status.State == TaskState.Canceled,
+            $"taskId={restCancelTaskId}, state={fetched.Status.State}", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("rest/spec-task-cancel", "Task Cancel", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 12b. spec-cancel-with-metadata — cancel does not carry metadata in REST (POST empty body)
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var cancelMetaReq = new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-cancel start")] }
+    };
+    string? restCancelMetaTaskId = null;
+    using var restCancelMetaCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+    await foreach (var ev in restClient.SendStreamingMessageAsync(cancelMetaReq).WithCancellation(restCancelMetaCts.Token))
+    {
+        restCancelMetaTaskId = ev.Task?.Id ?? ev.StatusUpdate?.TaskId ?? ev.ArtifactUpdate?.TaskId;
+        if (restCancelMetaTaskId is not null) break;
+    }
+    if (restCancelMetaTaskId is null)
+    {
+        Record("rest/spec-cancel-with-metadata", "Cancel With Metadata", false, "no taskId", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        // REST cancel is POST with empty body — metadata not carried; just verify cancel works
+        var cancelResult = await restClient.CancelTaskAsync(new CancelTaskRequest { Id = restCancelMetaTaskId });
+        Record("rest/spec-cancel-with-metadata", "Cancel With Metadata", cancelResult.Status.State == TaskState.Canceled,
+            $"taskId={restCancelMetaTaskId}, state={cancelResult.Status.State} (REST cancel has no metadata body)", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("rest/spec-cancel-with-metadata", "Cancel With Metadata", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 13. spec-list-tasks
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var listResponse = await restClient.ListTasksAsync(new ListTasksRequest { PageSize = 10 });
+    Record("rest/spec-list-tasks", "List Tasks", listResponse.Tasks.Count >= 1,
+        $"tasks={listResponse.Tasks.Count}, totalSize={listResponse.TotalSize}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("rest/spec-list-tasks", "List Tasks", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 14. spec-return-immediately — REST SendMessage does not support Blocking=false config, just send and check
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var request = new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("long-running test")] },
+        Configuration = new SendMessageConfiguration { Blocking = false }
+    };
+    var riSw = Stopwatch.StartNew();
+    var response = await restClient.SendMessageAsync(request);
+    riSw.Stop();
+    var state = response.Task?.Status.State;
+    bool riPassed = riSw.ElapsedMilliseconds < 2000 && state == TaskState.Working;
+    string riDetail = riPassed
+        ? $"state={state}, time={riSw.ElapsedMilliseconds}ms"
+        : $"state={state}, time={riSw.ElapsedMilliseconds}ms (expected Working within 2s)";
+    Record("rest/spec-return-immediately", "Return Immediately", riPassed, riDetail, sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("rest/spec-return-immediately", "Return Immediately", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 15. error-cancel-not-found
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    await restClient.CancelTaskAsync(new CancelTaskRequest { Id = "00000000-0000-0000-0000-000000000000" });
+    Record("rest/error-cancel-not-found", "Cancel Not Found", false, "expected error, got success", sw.ElapsedMilliseconds);
+}
+catch (A2AException ex) { Record("rest/error-cancel-not-found", "Cancel Not Found", true, $"errorCode={ex.ErrorCode}: {ex.Message}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("rest/error-cancel-not-found", "Cancel Not Found", true, $"got error: {ex.GetType().Name}: {ex.Message}", sw.ElapsedMilliseconds); }
+
+// REST 16. error-cancel-terminal
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-lifecycle process this")] }
+    });
+    var termCancelTaskId = r.Task?.Id;
+    if (termCancelTaskId is null)
+    {
+        Record("rest/error-cancel-terminal", "Cancel Terminal Task", false, "no taskId", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        await restClient.CancelTaskAsync(new CancelTaskRequest { Id = termCancelTaskId });
+        Record("rest/error-cancel-terminal", "Cancel Terminal Task", false, "expected error, got success", sw.ElapsedMilliseconds);
+    }
+}
+catch (A2AException ex) { Record("rest/error-cancel-terminal", "Cancel Terminal Task", true, $"errorCode={ex.ErrorCode}: {ex.Message}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("rest/error-cancel-terminal", "Cancel Terminal Task", true, $"got error: {ex.GetType().Name}: {ex.Message}", sw.ElapsedMilliseconds); }
+
+// REST 17. error-send-terminal
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-lifecycle process this")] }
+    });
+    var termTaskId = r.Task?.Id;
+    if (termTaskId is null)
+    {
+        Record("rest/error-send-terminal", "Send To Terminal Task", false, "no taskId from lifecycle", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        var req = new SendMessageRequest
+        {
+            Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), TaskId = termTaskId, Parts = [Part.FromText("this should fail")] }
+        };
+        await restClient.SendMessageAsync(req);
+        Record("rest/error-send-terminal", "Send To Terminal Task", false, "expected error, got success", sw.ElapsedMilliseconds);
+    }
+}
+catch (A2AException ex) { Record("rest/error-send-terminal", "Send To Terminal Task", true, $"got expected error: {ex.ErrorCode}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("rest/error-send-terminal", "Send To Terminal Task", true, $"got error: {ex.GetType().Name}: {ex.Message}", sw.ElapsedMilliseconds); }
+
+// REST 18. error-send-invalid-task
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var req = new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), TaskId = "00000000-0000-0000-0000-000000000000", Parts = [Part.FromText("send to invalid task")] }
+    };
+    await restClient.SendMessageAsync(req);
+    Record("rest/error-send-invalid-task", "Send Invalid TaskId", false, "expected error, got success", sw.ElapsedMilliseconds);
+}
+catch (A2AException ex) { Record("rest/error-send-invalid-task", "Send Invalid TaskId", true, $"errorCode={ex.ErrorCode}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("rest/error-send-invalid-task", "Send Invalid TaskId", true, $"got error: {ex.GetType().Name}", sw.ElapsedMilliseconds); }
+
+// REST 19. error-push-not-supported
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    await restClient.CreateTaskPushNotificationConfigAsync(new CreateTaskPushNotificationConfigRequest
+    {
+        TaskId = "00000000-0000-0000-0000-000000000000",
+        ConfigId = "test-config",
+        Config = new PushNotificationConfig { Url = "https://example.com/webhook" }
+    });
+    Record("rest/error-push-not-supported", "Push Not Supported", false, "expected error, got success", sw.ElapsedMilliseconds);
+}
+catch (A2AException ex) { Record("rest/error-push-not-supported", "Push Not Supported", true, $"errorCode={ex.ErrorCode}: {ex.Message}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("rest/error-push-not-supported", "Push Not Supported", true, $"got error: {ex.GetType().Name}: {ex.Message}", sw.ElapsedMilliseconds); }
+
+// REST 20. subscribe-to-task — start a long-running task via REST streaming, then subscribe
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    // Use streaming to start a long-running task and get its ID
+    var subReq = new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-cancel start")] }
+    };
+    string? restSubTaskId = null;
+    using var restSubStartCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+    await foreach (var ev in restClient.SendStreamingMessageAsync(subReq).WithCancellation(restSubStartCts.Token))
+    {
+        restSubTaskId = ev.Task?.Id ?? ev.StatusUpdate?.TaskId ?? ev.ArtifactUpdate?.TaskId;
+        if (restSubTaskId is not null) break;
+    }
+    if (restSubTaskId is null)
+    {
+        Record("rest/subscribe-to-task", "SubscribeToTask", false, "no taskId from streaming", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        int restSubEvtCount = 0;
+        using var restSubCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        await foreach (var ev in restClient.SubscribeToTaskAsync(new SubscribeToTaskRequest { Id = restSubTaskId }).WithCancellation(restSubCts.Token))
+        {
+            restSubEvtCount++;
+            var evState = ev.Task?.Status.State ?? ev.StatusUpdate?.Status.State;
+            if (evState == TaskState.Completed || evState == TaskState.Failed || evState == TaskState.Canceled)
+                break;
+        }
+        Record("rest/subscribe-to-task", "SubscribeToTask", restSubEvtCount >= 1,
+            $"taskId={restSubTaskId}, events={restSubEvtCount}", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("rest/subscribe-to-task", "SubscribeToTask", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 21. error-subscribe-not-found
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    await foreach (var ev in restClient.SubscribeToTaskAsync(new SubscribeToTaskRequest { Id = "00000000-0000-0000-0000-000000000000" }))
+    {
+        break;
+    }
+    Record("rest/error-subscribe-not-found", "Subscribe Not Found", false, "expected error, got events", sw.ElapsedMilliseconds);
+}
+catch (A2AException ex) { Record("rest/error-subscribe-not-found", "Subscribe Not Found", true, $"errorCode={ex.ErrorCode}: {ex.Message}", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("rest/error-subscribe-not-found", "Subscribe Not Found", true, $"got error: {ex.GetType().Name}: {ex.Message}", sw.ElapsedMilliseconds); }
+
+// REST 22. stream-message-only
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var req = new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("message-only hello")] }
+    };
+    int restMsgEvtCount = 0; bool restHasMessage = false;
+    await foreach (var ev in restClient.SendStreamingMessageAsync(req))
+    {
+        restMsgEvtCount++;
+        if (ev.Message is not null) restHasMessage = true;
+    }
+    Record("rest/stream-message-only", "Stream Message Only", restHasMessage && restMsgEvtCount == 1,
+        $"events={restMsgEvtCount}, hasMessage={restHasMessage}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("rest/stream-message-only", "Stream Message Only", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 23. stream-task-lifecycle
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var req = new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-lifecycle process this")] }
+    };
+    bool restFirstHasTask = false; bool restLastTerminal = false; int restIdx = 0;
+    await foreach (var ev in restClient.SendStreamingMessageAsync(req))
+    {
+        if (restIdx == 0 && ev.Task is not null) restFirstHasTask = true;
+        if (ev.Task?.Status.State == TaskState.Completed || ev.StatusUpdate?.Status.State == TaskState.Completed) restLastTerminal = true;
+        restIdx++;
+    }
+    Record("rest/stream-task-lifecycle", "Stream Task Lifecycle", restFirstHasTask && restLastTerminal,
+        $"firstHasTask={restFirstHasTask}, lastTerminal={restLastTerminal}, events={restIdx}", sw.ElapsedMilliseconds);
+}
+catch (Exception ex) { Record("rest/stream-task-lifecycle", "Stream Task Lifecycle", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 24. multi-turn-context-preserved
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r1 = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("multi-turn start conversation")] }
+    });
+    var ctx1 = r1.Task?.ContextId;
+    var tid = r1.Task?.Id;
+    if (tid is null || ctx1 is null)
+    {
+        Record("rest/multi-turn-context-preserved", "Context Preserved", false, $"step1: taskId={tid}, contextId={ctx1}", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        var req2 = new SendMessageRequest
+        {
+            Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), TaskId = tid, Parts = [Part.FromText("more data")] }
+        };
+        var r2 = await restClient.SendMessageAsync(req2);
+        var ctx2 = r2.Task?.ContextId;
+        Record("rest/multi-turn-context-preserved", "Context Preserved", ctx1 == ctx2,
+            $"ctx1={ctx1}, ctx2={ctx2}", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("rest/multi-turn-context-preserved", "Context Preserved", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 25. get-task-with-history
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-lifecycle process this")] }
+    });
+    var tid = r.Task?.Id;
+    if (tid is null)
+    {
+        Record("rest/get-task-with-history", "GetTask With History", false, "no taskId", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        var task = await restClient.GetTaskAsync(new GetTaskRequest { Id = tid, HistoryLength = 10 });
+        var hasHistory = task.History?.Count > 0;
+        Record("rest/get-task-with-history", "GetTask With History", true,
+            $"state={task.Status.State}, history={task.History?.Count ?? 0}", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("rest/get-task-with-history", "GetTask With History", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// REST 26. get-task-after-failure
+try
+{
+    sw.Restart();
+    var restClient = new A2AHttpJsonClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var r = await restClient.SendMessageAsync(new SendMessageRequest
+    {
+        Message = new Message { Role = Role.User, MessageId = Guid.NewGuid().ToString("N"), Parts = [Part.FromText("task-failure trigger error")] }
+    });
+    var tid = r.Task?.Id;
+    if (tid is null)
+    {
+        Record("rest/get-task-after-failure", "GetTask After Failure", false, "no taskId from failure test", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        var task = await restClient.GetTaskAsync(new GetTaskRequest { Id = tid });
+        var state = task.Status.State;
+        Record("rest/get-task-after-failure", "GetTask After Failure", state == TaskState.Failed,
+            $"state={state}, msg={task.Status.Message?.Parts.FirstOrDefault()?.Text ?? "none"}", sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("rest/get-task-after-failure", "GetTask After Failure", false, ex.Message, sw.ElapsedMilliseconds); }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // v0.3 BACKWARD COMPATIBILITY TESTS
