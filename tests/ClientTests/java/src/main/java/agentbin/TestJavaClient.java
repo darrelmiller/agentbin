@@ -182,7 +182,8 @@ public class TestJavaClient {
                     .addConsumer((event, c) -> {
                         if (event instanceof MessageEvent me)
                             result.complete(extractText(me.getMessage()));
-                        else if (event instanceof TaskEvent te)
+                        else if (event instanceof TaskEvent te
+                                && te.getTask().status().state().isFinal())
                             result.complete(extractArtifactText(te.getTask()));
                     })
                     .streamingErrorHandler(e -> result.completeExceptionally(e))
@@ -233,7 +234,8 @@ public class TestJavaClient {
 
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {
-                        if (event instanceof TaskEvent te)
+                        if (event instanceof TaskEvent te
+                                && te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
                             result.complete(te.getTask());
                         else if (event instanceof TaskUpdateEvent tue
                                 && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
@@ -279,7 +281,8 @@ public class TestJavaClient {
 
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {
-                        if (event instanceof TaskEvent te)
+                        if (event instanceof TaskEvent te
+                                && te.getTask().status().state() == TaskState.TASK_STATE_FAILED)
                             result.complete(te.getTask());
                         else if (event instanceof TaskUpdateEvent tue
                                 && tue.getTask().status().state() == TaskState.TASK_STATE_FAILED)
@@ -308,7 +311,8 @@ public class TestJavaClient {
 
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {
-                        if (event instanceof TaskEvent te)
+                        if (event instanceof TaskEvent te
+                                && te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
                             result.complete(te.getTask());
                         else if (event instanceof TaskUpdateEvent tue
                                 && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
@@ -381,8 +385,10 @@ public class TestJavaClient {
             // Step 1: start multi-turn
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {
-                        if (event instanceof TaskEvent te) step1.complete(te.getTask());
-                        else if (event instanceof TaskUpdateEvent tue) step1.complete(tue.getTask());
+                        Task t = extractTask(event);
+                        if (t != null && t.status().state().isFinal()
+                                || t != null && t.status().state() == TaskState.TASK_STATE_INPUT_REQUIRED)
+                            step1.complete(t);
                     })
                     .streamingErrorHandler(e -> step1.completeExceptionally(e))
                     .build()) {
@@ -401,8 +407,10 @@ public class TestJavaClient {
                 var step2 = new CompletableFuture<Task>();
                 try (Client client2 = tc.apply(Client.builder(card))
                         .addConsumer((event, c) -> {
-                            if (event instanceof TaskEvent te) step2.complete(te.getTask());
-                            else if (event instanceof TaskUpdateEvent tue) step2.complete(tue.getTask());
+                            Task t = extractTask(event);
+                            if (t != null && t.status().state().isFinal()
+                                    || t != null && t.status().state() == TaskState.TASK_STATE_INPUT_REQUIRED)
+                                step2.complete(t);
                         })
                         .streamingErrorHandler(e -> step2.completeExceptionally(e))
                         .build()) {
@@ -422,8 +430,9 @@ public class TestJavaClient {
                     var step3 = new CompletableFuture<Task>();
                     try (Client client3 = tc.apply(Client.builder(card))
                             .addConsumer((event, c) -> {
-                                if (event instanceof TaskEvent te) step3.complete(te.getTask());
-                                else if (event instanceof TaskUpdateEvent tue) step3.complete(tue.getTask());
+                                Task t = extractTask(event);
+                                if (t != null && t.status().state() == TaskState.TASK_STATE_COMPLETED)
+                                    step3.complete(t);
                             })
                             .streamingErrorHandler(e -> step3.completeExceptionally(e))
                             .build()) {
@@ -470,7 +479,7 @@ public class TestJavaClient {
                 String taskId = taskIdFuture.get(10, TimeUnit.SECONDS);
 
                 // Now cancel it
-                Task canceled = client.cancelTask(new TaskIdParams(taskId));
+                Task canceled = client.cancelTask(new CancelTaskParams(taskId));
                 boolean ok = canceled.status().state() == TaskState.TASK_STATE_CANCELED;
                 record(id, "Task Cancel", ok,
                         "taskId=" + taskId + ", state=" + canceled.status().state(),
@@ -506,14 +515,14 @@ public class TestJavaClient {
 
                 String taskId = taskIdFuture.get(10, TimeUnit.SECONDS);
 
-                // SDK Alpha3 TaskIdParams has no metadata field; CancelTaskParams not yet available.
-                // Cancel the task — metadata cannot be attached with the current SDK version.
-                Task canceled = client.cancelTask(new TaskIdParams(taskId));
+                // Beta1-SNAPSHOT: CancelTaskParams supports metadata
+                var cancelParams = new CancelTaskParams(taskId, "", Map.of(
+                        "reason", "test-cancel-reason",
+                        "requestedBy", "java-sdk"));
+                Task canceled = client.cancelTask(cancelParams);
 
                 boolean stateOk = canceled.status().state() == TaskState.TASK_STATE_CANCELED;
 
-                // We cannot send metadata, so we can only verify the cancel itself succeeded
-                // and honestly report the metadata gap.
                 Map<String, Object> respMeta = canceled.metadata();
                 boolean metaOk = respMeta != null
                         && "test-cancel-reason".equals(String.valueOf(respMeta.get("reason")))
@@ -525,9 +534,7 @@ public class TestJavaClient {
                             + " (expected CANCELED)";
                 } else if (!metaOk) {
                     detail = "taskId=" + taskId + ", state=CANCELED"
-                            + ", SDK limitation: TaskIdParams has no metadata field"
-                            + " (CancelTaskParams not in SDK " + "1.0.0.Alpha3"
-                            + "); cannot send reason/requestedBy";
+                            + ", metadata not echoed (reason/requestedBy not in response)";
                 } else {
                     detail = "taskId=" + taskId + ", state=CANCELED, metadata verified";
                 }
@@ -619,7 +626,7 @@ public class TestJavaClient {
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {})
                     .build()) {
-                client.cancelTask(new TaskIdParams("00000000-0000-0000-0000-000000000000"));
+                client.cancelTask(new CancelTaskParams("00000000-0000-0000-0000-000000000000"));
                 record(id, "Cancel Not Found", false, "expected error, got success",
                         System.currentTimeMillis() - start);
             }
@@ -637,7 +644,9 @@ public class TestJavaClient {
             var taskFuture = new CompletableFuture<Task>();
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {
-                        if (event instanceof TaskEvent te) taskFuture.complete(te.getTask());
+                        if (event instanceof TaskEvent te
+                                && te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            taskFuture.complete(te.getTask());
                         else if (event instanceof TaskUpdateEvent tue
                                 && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
                             taskFuture.complete(tue.getTask());
@@ -647,7 +656,7 @@ public class TestJavaClient {
                 client.sendMessage(A2A.toUserMessage("task-lifecycle process this"));
                 Task task = taskFuture.get(10, TimeUnit.SECONDS);
                 try {
-                    client.cancelTask(new TaskIdParams(task.id()));
+                    client.cancelTask(new CancelTaskParams(task.id()));
                     record(id, "Cancel Terminal Task", false, "expected error, got success",
                             System.currentTimeMillis() - start);
                 } catch (Exception cancelEx) {
@@ -669,7 +678,9 @@ public class TestJavaClient {
             var taskFuture = new CompletableFuture<Task>();
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {
-                        if (event instanceof TaskEvent te) taskFuture.complete(te.getTask());
+                        if (event instanceof TaskEvent te
+                                && te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            taskFuture.complete(te.getTask());
                         else if (event instanceof TaskUpdateEvent tue
                                 && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
                             taskFuture.complete(tue.getTask());
@@ -721,11 +732,9 @@ public class TestJavaClient {
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {})
                     .build()) {
-                var pushConfig = PushNotificationConfig.builder()
-                        .url("https://example.com/webhook")
-                        .build();
                 var config = new TaskPushNotificationConfig(
-                        "00000000-0000-0000-0000-000000000000", pushConfig, null);
+                        "push-config-1", "00000000-0000-0000-0000-000000000000",
+                        "https://example.com/webhook", null, null, null);
                 client.createTaskPushNotificationConfiguration(config);
                 record(id, "Push Not Supported", false, "expected error, got success",
                         System.currentTimeMillis() - start);
@@ -763,19 +772,21 @@ public class TestJavaClient {
 
                 // Subscribe from a second client
                 var subEvent = new CompletableFuture<ClientEvent>();
+                BiConsumer<ClientEvent, AgentCard> subConsumer = (event, c) -> subEvent.complete(event);
+                Consumer<Throwable> subErrorHandler = e -> subEvent.completeExceptionally(e);
                 try (Client subClient = tc.apply(Client.builder(card))
-                        .addConsumer((event, c) -> subEvent.complete(event))
-                        .streamingErrorHandler(e -> subEvent.completeExceptionally(e))
+                        .addConsumer(subConsumer)
+                        .streamingErrorHandler(subErrorHandler)
                         .build()) {
 
                     new Thread(() -> {
-                        try { subClient.subscribeToTask(new TaskIdParams(taskId)); }
+                        try { subClient.subscribeToTask(new TaskIdParams(taskId), List.of(subConsumer), subErrorHandler, null); }
                         catch (Exception ignored) {}
                     }).start();
 
                     // Allow subscription to establish, then cancel to trigger events
                     Thread.sleep(500);
-                    sendClient.cancelTask(new TaskIdParams(taskId));
+                    sendClient.cancelTask(new CancelTaskParams(taskId));
 
                     ClientEvent event = subEvent.get(10, TimeUnit.SECONDS);
                     record(id, "Subscribe To Task", event != null,
@@ -796,7 +807,8 @@ public class TestJavaClient {
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {})
                     .build()) {
-                client.subscribeToTask(new TaskIdParams("00000000-0000-0000-0000-000000000000"));
+                client.subscribeToTask(new TaskIdParams("00000000-0000-0000-0000-000000000000"),
+                        List.of((event, c) -> {}), null, null);
                 record(id, "Subscribe Not Found", false, "expected error, got success",
                         System.currentTimeMillis() - start);
             }
@@ -888,8 +900,10 @@ public class TestJavaClient {
             // Step 1: start multi-turn
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {
-                        if (event instanceof TaskEvent te) step1.complete(te.getTask());
-                        else if (event instanceof TaskUpdateEvent tue) step1.complete(tue.getTask());
+                        Task t = extractTask(event);
+                        if (t != null && t.status().state().isFinal()
+                                || t != null && t.status().state() == TaskState.TASK_STATE_INPUT_REQUIRED)
+                            step1.complete(t);
                     })
                     .streamingErrorHandler(e -> step1.completeExceptionally(e))
                     .build()) {
@@ -903,8 +917,10 @@ public class TestJavaClient {
                 var step2 = new CompletableFuture<Task>();
                 try (Client client2 = tc.apply(Client.builder(card))
                         .addConsumer((event, c) -> {
-                            if (event instanceof TaskEvent te) step2.complete(te.getTask());
-                            else if (event instanceof TaskUpdateEvent tue) step2.complete(tue.getTask());
+                            Task t = extractTask(event);
+                            if (t != null && t.status().state().isFinal()
+                                    || t != null && t.status().state() == TaskState.TASK_STATE_INPUT_REQUIRED)
+                                step2.complete(t);
                         })
                         .streamingErrorHandler(e -> step2.completeExceptionally(e))
                         .build()) {
@@ -932,7 +948,9 @@ public class TestJavaClient {
 
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {
-                        if (event instanceof TaskEvent te) taskFuture.complete(te.getTask());
+                        if (event instanceof TaskEvent te
+                                && te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
+                            taskFuture.complete(te.getTask());
                         else if (event instanceof TaskUpdateEvent tue
                                 && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
                             taskFuture.complete(tue.getTask());
@@ -962,7 +980,9 @@ public class TestJavaClient {
 
             try (Client client = tc.apply(Client.builder(card))
                     .addConsumer((event, c) -> {
-                        if (event instanceof TaskEvent te) taskFuture.complete(te.getTask());
+                        if (event instanceof TaskEvent te
+                                && te.getTask().status().state() == TaskState.TASK_STATE_FAILED)
+                            taskFuture.complete(te.getTask());
                         else if (event instanceof TaskUpdateEvent tue
                                 && tue.getTask().status().state() == TaskState.TASK_STATE_FAILED)
                             taskFuture.complete(tue.getTask());
@@ -1083,7 +1103,8 @@ public class TestJavaClient {
 
             try (Client client = v03Jsonrpc().apply(Client.builder(card))
                     .addConsumer((event, c) -> {
-                        if (event instanceof TaskEvent te)
+                        if (event instanceof TaskEvent te
+                                && te.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
                             result.complete(te.getTask());
                         else if (event instanceof TaskUpdateEvent tue
                                 && tue.getTask().status().state() == TaskState.TASK_STATE_COMPLETED)
@@ -1144,6 +1165,12 @@ public class TestJavaClient {
 
     // ── Helpers ───────────────────────────────────────────────────────
 
+    static Task extractTask(ClientEvent event) {
+        if (event instanceof TaskEvent te) return te.getTask();
+        if (event instanceof TaskUpdateEvent tue) return tue.getTask();
+        return null;
+    }
+
     static String extractText(Message msg) {
         if (msg == null || msg.parts() == null) return "";
         StringBuilder sb = new StringBuilder();
@@ -1178,7 +1205,7 @@ public class TestJavaClient {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
         sb.append("  \"client\": \"java\",\n");
-        sb.append("  \"sdk\": \"a2a-java-sdk 1.0.0.Alpha3\",\n");
+        sb.append("  \"sdk\": \"a2a-java-sdk 1.0.0.Beta1-SNAPSHOT\",\n");
         sb.append("  \"protocolVersion\": \"1.0\",\n");
         sb.append("  \"timestamp\": \"").append(Instant.now()).append("\",\n");
         sb.append("  \"baseUrl\": \"").append(baseUrl).append("\",\n");

@@ -11,22 +11,22 @@
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <a2a.version>1.0.0.Alpha3</a2a.version>
+        <a2a.version>1.0.0.Beta1-SNAPSHOT</a2a.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-client</artifactId>
             <version>${a2a.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
             <version>${a2a.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-client-transport-rest</artifactId>
             <version>${a2a.version}</version>
         </dependency>
