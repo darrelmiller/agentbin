@@ -176,12 +176,12 @@ def load_existing_results() -> dict[str, dict]:
 # client_pattern: exact client id or "*" for all clients
 # test_id_pattern: exact test id or a substring match
 KNOWN_FAILURES: dict[tuple[str, str], str] = {
-    # .NET server doesn't implement returnImmediately — all SDKs block for the full task duration
+    # ── Cross-client: server does not implement returnImmediately ──
     ("*", "spec-return-immediately"):
         "Known: .NET A2A server does not implement returnImmediately. "
         "The SDK blocks until the task completes instead of returning early.",
 
-    # .NET SDK — REST transport not available, subscribe-to-task server error
+    # ── .NET SDK — no REST transport, subscribe streaming error ──
     ("dotnet", "rest/"):
         "Known: .NET A2A SDK does not support REST (HTTP+JSON) transport. "
         "Only JSON-RPC binding is available.",
@@ -189,64 +189,28 @@ KNOWN_FAILURES: dict[tuple[str, str], str] = {
         "Known: SubscribeToTask returns 'internal error during streaming' — "
         "server-side issue with resubscription to completed tasks.",
 
-    # Java SDK protobuf agent card deserialization
-    ("java", "agent-card-echo"):
-        "Known: Java SDK uses protobuf internally to parse agent cards. "
-        "The .NET server emits null for repeated fields (extensions, inputModes, outputModes) "
-        "which protobuf JSON parsing rejects.",
-    ("java", "agent-card-spec"):
-        "Known: Java SDK uses protobuf internally to parse agent cards. "
-        "The .NET server emits null for repeated fields which protobuf JSON parsing rejects.",
+    # ── Go SDK — REST cancel metadata, subscribe, v0.3 not supported ──
+    ("go", "rest/spec-cancel-with-metadata"):
+        "Known: REST cancel succeeds but metadata is nil in response. "
+        "Server does not echo cancel metadata back via REST binding.",
+    ("go", "rest/subscribe-to-task"):
+        "Known: REST SubscribeToTask returns server error. "
+        "Server-side issue with REST SSE resubscription.",
+    ("go", "v03/spec03-send-message"):
+        "Known: Go SDK rejects v0.3 agent card — 'no supported interfaces'. "
+        "V1.0 SDK does not fall back to v0.3 protocol.",
+    ("go", "v03/spec03-task-lifecycle"):
+        "Known: Go SDK rejects v0.3 agent card. Same root cause as spec03-send-message.",
+    ("go", "v03/spec03-streaming"):
+        "Known: Go SDK rejects v0.3 agent card. Same root cause as spec03-send-message.",
 
-    # Java SDK JSONRPC — Task ID null after protobuf deserialization
-    ("java", "jsonrpc/spec-task-lifecycle"):
-        "Known: Java SDK protobuf-to-spec conversion produces Task with null 'id' "
-        "when deserializing SSE streaming responses from the .NET server.",
-    ("java", "jsonrpc/spec-get-task"):
-        "Known: Skipped because task-lifecycle fails (no task ID to query).",
-    ("java", "jsonrpc/spec-task-failure"):
-        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
-    ("java", "jsonrpc/spec-data-types"):
-        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
-    ("java", "jsonrpc/spec-streaming"):
-        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
-    ("java", "jsonrpc/spec-multi-turn"):
-        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
-    ("java", "jsonrpc/spec-task-cancel"):
-        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
-    ("java", "jsonrpc/spec-list-tasks"):
-        "Known: Java SDK JSONRPC listTasks returns 0 results — "
-        "likely protobuf deserialization issue with task list response.",
-    ("java", "jsonrpc/spec-return-immediately"):
-        "Known: Java SDK Task 'id' null after protobuf deserialization of SSE response.",
-
-    # Java SDK REST — non-streaming returns SUBMITTED (not final state)
-    ("java", "rest/spec-task-lifecycle"):
-        "Known: Java SDK REST non-streaming sendMessage returns immediately with "
-        "TASK_STATE_SUBMITTED instead of waiting for the final completed state. "
-        "Needs polling via getTask or use streaming.",
-    ("java", "rest/spec-task-failure"):
-        "Known: Java SDK REST non-streaming returns TASK_STATE_SUBMITTED — "
-        "doesn't wait for FAILED state. Same root cause as task-lifecycle.",
-    ("java", "rest/spec-data-types"):
-        "Known: Java SDK REST non-streaming returns SUBMITTED with no artifacts. "
-        "The response arrives before the agent finishes processing.",
-    ("java", "rest/spec-multi-turn"):
-        "Known: Java SDK REST non-streaming returns TASK_STATE_SUBMITTED "
-        "instead of TASK_STATE_INPUT_REQUIRED. Agent hasn't finished processing.",
-    ("java", "rest/spec-list-tasks"):
-        "Known: Java SDK listTasks fails with Task 'id' null — "
-        "protobuf deserialization issue when parsing task list.",
-
-    # Python SDK — REST subscribe returns 0 events, cancel metadata not echoed via REST
+    # ── Python SDK — REST subscribe/cancel metadata, v0.3 method names ──
     ("python", "rest/subscribe-to-task"):
         "Known: Python SDK REST subscribe returns 0 events. "
         "Possible server or SDK issue with REST SSE subscription.",
     ("python", "rest/spec-cancel-with-metadata"):
         "Known: Python SDK REST cancel succeeds but metadata keys are empty. "
         "REST binding does not echo cancel metadata back in response.",
-
-    # Python SDK — v0.3 method name mismatch
     ("python", "v03/spec03-send-message"):
         "Known: Python SDK sends v1.0 method names (message/send) to v0.3 agent "
         "which only accepts v0.3 method names (tasks/send). SDK does not fall back.",
@@ -257,11 +221,111 @@ KNOWN_FAILURES: dict[tuple[str, str], str] = {
         "Known: Python SDK sends v1.0 method names to v0.3 agent. "
         "Same root cause as spec03-send-message.",
 
-    # JS SDK — protobuf-based method names and field names don't match .NET server
+    # ── Java SDK (Beta1-SNAPSHOT) — agent card protobuf deserialization ──
+    ("java", "agent-card-echo"):
+        "Known: Java SDK uses protobuf internally to parse agent cards. "
+        "The .NET server emits null for repeated fields (extensions, inputModes, outputModes) "
+        "which protobuf JSON parsing rejects.",
+    ("java", "agent-card-spec"):
+        "Known: Java SDK uses protobuf internally to parse agent cards. "
+        "The .NET server emits null for repeated fields which protobuf JSON parsing rejects.",
+
+    # ── Java SDK (Beta1) — JSONRPC null-ID bug ──
+    # Beta1 protobuf conversion produces null message 'id'; server rejects with
+    # InvalidParamsError: Parameter 'id' may not be null.
+    ("java", "jsonrpc/spec-task-lifecycle"):
+        "Known: Java SDK Beta1 protobuf conversion produces null message 'id'. "
+        "Server rejects with InvalidParamsError: Parameter 'id' may not be null.",
+    ("java", "jsonrpc/spec-get-task"):
+        "Known: Skipped because task-lifecycle fails (no task ID to query).",
+    ("java", "jsonrpc/spec-task-failure"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/spec-data-types"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/spec-streaming"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/spec-multi-turn"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/spec-task-cancel"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/spec-cancel-with-metadata"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/spec-list-tasks"):
+        "Known: Java SDK JSONRPC listTasks returns 0 results — "
+        "likely protobuf deserialization issue with task list response.",
+    ("java", "jsonrpc/spec-return-immediately"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/error-cancel-terminal"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/error-send-terminal"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/error-send-invalid-task"):
+        "Known: Java SDK Beta1 — expected error but got success. "
+        "SDK may not send the correct task ID due to protobuf null-ID bug.",
+    ("java", "jsonrpc/subscribe-to-task"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/error-subscribe-not-found"):
+        "Known: Java SDK Beta1 — expected error but got success. "
+        "SDK may not send the correct task ID due to protobuf null-ID bug.",
+    ("java", "jsonrpc/stream-task-lifecycle"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/multi-turn-context-preserved"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/get-task-with-history"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+    ("java", "jsonrpc/get-task-after-failure"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+
+    # ── Java SDK (Beta1) — REST-specific failures ──
+    # Beta1 fixed the SUBMITTED-state issue for basic REST tests (task-lifecycle,
+    # task-failure, data-types, multi-turn now pass). Remaining REST failures:
+    ("java", "rest/spec-cancel-with-metadata"):
+        "Known: REST cancel succeeds but cancel metadata (reason/requestedBy) "
+        "not echoed in response. Server-side limitation.",
+    ("java", "rest/spec-list-tasks"):
+        "Known: Java SDK REST listTasks fails with InvalidParamsError — "
+        "protobuf null 'id' bug affects list request.",
+    ("java", "rest/error-send-terminal"):
+        "Known: Java SDK Beta1 — expected error but got success. "
+        "REST binding may not properly propagate terminal-state errors.",
+    ("java", "rest/error-send-invalid-task"):
+        "Known: Java SDK Beta1 — expected error but got success. "
+        "REST binding may not properly propagate task-not-found errors.",
+    ("java", "rest/subscribe-to-task"):
+        "Known: Java SDK REST subscribe times out. "
+        "Server-side issue with REST SSE subscription.",
+    ("java", "rest/error-subscribe-not-found"):
+        "Known: Java SDK Beta1 — expected error but got success. "
+        "REST binding may not properly propagate subscription errors.",
+
+    # ── Java SDK (Beta1) — v0.3 failures ──
+    ("java", "v03/spec03-task-lifecycle"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug affects v0.3 tests. "
+        "Same root cause as JSONRPC null-ID issue.",
+    ("java", "v03/spec03-streaming"):
+        "Known: Java SDK Beta1 protobuf null 'id' bug affects v0.3 tests. "
+        "Same root cause as JSONRPC null-ID issue.",
+
+    # ── JS SDK (V1.0 with compat layer) ──
     ("js", "jsonrpc/spec-list-tasks"):
         "Known: JS SDK does not expose listTasks method.",
     ("js", "rest/spec-list-tasks"):
         "Known: JS SDK does not expose listTasks method.",
+    ("js", "jsonrpc/error-subscribe-not-found"):
+        "Known: Server returns 'internal error during streaming' instead of "
+        "NotFound error. Server-side issue with subscription error handling.",
+    ("js", "jsonrpc/get-task-with-history"):
+        "Known: Server returns task with 0 history items. "
+        "Server may not persist message history for getTask requests.",
+    ("js", "rest/spec-cancel-with-metadata"):
+        "Known: REST cancel succeeds but metadata keys are empty. "
+        "REST binding does not echo cancel metadata back in response.",
+    ("js", "rest/subscribe-to-task"):
+        "Known: REST subscribe returns 0 events. "
+        "Server-side issue with REST SSE resubscription to completed tasks.",
+    ("js", "rest/get-task-with-history"):
+        "Known: Server returns task with 0 history items. "
+        "Server may not persist message history for getTask requests.",
 }
 
 
