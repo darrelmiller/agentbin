@@ -20,9 +20,11 @@ import {
 } from "@a2a-js/sdk";
 import {
   Client,
-  JsonRpcTransport,
   RestTransport,
 } from "@a2a-js/sdk/client";
+
+// V1 wire-format compatibility layer (bridges SDK proto format ↔ v1.0 server)
+import { V1JsonRpcTransport, createV1RestFetch } from "./v1_compat.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -65,20 +67,27 @@ async function fetchAgentCard(url) {
   return await resp.json();
 }
 
+const v1RestFetch = createV1RestFetch();
+
 async function makeClient(url, { binding = "JSONRPC" } = {}) {
   const card = await fetchAgentCard(url);
-  // Find the matching interface URL from supportedInterfaces
-  let endpointUrl = url; // fallback
-  const interfaces = card.supportedInterfaces || [];
+  // Normalize v0.3 capabilities to v1.0 format for SDK compatibility
+  if (card.capabilities) {
+    if (card.capabilities.supportsStreaming !== undefined && card.capabilities.streaming === undefined) {
+      card.capabilities.streaming = card.capabilities.supportsStreaming;
+    }
+    if (card.capabilities.supportsPushNotifications !== undefined && card.capabilities.pushNotifications === undefined) {
+      card.capabilities.pushNotifications = card.capabilities.supportsPushNotifications;
+    }
+  }
+  // Resolve endpoint URL from v1.0 card format
+  let endpointUrl = card.url || url;
+  // Check additionalInterfaces (v1.0) or supportedInterfaces (v0.3) for binding-specific URL
+  const interfaces = card.additionalInterfaces || card.supportedInterfaces || [];
   for (const iface of interfaces) {
-    if (binding === "JSONRPC" && iface.protocolBinding === "JSONRPC") {
-      endpointUrl = iface.url;
-      break;
-    }
-    if (binding === "REST" && iface.protocolBinding === "HTTP+JSON") {
-      endpointUrl = iface.url;
-      break;
-    }
+    const proto = iface.transport || iface.protocolBinding || "";
+    if (binding === "JSONRPC" && proto === "JSONRPC") { endpointUrl = iface.url; break; }
+    if (binding === "REST" && (proto === "HTTP+JSON" || proto === "REST")) { endpointUrl = iface.url; break; }
   }
   // Rewrite the host to match our BASE_URL (card may advertise different host)
   const baseOrigin = new URL(BASE_URL).origin;
@@ -88,8 +97,8 @@ async function makeClient(url, { binding = "JSONRPC" } = {}) {
   }
   const transport =
     binding === "REST"
-      ? new RestTransport({ endpoint: endpointUrl })
-      : new JsonRpcTransport({ endpoint: endpointUrl });
+      ? new RestTransport({ endpoint: endpointUrl, fetchImpl: v1RestFetch })
+      : new V1JsonRpcTransport({ endpoint: endpointUrl });
   return new Client(transport, card);
 }
 
@@ -165,10 +174,14 @@ async function sdkSendStream(url, text, { binding = "JSONRPC" } = {}) {
   const events = [];
   let finalTask = null;
   let finalMessage = null;
+  const collectedArtifacts = [];
   for await (const event of client.sendMessageStream(req)) {
     events.push(event);
     if (isTask(event)) finalTask = event;
     if (isMessage(event)) finalMessage = event;
+    if (isArtifactEvent(event) && event.artifact) {
+      collectedArtifacts.push(event.artifact);
+    }
     if (isStatusEvent(event) && event.status) {
       // Build a pseudo-task from status events
       const state = event.status.state;
@@ -184,6 +197,10 @@ async function sdkSendStream(url, text, { binding = "JSONRPC" } = {}) {
         }
       }
     }
+  }
+  // Merge collected artifacts into finalTask if it has none
+  if (finalTask && collectedArtifacts.length > 0 && (!finalTask.artifacts || finalTask.artifacts.length === 0)) {
+    finalTask.artifacts = collectedArtifacts;
   }
   return { events, finalTask, finalMessage };
 }

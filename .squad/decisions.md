@@ -41,16 +41,18 @@
 - Cost: ~$5-6/month (ACR Basic + scale-to-zero Container App)
 - Ensures deployment is repeatable and not ad-hoc
 
-### JSON-RPC Transport Removal in @a2a-js/sdk (2026-03-22)
-**Status:** Needs Discussion | **Author:** TypeScript  
+### JSON-RPC Transport Compatibility in @a2a-js/sdk (2026-03-22)
+**Status:** Resolved | **Author:** TypeScript  
 
-- Latest commit `c29f4f8` in a2a-js repo (epic/1.0_breaking_changes) removes `JsonRpcTransport` from client exports
-- Test client imports `JsonRpcTransport` at lines 23 and 92 of `test_js_client.mjs`
-- **Current state:** Works because node_modules was installed before removal; running `npm install` now will break JSON-RPC tests
-- Also: Commit `a886b1a` switches codebase to proto-based types (may require additional import changes)
-- **Impact:** All `jsonrpc/*` test IDs will fail; only `rest/*` and `v0.3/*` tests will survive
-- **Options:** (1) Adapt tests to REST-only, (2) Pin SDK to pre-removal commit, (3) Wait for stabilization
-- **Recommendation:** Option 1 — adapt tests to match SDK's intentional direction
+- `JsonRpcTransport` is still exported from `@a2a-js/sdk/client` (earlier audit was incorrect)
+- However, it sends v0.3 method names (`message/send`) and doesn't call `fromJSON` on responses
+- **Solution:** Created `v1_compat.mjs` compatibility layer with:
+  - `V1JsonRpcTransport` — implements Transport interface with correct V1.0 method names and proto deserialization
+  - `createV1RestFetch()` — fetch wrapper fixing `content↔parts` field naming for REST transport
+  - State normalization: `TASK_STATE_CANCELED` (server) → `TASK_STATE_CANCELLED` (SDK)
+  - Agent card capability normalization: `supportsStreaming` → `streaming`
+- **Test results:** 49/58 pass (was 13/58 before changes)
+- **Remaining 9 failures:** Server limitations (no history, no REST subscribe, sync return-immediately), SDK limitations (no listTasks, REST cancel has no body)
 
 ### DotNet run-all.py Process Lifecycle Issue (2026-07-25)
 **Status:** Proposed | **Author:** DotNet  
@@ -73,15 +75,14 @@
 - **Upgrade path:** When 1.0.0 lands on PyPI, update `requirements.txt` to pin exact stable version
 
 ### Java SDK Version Gap: Alpha3 vs Beta1-SNAPSHOT (2026-03-21)
-**Status:** Identified | **Author:** Java  
+**Status:** Resolved | **Author:** Java  
 
-- Test client pom.xml references groupId `io.github.a2asdk` version `1.0.0.Alpha3` (Maven Central artifacts)
-- Upstream SDK at `D:\github\a2aproject\a2a-java` has moved to groupId `org.a2aproject.sdk` version `1.0.0.Beta1-SNAPSHOT`
-- **Upstream change:** SDK underwent **groupId rename** (`io.github.a2asdk` → `org.a2aproject.sdk`)
-- **Version gap:** Current pom.xml is 2 versions behind (Alpha3 → Alpha4-SNAPSHOT → Beta1-SNAPSHOT)
-- **Known issue:** Alpha3 has protobuf deserialization issues (Task.id null in JSONRPC tests)
-- **Options:** (1) Stay on Alpha3 (stable but stale), (2) Switch to Beta1-SNAPSHOT (requires local build + groupId change), (3) Wait for Maven Central publish
-- **Impact:** Newer SDK versions may fix protobuf issues; no action taken per charter
+- Test client pom.xml **upgraded** from groupId `io.github.a2asdk` version `1.0.0.Alpha3` to `org.a2aproject.sdk` version `1.0.0.Beta1-SNAPSHOT`
+- Upstream SDK built locally from `D:\github\a2aproject\a2a-java` (requires `mvn clean install -DskipTests -Dinvoker.skip=true`)
+- API changes adapted: CancelTaskParams, subscribeToTask signature, TaskPushNotificationConfig
+- Beta SDK behavioral change: TaskEvent fires at SUBMITTED state; consumer patterns updated
+- **Remaining issues:** JSONRPC transport protobuf bug (upstream), agent card unmarshalling (upstream)
+- **Test results:** 27/58 pass (REST tests mostly work; JSONRPC transport blocked by SDK bug)
 
 ## Governance
 
