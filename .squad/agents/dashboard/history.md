@@ -41,3 +41,13 @@
 - Removed 4 obsolete Java REST annotations (Beta1 fixed the SUBMITTED-state issue)
 - All 83 failures across all clients are now annotated as known (0 unexpected red cells)
 - Dashboard published to GitHub Pages at commit 16987c7
+
+### 2026-03-22 — DotNet REST support enabled
+- **DotNet dramatic improvement:** 29/58 → **53/58** (+24 tests)
+  - REST binding unlocked via `A2AHttpJsonClient` from `support-rest` branch of `a2a-dotnet` (package 1.0.0-preview2)
+  - JSON-RPC: 25/27 (stable)
+  - REST: 0/27 → **25/27** (real SDK calls now functional)
+  - v0.3: 4/4 (stable)
+- 5 remaining failures are all server-side (Blocking=false, subscribe-to-task, SSE formatting)
+- NuGet packages rebuilt locally; local feed configured in `nuget.config`
+- **Next:** Monitor `a2a-dotnet` for merge to main → NuGet.org publish → switch to published package

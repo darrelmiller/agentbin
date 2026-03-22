@@ -25,3 +25,16 @@
 ### ⚠ Cross-Team Alert: JS SDK Breaking Change (2026-03-22)
 
 **Alert from TypeScript agent:** The @a2a-js/sdk dependency (epic/1.0_breaking_changes branch) has removed `JsonRpcTransport` from client exports (commit c29f4f8 "Remove JSON-RPC Client #353"). The JS test client will break when `npm install` is run because it imports `JsonRpcTransport`. Additionally, commit a886b1a switched codebase to proto-based types (may require more import changes). The JSON-RPC transport removal appears intentional (architectural decision in the SDK), so tests should likely be adapted to REST-only rather than pinned. No action needed for Java client — this is informational cross-team awareness.
+
+### SDK upgrade: Alpha3 → Beta1-SNAPSHOT (2026-03-21)
+- **Completed upgrade** from `io.github.a2asdk:1.0.0.Alpha3` (Maven Central) to `org.a2aproject.sdk:1.0.0.Beta1-SNAPSHOT` (local build)
+- Upstream SDK built from `D:\github\a2aproject\a2a-java` with `mvn clean install -DskipTests -Dinvoker.skip=true` (BOM invoker test fails, skip it)
+- **API breaking changes found and fixed:**
+  - `cancelTask()` now takes `CancelTaskParams` instead of `TaskIdParams` — CancelTaskParams supports metadata field
+  - `subscribeToTask()` requires consumers and error handler as method params (not just on builder)
+  - `PushNotificationConfig` class removed — `TaskPushNotificationConfig` is now a 6-param record (id, taskId, url, token, authentication, tenant)
+- **Behavioral change:** Beta SDK emits `TaskEvent` at SUBMITTED state (not just terminal). All consumer patterns that resolved CompletableFuture on any TaskEvent needed state checks added.
+- **Import paths unchanged:** `io.a2a.*` packages are the same despite groupId change
+- **Artifact IDs unchanged:** `a2a-java-sdk-client`, `a2a-java-sdk-client-transport-jsonrpc`, `a2a-java-sdk-client-transport-rest`
+- **Test results:** 27/58 pass. JSONRPC transport still broken (protobuf serialization: "Parameter 'id' may not be null"), agent card unmarshalling fails on both transports. These are upstream SDK bugs.
+- **Cancel-with-metadata test** now actually sends metadata via CancelTaskParams (was impossible with Alpha3's TaskIdParams)
