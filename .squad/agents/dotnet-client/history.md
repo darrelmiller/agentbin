@@ -12,6 +12,34 @@
 
 ## Learnings
 
+### REST binding enabled via support-rest branch (2026-03-22)
+
+**What changed:**
+- The `support-rest` branch in `a2a-dotnet` adds `A2AHttpJsonClient` — a full REST/HTTP+JSON client implementing `IA2AClient`.
+- Also adds `A2AClientFactory` (creates client from AgentCard), `A2AClientOptions` (binding preference), `ProtocolBindingNames` constants.
+- `A2AHttpJsonClient` uses the same `IA2AClient` interface as `A2AClient` (JSON-RPC), so test code is almost identical — just swap the client constructor.
+- Package version bumped from `1.0.0-preview` to `1.0.0-preview2`.
+
+**REST client API surface:**
+- Constructor: `new A2AHttpJsonClient(new Uri(baseUrl), httpClient)` — baseUrl is the agent's REST base (e.g., `http://localhost:5555/spec`)
+- REST routes: `/message:send`, `/message:stream`, `/tasks/{id}`, `/tasks/{id}:cancel`, `/tasks/{id}:subscribe`, `/tasks`, `/card`, `/extendedAgentCard`, `/tasks/{id}/pushNotificationConfigs/*`
+- Streaming uses SSE (`text/event-stream`), same `IAsyncEnumerable<StreamResponse>` as JSON-RPC
+- Agent card fetch: REST has `/card` endpoint (different from JSON-RPC `/.well-known/agent-card.json`) — used raw HTTP for card tests
+- Cancel: REST `POST /tasks/{id}:cancel` sends empty body — cannot carry metadata (unlike JSON-RPC `CancelTaskRequest.Metadata`)
+
+**Test results:** 53/58 pass (25/27 JSON-RPC, 25/27 REST, 4/4 v0.3)
+- REST went from 0/27 → 25/27
+- 5 failures are all server-side bugs (not SDK issues):
+  - `spec-return-immediately` (both bindings): `Blocking=false` config not implemented server-side
+  - `subscribe-to-task` (JSON-RPC): "internal error during streaming"
+  - `subscribe-to-task` (REST): timeout — no events received
+  - `error-subscribe-not-found` (REST): returns empty SSE stream instead of error
+
+**Infrastructure:**
+- `nuget.config` (root + test client) now includes `./nupkgs` as local feed
+- Server + client both reference `A2A 1.0.0-preview2` / `A2A.AspNetCore 1.0.0-preview2`
+- NuGet cache must be cleared when switching package versions: `dotnet nuget locals all --clear`
+
 ### a2a-dotnet versioning pipeline investigation (2026-03-21)
 
 **Version control files:**
