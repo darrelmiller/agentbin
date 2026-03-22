@@ -31,3 +31,13 @@
 - This incident validates the need for automated smoke testing after every publish
 - User directive captured: "We should be smoke testing agents after every publish"
 - Smoke test framework enables rapid catch of deployment gaps before users discover them
+
+### 2026-07-25 — Post-SDK-upgrade dashboard refresh
+- Ran full test suite across all 5 clients: .NET 29/58, Go 51/58, Python 51/58, Java 27/58, JS 49/58
+- **Java Beta1-SNAPSHOT improvement:** 23→27 passing (4 REST tests fixed: task-lifecycle, task-failure, data-types, multi-turn)
+- **JS V1.0 SDK improvement:** 13→49 passing (compat layer enables nearly full coverage)
+- Java JSONRPC failures changed from "null task ID in response" to "InvalidParamsError: Parameter 'id' may not be null" — same protobuf root cause, different symptom in Beta1
+- Added 27 new KNOWN_FAILURES annotations (17 Java, 5 Go, 5 JS) for TCK-inspired tests
+- Removed 4 obsolete Java REST annotations (Beta1 fixed the SUBMITTED-state issue)
+- All 83 failures across all clients are now annotated as known (0 unexpected red cells)
+- Dashboard published to GitHub Pages at commit 16987c7
