@@ -82,3 +82,26 @@
 ### ⚠ Cross-Team Alert: JS SDK Breaking Change (2026-03-22)
 
 **Alert from TypeScript agent:** The @a2a-js/sdk dependency (epic/1.0_breaking_changes branch) has removed `JsonRpcTransport` from client exports (commit c29f4f8 "Remove JSON-RPC Client #353"). The JS test client will break when `npm install` is run because it imports `JsonRpcTransport`. Additionally, commit a886b1a switched codebase to proto-based types (may require more import changes). The JSON-RPC transport removal appears intentional (architectural decision in the SDK), so tests should likely be adapted to REST-only rather than pinned. No action needed for DotNet client — this is informational cross-team awareness.
+
+### Reverted to published A2A 1.0.0-preview NuGet packages (2026-07-25)
+
+**What changed:**
+- Both `AgentBin.csproj` and `A2AClientTests.csproj` reverted from `A2A 1.0.0-preview2` → `A2A 1.0.0-preview`
+- `A2A.AspNetCore` also reverted from `1.0.0-preview2` → `1.0.0-preview`
+- REST tests in Program.cs reverted to "sdk-does-not-support" stubs (27 tests)
+- NuGet cache cleared to ensure genuine NuGet.org packages
+
+**Build results:**
+- **Server (`AgentBin`):** Builds and runs successfully with `A2A.AspNetCore 1.0.0-preview`
+- **Client (`A2AClientTests`):** Builds successfully after stubbing REST tests — `A2AHttpJsonClient` does NOT exist in `A2A 1.0.0-preview`
+
+**KEY FINDING — REST endpoint availability:**
+- `A2A.AspNetCore 1.0.0-preview` does **NOT** serve REST/HTTP+JSON endpoints
+- `GET /spec/card` → 404, `POST /spec/message:send` → 404, `GET /spec/tasks` → 404
+- JSON-RPC works fine: `GET /spec/.well-known/agent-card.json` → 200
+- **Conclusion:** REST transport (both client `A2AHttpJsonClient` and server-side REST routing) is a `1.0.0-preview2` feature that has NOT been published to NuGet.org
+
+**Test results:** 29/58 pass (25/27 JSON-RPC, 0/27 REST stubbed, 4/4 v0.3)
+- JSON-RPC failures: `spec-return-immediately` (Blocking=false not implemented server-side), `subscribe-to-task` (internal error during streaming)
+- REST failures: all 27 stubbed as "sdk-does-not-support"
+- v0.3: all 4 pass

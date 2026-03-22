@@ -84,6 +84,25 @@
 - **Remaining issues:** JSONRPC transport protobuf bug (upstream), agent card unmarshalling (upstream)
 - **Test results:** 27/58 pass (REST tests mostly work; JSONRPC transport blocked by SDK bug)
 
+### User Directive: Never Publish Local Build Results Without Approval (2026-03-22)
+**Status:** Captured | **By:** Darrel Miller (via Copilot)
+
+- **What:** Never publish (push to origin, deploy, or update public dashboard) test results from local builds without explicit user approval first
+- **Why:** Local build results may use unpublished SDKs and could be misleading if shared publicly
+- **Implementation:** Dashboard agent added `--publish` flag to `run-all.py` with per-client gating (default off for local builds)
+- **Benefit:** Maintains audit trail; prevents accidental publication of incomplete results
+
+### REST Transport Requires Unpublished Preview2 Packages (2026-03-22)
+**Status:** Confirmed | **Author:** DotNet
+
+- The published `A2A 1.0.0-preview` and `A2A.AspNetCore 1.0.0-preview` NuGet packages do **not** include REST/HTTP+JSON support
+  - **Client:** `A2AHttpJsonClient` class does not exist in published 1.0.0-preview
+  - **Server:** `A2A.AspNetCore 1.0.0-preview` does not register REST routes (all return 404)
+  - **JSON-RPC:** Works fine with published packages
+- **Test results with published packages:** 29/58 pass (25/27 JSON-RPC, 0/27 REST, 4/4 v0.3)
+- **With unpublished preview2:** 53/58 pass (25/27 JSON-RPC, 25/27 REST, 4/4 v0.3)
+- **Team implication:** REST transport is a `1.0.0-preview2` feature; any team member needing REST must use local `nupkgs/` feed
+
 ## Governance
 
 - All meaningful changes require team consensus

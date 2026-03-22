@@ -30,7 +30,7 @@
 - When a test needs a task ID mid-flight, use streaming to get it (not Blocking=false)
 - `CancelTaskRequest.Metadata` uses `Dictionary<string, JsonElement>`, not `Dictionary<string, object>`
 - REST transport tests record "SDK does not support" — the .NET SDK only has JSON-RPC
-- Current results: 29/58 pass (25/27 JSON-RPC, 0/27 REST, 4/4 v0.3)
+- **Current results:** 29/58 pass with published packages (25/27 JSON-RPC, 0/27 REST unsupported, 4/4 v0.3) — See `decisions.md` REST Transport entry for details
 
 ## Boundaries
 

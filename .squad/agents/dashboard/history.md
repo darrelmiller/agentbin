@@ -51,3 +51,13 @@
 - 5 remaining failures are all server-side (Blocking=false, subscribe-to-task, SSE formatting)
 - NuGet packages rebuilt locally; local feed configured in `nuget.config`
 - **Next:** Monitor `a2a-dotnet` for merge to main → NuGet.org publish → switch to published package
+
+### 2026-07-25 — Publish gating for public dashboard
+- Added `"publish": True/False` field to every entry in CLIENTS dict
+- Swift set to `publish: False` (not ready for public dashboard); all others `True`
+- Local dashboard (`tests/dashboard.html`) always includes ALL clients — unchanged behavior
+- Public dashboard (`docs/dashboard.html`) now requires explicit `--publish` flag
+- When `--publish` is passed, only clients with `publish: True` are included in docs/ output
+- Without `--publish`, prints "📌 Public dashboard NOT updated" reminder
+- Verified: `--dashboard-only` produces 7 clients locally; `--dashboard-only --publish` produces 6 of 7 in docs/ (swift excluded)
+- Docstring updated to document new `--publish` flag usage
