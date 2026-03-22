@@ -11,6 +11,8 @@ How to decide who handles what.
 | Python client tests | Python | PyPI upgrades, Python test fixes, requirements.txt |
 | Java client tests | Java | Maven/SDK updates, Java test fixes, pom.xml changes |
 | JS/TS client tests | TypeScript | npm upgrades, JS test fixes, TypeScript compilation |
+| Rust client tests | Rust | Cargo updates, Rust test fixes, Cargo.toml changes |
+| Swift client tests | Swift | SPM updates, Swift test fixes, Package.swift changes |
 | v1.0 server agents | Spec | Agent behavior, agent cards, server bugs, A2A spec compliance |
 | v0.3 compatibility | Legacy | v0.3 protocol, version negotiation, backward compat |
 | Dashboard & website | Dashboard | dashboard.html, index.html, run-all.py config, known failures |
@@ -31,6 +33,8 @@ How to decide who handles what.
 | `tests/ClientTests/python/` | Python | — |
 | `tests/ClientTests/java/` | Java | — |
 | `tests/ClientTests/js/` | TypeScript | — |
+| `tests/ClientTests/rust/` | Rust | — |
+| `tests/ClientTests/swift/` | Swift | — |
 | `tests/run-all.py` | Dashboard | All clients |
 | `docs/` | Dashboard | — |
 | `infra/` | Spec | — |

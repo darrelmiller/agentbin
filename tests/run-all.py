@@ -118,6 +118,20 @@ CLIENTS = {
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/js/test_js_client.mjs",
         "sdk_url": "https://github.com/a2aproject/a2a-js",
     },
+    "rust": {
+        "name": "Rust",
+        "dir": "rust",
+        "icon": "&#9883;",
+        "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/rust/src/main.rs",
+        "sdk_url": "https://crates.io/crates/a2a-rs-client",
+    },
+    "swift": {
+        "name": "Swift",
+        "dir": "swift",
+        "icon": "&#9830;",
+        "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/swift/Sources/main.swift",
+        "sdk_url": "https://github.com/tolgaki/a2a-client-swift",
+    },
 }
 
 
