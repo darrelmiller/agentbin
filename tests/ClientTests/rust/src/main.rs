@@ -8,16 +8,16 @@ use std::time::Instant;
 
 use a2a_rs_client::{A2aClient, ClientConfig};
 use a2a_rs_core::{
-    AgentCard, Message, Part, Role, SendMessageConfiguration,
-    SendMessageResult, StreamingMessageResult, Task, TaskState,
+    AgentCard, ListTasksRequest, Message, Part, PushNotificationConfig, Role,
+    SendMessageConfiguration, SendMessageResult, StreamingMessageResult, TaskState,
 };
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio_stream::StreamExt;
 
 const DEFAULT_BASE_URL: &str =
     "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io";
-const SDK_VERSION: &str = "a2a-rs-client 1.0.5";
+const SDK_VERSION: &str = "a2a-rs-client 1.0.7";
 
 // ── Result structures ──────────────────────────────────────────────
 
@@ -261,7 +261,6 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
     let mut saved_task_id: Option<String> = None;
     let mut _saved_context_id: Option<String> = None;
     let mut failed_task_id: Option<String> = None;
-    let spec_rpc_url = format!("{base_url}/spec");
 
     // ── 1. Discovery: Echo Agent Card ──
     {
@@ -773,40 +772,163 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
         }
     }
 
-    // ── 11. spec-task-cancel (SDK not supported — needs cancel_task) ──
+    // ── 11. spec-task-cancel ──
     {
-        record(
-            results,
-            "jsonrpc/spec-task-cancel",
-            "Task Cancel (via streaming)",
-            false,
-            "SDK not supported: a2a-rs-client does not expose cancel_task",
-            std::time::Duration::ZERO,
-        );
+        let start = Instant::now();
+        // Start a streaming task, then cancel it
+        let msg = new_user_message("task-cancel start");
+        let config = Some(SendMessageConfiguration {
+            return_immediately: Some(true),
+            ..Default::default()
+        });
+        match spec.send_message(msg, None, config).await {
+            Ok(SendMessageResult::Task(task)) => {
+                if !task.status.state.is_terminal() {
+                    match spec.cancel_task(&task.id, None).await {
+                        Ok(cancelled) => {
+                            let passed = cancelled.status.state == TaskState::Canceled;
+                            record(
+                                results,
+                                "jsonrpc/spec-task-cancel",
+                                "Task Cancel (via streaming)",
+                                passed,
+                                &format!("state={:?}", cancelled.status.state),
+                                start.elapsed(),
+                            );
+                        }
+                        Err(e) => {
+                            record(
+                                results,
+                                "jsonrpc/spec-task-cancel",
+                                "Task Cancel (via streaming)",
+                                false,
+                                &format!("cancel error: {}", truncate(&e.to_string(), 80)),
+                                start.elapsed(),
+                            );
+                        }
+                    }
+                } else {
+                    record(
+                        results,
+                        "jsonrpc/spec-task-cancel",
+                        "Task Cancel (via streaming)",
+                        false,
+                        &format!("task already terminal: {:?}", task.status.state),
+                        start.elapsed(),
+                    );
+                }
+            }
+            Ok(SendMessageResult::Message(_)) => {
+                record(
+                    results,
+                    "jsonrpc/spec-task-cancel",
+                    "Task Cancel (via streaming)",
+                    false,
+                    "expected Task, got Message",
+                    start.elapsed(),
+                );
+            }
+            Err(e) => {
+                record(
+                    results,
+                    "jsonrpc/spec-task-cancel",
+                    "Task Cancel (via streaming)",
+                    false,
+                    &truncate(&e.to_string(), 120),
+                    start.elapsed(),
+                );
+            }
+        }
     }
 
-    // ── 12. spec-cancel-with-metadata (SDK not supported — needs cancel_task) ──
+    // ── 12. spec-cancel-with-metadata ──
     {
-        record(
-            results,
-            "jsonrpc/spec-cancel-with-metadata",
-            "Cancel With Metadata",
-            false,
-            "SDK not supported: a2a-rs-client does not expose cancel_task",
-            std::time::Duration::ZERO,
-        );
+        let start = Instant::now();
+        let msg = new_user_message("task-cancel start");
+        let config = Some(SendMessageConfiguration {
+            return_immediately: Some(true),
+            ..Default::default()
+        });
+        match spec.send_message(msg, None, config).await {
+            Ok(SendMessageResult::Task(task)) => {
+                if !task.status.state.is_terminal() {
+                    match spec.cancel_task(&task.id, None).await {
+                        Ok(cancelled) => {
+                            let passed = cancelled.status.state == TaskState::Canceled;
+                            record(
+                                results,
+                                "jsonrpc/spec-cancel-with-metadata",
+                                "Cancel With Metadata",
+                                passed,
+                                &format!("state={:?}", cancelled.status.state),
+                                start.elapsed(),
+                            );
+                        }
+                        Err(e) => {
+                            record(
+                                results,
+                                "jsonrpc/spec-cancel-with-metadata",
+                                "Cancel With Metadata",
+                                false,
+                                &format!("cancel error: {}", truncate(&e.to_string(), 80)),
+                                start.elapsed(),
+                            );
+                        }
+                    }
+                } else {
+                    record(
+                        results,
+                        "jsonrpc/spec-cancel-with-metadata",
+                        "Cancel With Metadata",
+                        false,
+                        &format!("task already terminal: {:?}", task.status.state),
+                        start.elapsed(),
+                    );
+                }
+            }
+            _ => {
+                record(
+                    results,
+                    "jsonrpc/spec-cancel-with-metadata",
+                    "Cancel With Metadata",
+                    false,
+                    "could not create cancellable task",
+                    start.elapsed(),
+                );
+            }
+        }
     }
 
-    // ── 13. spec-list-tasks (SDK not supported) ──
+    // ── 13. spec-list-tasks ──
     {
-        record(
-            results,
-            "jsonrpc/spec-list-tasks",
-            "ListTasks",
-            false,
-            "SDK not supported: a2a-rs-client does not expose list_tasks",
-            std::time::Duration::ZERO,
-        );
+        let start = Instant::now();
+        let request = ListTasksRequest {
+            page_size: Some(10),
+            ..Default::default()
+        };
+        match spec.list_tasks(request, None).await {
+            Ok(resp) => {
+                let count = resp.tasks.len();
+                record(
+                    results,
+                    "jsonrpc/spec-list-tasks",
+                    "ListTasks",
+                    count > 0,
+                    &format!("returned {count} tasks"),
+                    start.elapsed(),
+                );
+            }
+            Err(e) => {
+                record(
+                    results,
+                    "jsonrpc/spec-list-tasks",
+                    "ListTasks",
+                    false,
+                    &truncate(&e.to_string(), 120),
+                    start.elapsed(),
+                );
+            }
+        }
     }
 
     // ── 14. spec-return-immediately ──
@@ -814,7 +936,7 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
         let start = Instant::now();
         let msg = new_user_message("return-immediately");
         let config = Some(SendMessageConfiguration {
-            blocking: Some(false),
+            return_immediately: Some(true),
             ..Default::default()
         });
         match spec.send_message(msg, None, config).await {
@@ -896,28 +1018,71 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
         }
     }
 
-    // ── 16. error-cancel-not-found (SDK not supported) ──
+    // ── 16. error-cancel-not-found ──
     {
-        record(
-            results,
-            "jsonrpc/error-cancel-not-found",
-            "Cancel Not Found",
-            false,
-            "SDK not supported: a2a-rs-client does not expose cancel_task",
-            std::time::Duration::ZERO,
-        );
+        let start = Instant::now();
+        let bogus_id = "00000000-0000-0000-0000-000000000000";
+        match spec.cancel_task(bogus_id, None).await {
+            Ok(_) => {
+                record(
+                    results,
+                    "jsonrpc/error-cancel-not-found",
+                    "Cancel Not Found",
+                    false,
+                    "expected error, got success",
+                    start.elapsed(),
+                );
+            }
+            Err(e) => {
+                record(
+                    results,
+                    "jsonrpc/error-cancel-not-found",
+                    "Cancel Not Found",
+                    true,
+                    &format!("got expected error: {}", truncate(&e.to_string(), 100)),
+                    start.elapsed(),
+                );
+            }
+        }
     }
 
-    // ── 17. error-cancel-terminal (SDK not supported) ──
+    // ── 17. error-cancel-terminal ──
     {
-        record(
-            results,
-            "jsonrpc/error-cancel-terminal",
-            "Cancel Terminal Task",
-            false,
-            "SDK not supported: a2a-rs-client does not expose cancel_task",
-            std::time::Duration::ZERO,
-        );
+        let start = Instant::now();
+        match &saved_task_id {
+            Some(tid) => match spec.cancel_task(tid, None).await {
+                Ok(_) => {
+                    record(
+                        results,
+                        "jsonrpc/error-cancel-terminal",
+                        "Cancel Terminal Task",
+                        false,
+                        "expected error cancelling completed task, got success",
+                        start.elapsed(),
+                    );
+                }
+                Err(e) => {
+                    record(
+                        results,
+                        "jsonrpc/error-cancel-terminal",
+                        "Cancel Terminal Task",
+                        true,
+                        &format!("got expected error: {}", truncate(&e.to_string(), 100)),
+                        start.elapsed(),
+                    );
+                }
+            },
+            None => {
+                record(
+                    results,
+                    "jsonrpc/error-cancel-terminal",
+                    "Cancel Terminal Task",
+                    false,
+                    "no saved taskId from task-lifecycle",
+                    start.elapsed(),
+                );
+            }
+        }
     }
 
     // ── 18. error-send-terminal ──
@@ -991,40 +1156,132 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
         }
     }
 
-    // ── 20. error-push-not-supported (SDK not supported) ──
+    // ── 20. error-push-not-supported ──
     {
-        record(
-            results,
-            "jsonrpc/error-push-not-supported",
-            "Push Not Supported",
-            false,
-            "SDK not supported: a2a-rs-client does not expose push notification config",
-            std::time::Duration::ZERO,
-        );
+        let start = Instant::now();
+        let config = PushNotificationConfig {
+            id: Some("test-cfg".to_string()),
+            url: "https://example.com/webhook".to_string(),
+            token: None,
+            authentication: None,
+        };
+        // Use a task ID we know exists
+        let test_tid = saved_task_id.as_deref().unwrap_or("00000000-0000-0000-0000-000000000000");
+        match spec.create_push_notification_config(test_tid, "test-cfg", config, None).await {
+            Ok(_) => {
+                record(
+                    results,
+                    "jsonrpc/error-push-not-supported",
+                    "Push Not Supported",
+                    false,
+                    "expected error, got success",
+                    start.elapsed(),
+                );
+            }
+            Err(e) => {
+                record(
+                    results,
+                    "jsonrpc/error-push-not-supported",
+                    "Push Not Supported",
+                    true,
+                    &format!("got expected error: {}", truncate(&e.to_string(), 100)),
+                    start.elapsed(),
+                );
+            }
+        }
     }
 
-    // ── 21. subscribe-to-task (SDK not supported) ──
+    // ── 21. subscribe-to-task ──
     {
-        record(
-            results,
-            "jsonrpc/subscribe-to-task",
-            "SubscribeToTask",
-            false,
-            "SDK not supported: a2a-rs-client does not expose subscribe_to_task",
-            std::time::Duration::ZERO,
-        );
+        let start = Instant::now();
+        // Create a task first, then subscribe to it
+        let msg = new_user_message("task-lifecycle");
+        match spec.send_message(msg, None, None).await {
+            Ok(SendMessageResult::Task(task)) => {
+                match spec.subscribe_to_task(&task.id, None).await {
+                    Ok(stream) => {
+                        let mut stream = stream;
+                        let mut event_count: usize = 0;
+                        let mut last_state: Option<TaskState> = None;
+
+                        while let Some(item) = stream.next().await {
+                            match item {
+                                Ok(event) => {
+                                    event_count += 1;
+                                    match &event {
+                                        StreamingMessageResult::StatusUpdate(ev) => {
+                                            last_state = Some(ev.status.state);
+                                        }
+                                        StreamingMessageResult::Task(t) => {
+                                            last_state = Some(t.status.state);
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                                Err(_) => break,
+                            }
+                        }
+                        record(
+                            results,
+                            "jsonrpc/subscribe-to-task",
+                            "SubscribeToTask",
+                            event_count > 0,
+                            &format!("events={event_count}, lastState={last_state:?}"),
+                            start.elapsed(),
+                        );
+                    }
+                    Err(e) => {
+                        record(
+                            results,
+                            "jsonrpc/subscribe-to-task",
+                            "SubscribeToTask",
+                            false,
+                            &truncate(&e.to_string(), 120),
+                            start.elapsed(),
+                        );
+                    }
+                }
+            }
+            _ => {
+                record(
+                    results,
+                    "jsonrpc/subscribe-to-task",
+                    "SubscribeToTask",
+                    false,
+                    "could not create task for subscribe test",
+                    start.elapsed(),
+                );
+            }
+        }
     }
 
-    // ── 22. error-subscribe-not-found (SDK not supported) ──
+    // ── 22. error-subscribe-not-found ──
     {
-        record(
-            results,
-            "jsonrpc/error-subscribe-not-found",
-            "Subscribe Not Found",
-            false,
-            "SDK not supported: a2a-rs-client does not expose subscribe_to_task",
-            std::time::Duration::ZERO,
-        );
+        let start = Instant::now();
+        let bogus_id = "00000000-0000-0000-0000-000000000000";
+        match spec.subscribe_to_task(bogus_id, None).await {
+            Ok(_) => {
+                // If we got a stream, try reading — it should error
+                record(
+                    results,
+                    "jsonrpc/error-subscribe-not-found",
+                    "Subscribe Not Found",
+                    false,
+                    "expected error, got stream",
+                    start.elapsed(),
+                );
+            }
+            Err(e) => {
+                record(
+                    results,
+                    "jsonrpc/error-subscribe-not-found",
+                    "Subscribe Not Found",
+                    true,
+                    &format!("got expected error: {}", truncate(&e.to_string(), 100)),
+                    start.elapsed(),
+                );
+            }
+        }
     }
 
     // ── 23. stream-message-only ──
@@ -1208,8 +1465,8 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
                     let msg2 = new_user_message_with_task("done", &task_id);
                     let _ = spec.send_message(msg2, None, None).await;
 
-                    // Now get the task with history
-                    match get_task_with_history(spec, &task_id, 10, &spec_rpc_url).await {
+                    // Now get the task with history using the SDK
+                    match spec.get_task(&task_id, Some(10), None).await {
                         Ok(task) => {
                             let history_len = task
                                 .history
@@ -1719,47 +1976,3 @@ fn extract_task_info(
     }
 }
 
-/// Get a task with history by making a raw JSON-RPC call with historyLength.
-/// The SDK's poll_task doesn't expose the historyLength parameter, so we
-/// build the request manually using the same HTTP client.
-async fn get_task_with_history(
-    _client: &A2aClient,
-    task_id: &str,
-    history_length: u32,
-    rpc_url: &str,
-) -> Result<Task> {
-    let request = serde_json::json!({
-        "jsonrpc": "2.0",
-        "method": "tasks/get",
-        "params": {
-            "id": task_id,
-            "historyLength": history_length,
-        },
-        "id": 1
-    });
-
-    let http = reqwest::Client::new();
-    let resp: serde_json::Value = http
-        .post(rpc_url)
-        .json(&request)
-        .send()
-        .await?
-        .error_for_status()?
-        .json()
-        .await?;
-
-    if let Some(err) = resp.get("error") {
-        let code = err.get("code").and_then(|c| c.as_i64()).unwrap_or(0);
-        let msg = err
-            .get("message")
-            .and_then(|m| m.as_str())
-            .unwrap_or("unknown error");
-        anyhow::bail!("Server error {code}: {msg}");
-    }
-
-    let result = resp
-        .get("result")
-        .ok_or_else(|| anyhow!("no result in response"))?;
-    let task: Task = serde_json::from_value(result.clone())?;
-    Ok(task)
-}
