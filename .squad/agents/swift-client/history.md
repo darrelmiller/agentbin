@@ -43,3 +43,14 @@
     - subscribe-to-task (1): Server returns "internal error during streaming"
     - rest/spec-get-task (1): Skipped, depends on REST lifecycle test
   - Key learning: a2a-client-swift v1.0.6 still speaks v0.3 wire format. All v1.0 protocol adaptation done via run.py patches.
+- **2026-07-25 — SDK v1.0.6 → v1.0.7 update (34/58 → 34/58, score stable)**
+  - Updated Package.resolved to v1.0.7 (commit b2aaf3d7). Key change: native v1.0 protocol compliance.
+  - v1.0.7 natively implements: SCREAMING_SNAKE_CASE enums (TaskState, MessageRole), PascalCase JSON-RPC method names, v1.0 streaming decoder (field-presence oneofs), cancelTask with metadata.
+  - **run.py patch status after v1.0.7:**
+    - Patches 3 (method names), 4/4b (enum values), 5 (kind discriminator), 6 (streaming decoder): NOW NO-OPS — SDK handles natively
+    - Patch 1 (FoundationNetworking): Still needed on Windows/Linux
+    - Patch 2 (bytes(for:) → data(for:)): Still needed on Windows/Linux
+    - Patch 7 (getTask taskId in queryItems): Still needed — SDK still omits ID from query params
+    - Patch 8 (array agent card): Still needed — root well-known returns array
+  - Score unchanged at 34/58: same 24 failures (19 REST 404, 2 cancel race, 1 returnImmediately, 1 subscribe-to-task, 1 REST get-task skip)
+  - Key learning: v1.0.7 is a major improvement in SDK protocol compliance. Consider pruning dead patch code from run.py in a future cleanup pass.
