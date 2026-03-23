@@ -7,7 +7,8 @@ collects results.json from each, and generates a static HTML compatibility dashb
 
 Usage:
     python run-all.py [baseUrl]
-    python run-all.py --dashboard-only   # skip running, just regenerate HTML from existing results.json files
+    python run-all.py --dashboard-only              # regenerate local dashboard from existing results.json
+    python run-all.py --dashboard-only --publish     # also update docs/ dashboard (publish-gated clients only)
 """
 
 import json
@@ -89,6 +90,7 @@ CLIENTS = {
         "icon": "&#9726;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/dotnet/Program.cs",
         "sdk_url": "https://www.nuget.org/packages/A2A/",
+        "publish": True,
     },
     "go": {
         "name": "Go",
@@ -96,6 +98,7 @@ CLIENTS = {
         "icon": "&#9671;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/go/main.go",
         "sdk_url": "https://pkg.go.dev/github.com/a2aproject/a2a-go/v2",
+        "publish": True,
     },
     "python": {
         "name": "Python",
@@ -103,6 +106,7 @@ CLIENTS = {
         "icon": "&#9673;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/python/test_python_client.py",
         "sdk_url": "https://pypi.org/project/a2a-sdk/1.0.0a0/",
+        "publish": True,
     },
     "java": {
         "name": "Java",
@@ -110,6 +114,7 @@ CLIENTS = {
         "icon": "&#9672;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/java/src/main/java/agentbin/TestJavaClient.java",
         "sdk_url": "https://github.com/a2aproject/a2a-java",
+        "publish": True,
     },
     "js": {
         "name": "JavaScript",
@@ -117,6 +122,7 @@ CLIENTS = {
         "icon": "&#9724;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/js/test_js_client.mjs",
         "sdk_url": "https://github.com/a2aproject/a2a-js",
+        "publish": True,
     },
     "rust": {
         "name": "Rust",
@@ -124,6 +130,7 @@ CLIENTS = {
         "icon": "&#9883;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/rust/src/main.rs",
         "sdk_url": "https://crates.io/crates/a2a-rs-client",
+        "publish": True,
     },
     "swift": {
         "name": "Swift",
@@ -131,6 +138,7 @@ CLIENTS = {
         "icon": "&#9830;",
         "source": "https://github.com/darrelmiller/agentbin/blob/main/tests/ClientTests/swift/Sources/main.swift",
         "sdk_url": "https://github.com/tolgaki/a2a-client-swift",
+        "publish": True,
     },
 }
 
@@ -554,10 +562,13 @@ def _esc(s: str) -> str:
 def main():
     base_url = BASE_URL
     dashboard_only = False
+    publish = False
 
     for arg in sys.argv[1:]:
         if arg == "--dashboard-only":
             dashboard_only = True
+        elif arg == "--publish":
+            publish = True
         elif not arg.startswith("-"):
             base_url = arg.rstrip("/")
 
@@ -575,16 +586,22 @@ def main():
         print("No results collected. Exiting.")
         return 1
 
+    # Local dashboard always includes ALL clients
     html = generate_dashboard(all_results, base_url)
     out_path = TESTS_DIR / "dashboard.html"
     out_path.write_text(html, encoding="utf-8")
     print(f"\n✅ Dashboard written to {out_path}")
 
-    # Also copy to docs/ for GitHub Pages
-    docs_path = TESTS_DIR.parent / "docs" / "dashboard.html"
-    if docs_path.parent.exists():
-        docs_path.write_text(html, encoding="utf-8")
-        print(f"✅ Dashboard copied to {docs_path}")
+    # Public dashboard (docs/) is gated behind --publish and filtered to publishable clients
+    if publish:
+        publishable = {cid: data for cid, data in all_results.items() if CLIENTS.get(cid, {}).get("publish", False)}
+        docs_path = TESTS_DIR.parent / "docs" / "dashboard.html"
+        if docs_path.parent.exists():
+            public_html = generate_dashboard(publishable, base_url)
+            docs_path.write_text(public_html, encoding="utf-8")
+            print(f"✅ Public dashboard updated (docs/dashboard.html) — {len(publishable)} of {len(all_results)} clients included")
+    else:
+        print("📌 Public dashboard NOT updated (use --publish to update docs/)")
 
     return 0
 

@@ -1,0 +1,415 @@
+{
+  "client": "rust",
+  "sdk": "a2a-rs-client 1.0.6",
+  "protocolVersion": "1.0",
+  "timestamp": "2026-03-23T03:23:27.760709100+00:00",
+  "baseUrl": "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io",
+  "results": [
+    {
+      "id": "jsonrpc/agent-card-echo",
+      "name": "Echo Agent Card",
+      "passed": true,
+      "detail": "name=Echo Agent, skills=1",
+      "durationMs": 8498
+    },
+    {
+      "id": "jsonrpc/agent-card-spec",
+      "name": "Spec Agent Card",
+      "passed": true,
+      "detail": "name=AgentBin Spec Agent, skills=8",
+      "durationMs": 275
+    },
+    {
+      "id": "jsonrpc/echo-send-message",
+      "name": "Echo Send Message",
+      "passed": true,
+      "detail": "response contains 'hello': true, text=Echo: hello from Rust",
+      "durationMs": 276
+    },
+    {
+      "id": "jsonrpc/spec-message-only",
+      "name": "Message Only",
+      "passed": true,
+      "detail": "isMessage=true, text=[message-only] You said: message-only",
+      "durationMs": 246
+    },
+    {
+      "id": "jsonrpc/spec-task-lifecycle",
+      "name": "Task Lifecycle",
+      "passed": true,
+      "detail": "state=Completed, taskId=d6f627e06f554ef29aef...",
+      "durationMs": 69
+    },
+    {
+      "id": "jsonrpc/spec-get-task",
+      "name": "GetTask",
+      "passed": true,
+      "detail": "state=Completed, id match=true",
+      "durationMs": 64
+    },
+    {
+      "id": "jsonrpc/spec-task-failure",
+      "name": "Task Failure",
+      "passed": true,
+      "detail": "state=Failed",
+      "durationMs": 71
+    },
+    {
+      "id": "jsonrpc/spec-data-types",
+      "name": "Data Types",
+      "passed": true,
+      "detail": "kinds=[\"data\", \"file\", \"text\"], text=true, data=true, file=true",
+      "durationMs": 60
+    },
+    {
+      "id": "jsonrpc/spec-streaming",
+      "name": "Streaming",
+      "passed": true,
+      "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
+      "durationMs": 2136
+    },
+    {
+      "id": "jsonrpc/spec-multi-turn",
+      "name": "Multi-Turn",
+      "passed": true,
+      "detail": "turn1=Some(InputRequired), turn2=Some(InputRequired), contextMatch=true",
+      "durationMs": 161
+    },
+    {
+      "id": "jsonrpc/spec-task-cancel",
+      "name": "Task Cancel (via streaming)",
+      "passed": false,
+      "detail": "SDK not supported: a2a-rs-client does not expose cancel_task",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/spec-cancel-with-metadata",
+      "name": "Cancel With Metadata",
+      "passed": false,
+      "detail": "SDK not supported: a2a-rs-client does not expose cancel_task",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/spec-list-tasks",
+      "name": "ListTasks",
+      "passed": false,
+      "detail": "SDK not supported: a2a-rs-client does not expose list_tasks",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/spec-return-immediately",
+      "name": "Return Immediately",
+      "passed": false,
+      "detail": "got Message instead of Task, took=0.1s — returnImmediately not supported",
+      "durationMs": 63
+    },
+    {
+      "id": "jsonrpc/error-task-not-found",
+      "name": "Task Not Found Error",
+      "passed": true,
+      "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
+      "durationMs": 70
+    },
+    {
+      "id": "jsonrpc/error-cancel-not-found",
+      "name": "Cancel Not Found",
+      "passed": false,
+      "detail": "SDK not supported: a2a-rs-client does not expose cancel_task",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/error-cancel-terminal",
+      "name": "Cancel Terminal Task",
+      "passed": false,
+      "detail": "SDK not supported: a2a-rs-client does not expose cancel_task",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/error-send-terminal",
+      "name": "Send To Terminal Task",
+      "passed": true,
+      "detail": "got expected error: Server error -32004: Task is in a terminal state and cannot accept messages.",
+      "durationMs": 40
+    },
+    {
+      "id": "jsonrpc/error-send-invalid-task",
+      "name": "Send Invalid TaskId",
+      "passed": true,
+      "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
+      "durationMs": 64
+    },
+    {
+      "id": "jsonrpc/error-push-not-supported",
+      "name": "Push Not Supported",
+      "passed": false,
+      "detail": "SDK not supported: a2a-rs-client does not expose push notification config",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/subscribe-to-task",
+      "name": "SubscribeToTask",
+      "passed": false,
+      "detail": "SDK not supported: a2a-rs-client does not expose subscribe_to_task",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/error-subscribe-not-found",
+      "name": "Subscribe Not Found",
+      "passed": false,
+      "detail": "SDK not supported: a2a-rs-client does not expose subscribe_to_task",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/stream-message-only",
+      "name": "Stream Message Only",
+      "passed": true,
+      "detail": "events=1, gotMessage=true",
+      "durationMs": 62
+    },
+    {
+      "id": "jsonrpc/stream-task-lifecycle",
+      "name": "Stream Task Lifecycle",
+      "passed": true,
+      "detail": "events=4, states=[Submitted, Working, Completed]",
+      "durationMs": 39
+    },
+    {
+      "id": "jsonrpc/multi-turn-context-preserved",
+      "name": "Context Preserved",
+      "passed": true,
+      "detail": "contextId1=231b89d8-2ed6-4704-8..., contextId2=231b89d8-2ed6-4704-8..., match=true",
+      "durationMs": 139
+    },
+    {
+      "id": "jsonrpc/get-task-with-history",
+      "name": "GetTask With History",
+      "passed": false,
+      "detail": "historyLength=0",
+      "durationMs": 313
+    },
+    {
+      "id": "jsonrpc/get-task-after-failure",
+      "name": "GetTask After Failure",
+      "passed": true,
+      "detail": "state=Failed",
+      "durationMs": 68
+    },
+    {
+      "id": "rest/agent-card-echo",
+      "name": "Echo Agent Card",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/agent-card-spec",
+      "name": "Spec Agent Card",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/echo-send-message",
+      "name": "Echo Send Message",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-message-only",
+      "name": "Message Only",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-task-lifecycle",
+      "name": "Task Lifecycle",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-get-task",
+      "name": "GetTask",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-task-failure",
+      "name": "Task Failure",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-data-types",
+      "name": "Data Types",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-streaming",
+      "name": "Streaming",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-multi-turn",
+      "name": "Multi-Turn",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-task-cancel",
+      "name": "Task Cancel (via streaming)",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-cancel-with-metadata",
+      "name": "Cancel With Metadata",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-list-tasks",
+      "name": "ListTasks",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-return-immediately",
+      "name": "Return Immediately",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/error-task-not-found",
+      "name": "Task Not Found Error",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/error-cancel-not-found",
+      "name": "Cancel Not Found",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/error-cancel-terminal",
+      "name": "Cancel Terminal Task",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/error-send-terminal",
+      "name": "Send To Terminal Task",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/error-send-invalid-task",
+      "name": "Send Invalid TaskId",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/error-push-not-supported",
+      "name": "Push Not Supported",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/subscribe-to-task",
+      "name": "SubscribeToTask",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/error-subscribe-not-found",
+      "name": "Subscribe Not Found",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/stream-message-only",
+      "name": "Stream Message Only",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/stream-task-lifecycle",
+      "name": "Stream Task Lifecycle",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/multi-turn-context-preserved",
+      "name": "Context Preserved",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/get-task-with-history",
+      "name": "GetTask With History",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/get-task-after-failure",
+      "name": "GetTask After Failure",
+      "passed": false,
+      "detail": "REST transport not supported by SDK",
+      "durationMs": 0
+    },
+    {
+      "id": "v03/spec03-agent-card",
+      "name": "v0.3 Agent Card",
+      "passed": true,
+      "detail": "protocolVersion=0.3.0, hasUrl=true",
+      "durationMs": 194
+    },
+    {
+      "id": "v03/spec03-send-message",
+      "name": "v0.3 Send Message",
+      "passed": true,
+      "detail": "text=[message-only] You said: message-only hello",
+      "durationMs": 255
+    },
+    {
+      "id": "v03/spec03-task-lifecycle",
+      "name": "v0.3 Task Lifecycle",
+      "passed": true,
+      "detail": "state=Completed",
+      "durationMs": 40
+    },
+    {
+      "id": "v03/spec03-streaming",
+      "name": "v0.3 Streaming",
+      "passed": true,
+      "detail": "events=7, lastState=Some(Completed)",
+      "durationMs": 2125
+    }
+  ]
+}
