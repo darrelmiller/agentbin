@@ -2,7 +2,7 @@
   "client": "rust",
   "sdk": "a2a-rs-client 1.0.7",
   "protocolVersion": "1.0",
-  "timestamp": "2026-03-23T21:55:14.129482800+00:00",
+  "timestamp": "2026-03-24T03:55:13.008407500+00:00",
   "baseUrl": "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io",
   "results": [
     {
@@ -10,34 +10,34 @@
       "name": "Echo Agent Card",
       "passed": true,
       "detail": "name=Echo Agent, skills=1",
-      "durationMs": 309
+      "durationMs": 166
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 374
+      "durationMs": 107
     },
     {
       "id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
       "passed": true,
       "detail": "response contains 'hello': true, text=Echo: hello from Rust",
-      "durationMs": 308
+      "durationMs": 203
     },
     {
       "id": "jsonrpc/spec-message-only",
       "name": "Message Only",
       "passed": true,
       "detail": "isMessage=true, text=[message-only] You said: message-only",
-      "durationMs": 247
+      "durationMs": 113
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=Completed, taskId=458f405ad4c64294a76f...",
+      "detail": "state=Completed, taskId=177b9d4e7b6e4019ab72...",
       "durationMs": 41
     },
     {
@@ -45,154 +45,154 @@
       "name": "GetTask",
       "passed": true,
       "detail": "state=Completed, id match=true",
-      "durationMs": 39
+      "durationMs": 36
     },
     {
       "id": "jsonrpc/spec-task-failure",
       "name": "Task Failure",
       "passed": true,
       "detail": "state=Failed",
-      "durationMs": 41
+      "durationMs": 33
     },
     {
       "id": "jsonrpc/spec-data-types",
       "name": "Data Types",
       "passed": true,
       "detail": "kinds=[\"data\", \"file\", \"text\"], text=true, data=true, file=true",
-      "durationMs": 94
+      "durationMs": 42
     },
     {
       "id": "jsonrpc/spec-streaming",
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
-      "durationMs": 2042
+      "durationMs": 2045
     },
     {
       "id": "jsonrpc/spec-multi-turn",
       "name": "Multi-Turn",
       "passed": true,
       "detail": "turn1=Some(InputRequired), turn2=Some(InputRequired), contextMatch=true",
-      "durationMs": 151
+      "durationMs": 71
     },
     {
       "id": "jsonrpc/spec-task-cancel",
       "name": "Task Cancel (via streaming)",
-      "passed": true,
-      "detail": "taskId=68fb8bbe82374415bdc50e4014bcde06, canceled=true",
-      "durationMs": 2272
+      "passed": false,
+      "detail": "task already terminal: Completed",
+      "durationMs": 30035
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
-      "passed": true,
-      "detail": "taskId=f308c235be114512b694aca6da561360, canceled=true, metadata={reason:true, requestedBy:true}",
-      "durationMs": 2284
+      "passed": false,
+      "detail": "task already terminal: Completed",
+      "durationMs": 30033
     },
     {
       "id": "jsonrpc/spec-list-tasks",
       "name": "ListTasks",
-      "passed": true,
-      "detail": "tasks=50 (need>=1)",
-      "durationMs": 201
+      "passed": false,
+      "detail": "Server error -32601: Invalid JSON-RPC request: 'method' field is not a valid A2A method.",
+      "durationMs": 35
     },
     {
       "id": "jsonrpc/spec-return-immediately",
       "name": "Return Immediately",
       "passed": false,
-      "detail": "got Message instead of Task, took=0.1s — returnImmediately not supported",
-      "durationMs": 70
+      "detail": "got Message instead of Task, took=0.0s — returnImmediately not supported",
+      "durationMs": 35
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 39
+      "durationMs": 33
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 39
+      "durationMs": 37
     },
     {
       "id": "jsonrpc/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": true,
       "detail": "got expected error: Server error -32002: Task is already in a terminal state.",
-      "durationMs": 79
+      "durationMs": 33
     },
     {
       "id": "jsonrpc/error-send-terminal",
       "name": "Send To Terminal Task",
       "passed": true,
       "detail": "got expected error: Server error -32004: Task is in a terminal state and cannot accept messages.",
-      "durationMs": 40
+      "durationMs": 33
     },
     {
       "id": "jsonrpc/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 85
+      "durationMs": 34
     },
     {
       "id": "jsonrpc/error-push-not-supported",
       "name": "Push Not Supported",
       "passed": true,
       "detail": "got expected error: Server error -32601: Invalid JSON-RPC request: 'method' field is not a valid A2A method.",
-      "durationMs": 39
+      "durationMs": 35
     },
     {
       "id": "jsonrpc/subscribe-to-task",
       "name": "SubscribeToTask",
-      "passed": true,
-      "detail": "taskId=6b0d14013bb04934bafa5f3b32c9e44a, subscriptionEvents=1",
-      "durationMs": 30351
+      "passed": false,
+      "detail": "events=0, lastState=None",
+      "durationMs": 70
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found",
-      "passed": true,
-      "detail": "got expected error: Server error -32603: An internal error occurred during streaming.",
-      "durationMs": 64
+      "passed": false,
+      "detail": "expected error, got stream",
+      "durationMs": 33
     },
     {
       "id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
       "passed": true,
       "detail": "events=1, gotMessage=true",
-      "durationMs": 39
+      "durationMs": 32
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": true,
       "detail": "events=4, states=[Submitted, Working, Completed]",
-      "durationMs": 39
+      "durationMs": 35
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": true,
-      "detail": "contextId1=ae767fd8-d53f-49a3-b..., contextId2=ae767fd8-d53f-49a3-b..., match=true",
-      "durationMs": 153
+      "detail": "contextId1=63bad88f-c194-46d6-8..., contextId2=63bad88f-c194-46d6-8..., match=true",
+      "durationMs": 66
     },
     {
       "id": "jsonrpc/get-task-with-history",
       "name": "GetTask With History",
-      "passed": true,
+      "passed": false,
       "detail": "historyLength=0",
-      "durationMs": 122
+      "durationMs": 100
     },
     {
       "id": "jsonrpc/get-task-after-failure",
       "name": "GetTask After Failure",
       "passed": true,
       "detail": "state=Failed",
-      "durationMs": 39
+      "durationMs": 32
     },
     {
       "id": "rest/agent-card-echo",
@@ -388,28 +388,28 @@
       "name": "v0.3 Agent Card",
       "passed": true,
       "detail": "protocolVersion=0.3.0, hasUrl=true",
-      "durationMs": 206
+      "durationMs": 124
     },
     {
       "id": "v03/spec03-send-message",
       "name": "v0.3 Send Message",
       "passed": true,
       "detail": "text=[message-only] You said: message-only hello",
-      "durationMs": 264
+      "durationMs": 102
     },
     {
       "id": "v03/spec03-task-lifecycle",
       "name": "v0.3 Task Lifecycle",
       "passed": true,
       "detail": "state=Completed",
-      "durationMs": 39
+      "durationMs": 29
     },
     {
       "id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed)",
-      "durationMs": 2047
+      "durationMs": 2031
     }
   ]
 }
