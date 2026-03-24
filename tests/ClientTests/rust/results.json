@@ -1,8 +1,8 @@
 {
   "client": "rust",
-  "sdk": "a2a-rs-client 1.0.7",
+  "sdk": "a2a-rs-client 1.0.11",
   "protocolVersion": "1.0",
-  "timestamp": "2026-03-24T04:09:46.371275200+00:00",
+  "timestamp": "2026-03-24T11:40:14.557793200+00:00",
   "baseUrl": "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io",
   "results": [
     {
@@ -10,406 +10,406 @@
       "name": "Echo Agent Card",
       "passed": false,
       "detail": "error decoding response body",
-      "durationMs": 6224
+      "durationMs": 297
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": false,
       "detail": "error decoding response body",
-      "durationMs": 132
+      "durationMs": 195
     },
     {
       "id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
       "passed": true,
       "detail": "response contains 'hello': true, text=Echo: hello from Rust",
-      "durationMs": 138
+      "durationMs": 176
     },
     {
       "id": "jsonrpc/spec-message-only",
       "name": "Message Only",
       "passed": true,
       "detail": "isMessage=true, text=[message-only] You said: message-only",
-      "durationMs": 106
+      "durationMs": 223
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=Completed, taskId=a58b07e570db4e5b9da2...",
-      "durationMs": 37
+      "detail": "state=Completed, taskId=aeeae6aea1a14010a18f...",
+      "durationMs": 72
     },
     {
       "id": "jsonrpc/spec-get-task",
       "name": "GetTask",
       "passed": true,
       "detail": "state=Completed, id match=true",
-      "durationMs": 33
+      "durationMs": 59
     },
     {
       "id": "jsonrpc/spec-task-failure",
       "name": "Task Failure",
       "passed": true,
       "detail": "state=Failed",
-      "durationMs": 30
+      "durationMs": 49
     },
     {
       "id": "jsonrpc/spec-data-types",
       "name": "Data Types",
-      "passed": true,
-      "detail": "kinds=[\"data\", \"file\", \"text\"], text=true, data=true, file=true",
-      "durationMs": 41
+      "passed": false,
+      "detail": "Part must have text, file, or data field",
+      "durationMs": 129
     },
     {
       "id": "jsonrpc/spec-streaming",
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
-      "durationMs": 2045
+      "durationMs": 2069
     },
     {
       "id": "jsonrpc/spec-multi-turn",
       "name": "Multi-Turn",
       "passed": true,
       "detail": "turn1=Some(InputRequired), turn2=Some(InputRequired), contextMatch=true",
-      "durationMs": 65
+      "durationMs": 118
     },
     {
       "id": "jsonrpc/spec-task-cancel",
       "name": "Task Cancel (via streaming)",
       "passed": false,
       "detail": "task already terminal: Completed",
-      "durationMs": 30032
+      "durationMs": 30063
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": false,
       "detail": "task already terminal: Completed",
-      "durationMs": 30030
+      "durationMs": 30050
     },
     {
       "id": "jsonrpc/spec-list-tasks",
       "name": "ListTasks",
-      "passed": false,
-      "detail": "Server error -32601: Invalid JSON-RPC request: 'method' field is not a valid A2A method.",
-      "durationMs": 30
+      "passed": true,
+      "detail": "returned 10 tasks",
+      "durationMs": 44
     },
     {
       "id": "jsonrpc/spec-return-immediately",
       "name": "Return Immediately",
       "passed": false,
       "detail": "got Message instead of Task, took=0.0s — returnImmediately not supported",
-      "durationMs": 31
+      "durationMs": 42
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 78
+      "durationMs": 42
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 61
+      "durationMs": 42
     },
     {
       "id": "jsonrpc/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": true,
       "detail": "got expected error: Server error -32002: Task is already in a terminal state.",
-      "durationMs": 46
+      "durationMs": 43
     },
     {
       "id": "jsonrpc/error-send-terminal",
       "name": "Send To Terminal Task",
       "passed": true,
       "detail": "got expected error: Server error -32004: Task is in a terminal state and cannot accept messages.",
-      "durationMs": 31
+      "durationMs": 94
     },
     {
       "id": "jsonrpc/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 64
+      "durationMs": 112
     },
     {
       "id": "jsonrpc/error-push-not-supported",
       "name": "Push Not Supported",
       "passed": true,
-      "detail": "got expected error: Server error -32601: Invalid JSON-RPC request: 'method' field is not a valid A2A method.",
-      "durationMs": 62
+      "detail": "got expected error: Server error -32003: Push notifications not supported.",
+      "durationMs": 46
     },
     {
       "id": "jsonrpc/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
-      "detail": "events=0, lastState=None",
-      "durationMs": 102
+      "detail": "Server error -32603: An internal error occurred during streaming.",
+      "durationMs": 89
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found",
-      "passed": false,
-      "detail": "expected error, got stream",
-      "durationMs": 43
+      "passed": true,
+      "detail": "got expected error: Server error -32603: An internal error occurred during streaming.",
+      "durationMs": 42
     },
     {
       "id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
       "passed": true,
       "detail": "events=1, gotMessage=true",
-      "durationMs": 42
+      "durationMs": 44
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": true,
       "detail": "events=4, states=[Submitted, Working, Completed]",
-      "durationMs": 53
+      "durationMs": 44
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": true,
-      "detail": "contextId1=2ab9acf0-5180-4b9a-9..., contextId2=2ab9acf0-5180-4b9a-9..., match=true",
-      "durationMs": 88
+      "detail": "contextId1=836dc011-753d-4876-b..., contextId2=836dc011-753d-4876-b..., match=true",
+      "durationMs": 161
     },
     {
       "id": "jsonrpc/get-task-with-history",
       "name": "GetTask With History",
       "passed": false,
       "detail": "historyLength=0",
-      "durationMs": 187
+      "durationMs": 212
     },
     {
       "id": "jsonrpc/get-task-after-failure",
       "name": "GetTask After Failure",
       "passed": true,
       "detail": "state=Failed",
-      "durationMs": 67
+      "durationMs": 41
     },
     {
       "id": "rest/agent-card-echo",
       "name": "Echo Agent Card",
       "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "detail": "error decoding response body",
+      "durationMs": 270
     },
     {
       "id": "rest/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "detail": "error decoding response body",
+      "durationMs": 285
     },
     {
       "id": "rest/echo-send-message",
       "name": "Echo Send Message",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "response contains 'hello': true, text=Echo: hello from Rust REST",
+      "durationMs": 280
     },
     {
       "id": "rest/spec-message-only",
       "name": "Message Only",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "isMessage=true, text=[message-only] You said: message-only",
+      "durationMs": 285
     },
     {
       "id": "rest/spec-task-lifecycle",
       "name": "Task Lifecycle",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "state=Completed, taskId=b1d8d1390f1f4004b6ab...",
+      "durationMs": 44
     },
     {
       "id": "rest/spec-get-task",
       "name": "GetTask",
       "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "detail": "HTTP status client error (404 Not Found) for url (https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec...",
+      "durationMs": 41
     },
     {
       "id": "rest/spec-task-failure",
       "name": "Task Failure",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "state=Failed",
+      "durationMs": 42
     },
     {
       "id": "rest/spec-data-types",
       "name": "Data Types",
       "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "detail": "error decoding response body",
+      "durationMs": 75
     },
     {
       "id": "rest/spec-streaming",
       "name": "Streaming",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
+      "durationMs": 2139
     },
     {
       "id": "rest/spec-multi-turn",
       "name": "Multi-Turn",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "turn1=Some(InputRequired), turn2=Some(InputRequired), contextMatch=true",
+      "durationMs": 85
     },
     {
       "id": "rest/spec-task-cancel",
       "name": "Task Cancel (via streaming)",
       "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "detail": "task already terminal: Completed",
+      "durationMs": 30050
     },
     {
       "id": "rest/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "detail": "task already terminal: Completed",
+      "durationMs": 30043
     },
     {
       "id": "rest/spec-list-tasks",
       "name": "ListTasks",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "returned 33 tasks",
+      "durationMs": 45
     },
     {
       "id": "rest/spec-return-immediately",
       "name": "Return Immediately",
       "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "detail": "got Message instead of Task, took=0.0s — returnImmediately not supported",
+      "durationMs": 42
     },
     {
       "id": "rest/error-task-not-found",
       "name": "Task Not Found Error",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: HTTP status client error (404 Not Found) for url (https://agentbin.greensmoke-1163cb63.eastus.azurec...",
+      "durationMs": 67
     },
     {
       "id": "rest/error-cancel-not-found",
       "name": "Cancel Not Found",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (https://agentbin.greensmoke-1163cb63.east...",
+      "durationMs": 47
     },
     {
       "id": "rest/error-cancel-terminal",
       "name": "Cancel Terminal Task",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (https://agentbin.greensmoke-1163cb63.east...",
+      "durationMs": 43
     },
     {
       "id": "rest/error-send-terminal",
       "name": "Send To Terminal Task",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: HTTP status client error (400 Bad Request) for url (https://agentbin.greensmoke-1163cb63.eastus.azur...",
+      "durationMs": 84
     },
     {
       "id": "rest/error-send-invalid-task",
       "name": "Send Invalid TaskId",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: HTTP status client error (404 Not Found) for url (https://agentbin.greensmoke-1163cb63.eastus.azurec...",
+      "durationMs": 115
     },
     {
       "id": "rest/error-push-not-supported",
       "name": "Push Not Supported",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: HTTP status client error (404 Not Found) for url (https://agentbin.greensmoke-1163cb63.eastus.azurec...",
+      "durationMs": 40
     },
     {
       "id": "rest/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "detail": "HTTP status client error (404 Not Found) for url (https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec...",
+      "durationMs": 150
     },
     {
       "id": "rest/error-subscribe-not-found",
       "name": "Subscribe Not Found",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: HTTP status client error (404 Not Found) for url (https://agentbin.greensmoke-1163cb63.eastus.azurec...",
+      "durationMs": 40
     },
     {
       "id": "rest/stream-message-only",
       "name": "Stream Message Only",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "events=1, gotMessage=true",
+      "durationMs": 41
     },
     {
       "id": "rest/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "events=4, states=[Submitted, Working, Completed]",
+      "durationMs": 112
     },
     {
       "id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
-      "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "passed": true,
+      "detail": "contextId1=f2d59eb7-076c-407f-9..., contextId2=f2d59eb7-076c-407f-9..., match=true",
+      "durationMs": 87
     },
     {
       "id": "rest/get-task-with-history",
       "name": "GetTask With History",
       "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "detail": "historyLength=0",
+      "durationMs": 157
     },
     {
       "id": "rest/get-task-after-failure",
       "name": "GetTask After Failure",
       "passed": false,
-      "detail": "REST transport not supported by SDK",
-      "durationMs": 0
+      "detail": "HTTP status client error (404 Not Found) for url (https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io/spec...",
+      "durationMs": 41
     },
     {
       "id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
-      "passed": true,
-      "detail": "protocolVersion=0.3.0, hasUrl=true",
-      "durationMs": 202
+      "passed": false,
+      "detail": "error decoding response body",
+      "durationMs": 218
     },
     {
       "id": "v03/spec03-send-message",
       "name": "v0.3 Send Message",
       "passed": true,
       "detail": "text=[message-only] You said: message-only hello",
-      "durationMs": 175
+      "durationMs": 238
     },
     {
       "id": "v03/spec03-task-lifecycle",
       "name": "v0.3 Task Lifecycle",
       "passed": true,
       "detail": "state=Completed",
-      "durationMs": 58
+      "durationMs": 75
     },
     {
       "id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
-      "passed": true,
-      "detail": "events=7, lastState=Some(Completed)",
-      "durationMs": 2048
+      "passed": false,
+      "detail": "stream error (SDK may not support v0.3): invalid value: map, expected map with a single key",
+      "durationMs": 2044
     }
   ]
 }
