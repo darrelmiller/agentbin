@@ -7,7 +7,7 @@ import FoundationNetworking
 // MARK: - Constants & Globals
 
 let defaultBaseURL = "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io"
-let sdkName = "a2a-client-swift 1.0.x"
+let sdkName = "a2a-client-swift 1.0.12"
 
 struct TestResult: Codable, Sendable {
     let id: String
@@ -54,6 +54,7 @@ func makeClient(baseURL: String, binding: TransportBinding) -> A2AClient {
     let config = A2AClientConfiguration(
         baseURL: URL(string: baseURL)!,
         transportBinding: binding,
+        tenant: binding == .httpREST ? "v1" : nil,
         timeoutInterval: 30
     )
     return A2AClient(configuration: config)

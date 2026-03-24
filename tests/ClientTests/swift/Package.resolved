@@ -1,13 +1,13 @@
 {
-  "originHash" : "be52635450d1d8bcb30a932259c6e93dc84c998e621c4df67ba2593ca914195a",
+  "originHash" : "908c9d9175d9ea94637a1ee99eeca34b2b69c9cf7359578295339e4b732b6210",
   "pins" : [
     {
       "identity" : "a2a-client-swift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tolgaki/a2a-client-swift.git",
       "state" : {
-        "revision" : "b2aaf3d71f65981b04b28598479c4809d4af7bde",
-        "version" : "1.0.7"
+        "revision" : "6e260fb77ae114ea1257a3e68e34a12a7b767bb5",
+        "version" : "1.0.12"
       }
     }
   ],
