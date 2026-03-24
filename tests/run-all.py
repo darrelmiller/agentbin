@@ -559,6 +559,150 @@ def _esc(s: str) -> str:
     return s.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "&#10;")
 
 
+def generate_report_card(all_results: dict[str, dict], base_url: str) -> str:
+    """Generate a standalone HTML report card showing failure details grouped by client."""
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    ordered_clients = [c for c in CLIENTS if c in all_results]
+
+    # Binding display names and test-id prefixes
+    binding_info = [
+        ("jsonrpc", "JSON-RPC"),
+        ("rest", "HTTP+JSON (REST)"),
+        ("v03", "v0.3 Backward Compatibility"),
+    ]
+
+    # Build test name lookup: full_id -> test_name
+    test_names: dict[str, str] = {}
+    for test_id, test_name, _cat in BASE_TESTS:
+        for binding in BINDINGS:
+            test_names[f"{binding}/{test_id}"] = test_name
+    for test_id, test_name, _cat in V03_TESTS:
+        test_names[f"v03/{test_id}"] = test_name
+
+    sections_html = ""
+
+    for cid in ordered_clients:
+        info = CLIENTS[cid]
+        data = all_results[cid]
+        sdk = data.get("sdk", "")
+        results_list = data.get("results", [])
+        passed = sum(1 for r in results_list if r.get("passed") or r.get("Passed"))
+        failed = len(results_list) - passed
+        score_color = "#3fb950" if failed == 0 else "#f85149"
+
+        sections_html += f'<div class="client-section">\n'
+        sections_html += f'  <div class="client-header">\n'
+        sections_html += f'    <span class="client-name">{info["icon"]} {info["name"]}</span>\n'
+        if sdk:
+            sections_html += f'    <span class="client-sdk">{_esc(sdk)}</span>\n'
+        sections_html += f'    <span class="client-score" style="color:{score_color}">{passed}/{passed+failed}</span>\n'
+        sections_html += f'  </div>\n'
+
+        if failed == 0:
+            sections_html += '  <div class="all-passing">&#10004; All tests passing</div>\n'
+            sections_html += '</div>\n'
+            continue
+
+        # Group failures by binding
+        failures_by_binding: dict[str, list[dict]] = {}
+        for r in results_list:
+            if r.get("passed") or r.get("Passed"):
+                continue
+            rid = r.get("id") or r.get("Id") or ""
+            prefix = rid.split("/")[0] if "/" in rid else ""
+            failures_by_binding.setdefault(prefix, []).append(r)
+
+        for binding_key, binding_label in binding_info:
+            binding_failures = failures_by_binding.get(binding_key, [])
+            if not binding_failures:
+                continue
+
+            sections_html += f'  <div class="binding-group">\n'
+            sections_html += f'    <div class="binding-label">{binding_label}</div>\n'
+            sections_html += '    <table>\n'
+            sections_html += '      <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>\n'
+            sections_html += '      <tbody>\n'
+
+            for r in binding_failures:
+                rid = r.get("id") or r.get("Id") or ""
+                name = test_names.get(rid, rid.split("/")[-1] if "/" in rid else rid)
+                detail = r.get("detail") or r.get("Detail") or ""
+                known = _get_known_failure(cid, rid)
+                row_class = "known-row" if known else "unknown-row"
+                known_cell = _esc(known) if known else "&mdash;"
+
+                sections_html += f'      <tr class="{row_class}">'
+                sections_html += f'<td class="col-id"><code>{_esc(rid)}</code></td>'
+                sections_html += f'<td class="col-name">{_esc(name)}</td>'
+                sections_html += f'<td class="col-detail">{_esc(detail)}</td>'
+                sections_html += f'<td class="col-known">{known_cell}</td>'
+                sections_html += '</tr>\n'
+
+            sections_html += '      </tbody>\n'
+            sections_html += '    </table>\n'
+            sections_html += '  </div>\n'
+
+        sections_html += '</div>\n'
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentBin A2A Report Card</title>
+<style>
+  :root {{ --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; }}
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+         background: var(--bg); color: var(--text); padding: 1.5rem; }}
+  h1 {{ font-size: 1.4rem; margin-bottom: 0.2rem; }}
+  .subtitle {{ color: var(--muted); margin-bottom: 1.5rem; font-size: 0.8rem; }}
+  .client-section {{ background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+                     padding: 1rem 1.2rem; margin-bottom: 1rem; }}
+  .client-header {{ display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; flex-wrap: wrap; }}
+  .client-name {{ font-size: 1.1rem; font-weight: 700; }}
+  .client-sdk {{ color: var(--muted); font-size: 0.8rem; }}
+  .client-score {{ font-weight: 700; font-size: 1rem; margin-left: auto; }}
+  .all-passing {{ color: #3fb950; font-weight: 600; font-size: 0.9rem; padding: 0.5rem 0; }}
+  .binding-group {{ margin-bottom: 0.8rem; }}
+  .binding-label {{ font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+                    color: var(--muted); margin-bottom: 0.4rem; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 0.78rem; border: 1px solid var(--border);
+           border-radius: 4px; overflow: hidden; }}
+  th {{ background: #21262d; padding: 5px 8px; text-align: left; font-size: 0.72rem; text-transform: uppercase;
+       letter-spacing: 0.03em; color: var(--muted); border-bottom: 1px solid var(--border); }}
+  td {{ padding: 4px 8px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.4; }}
+  .col-id {{ white-space: nowrap; }}
+  .col-id code {{ background: var(--bg); padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.8em; }}
+  .col-name {{ white-space: nowrap; }}
+  .col-detail {{ color: var(--muted); max-width: 350px; word-break: break-word; }}
+  .col-known {{ max-width: 350px; word-break: break-word; }}
+  .unknown-row td {{ color: #f85149; }}
+  .unknown-row .col-detail {{ color: #f85149; }}
+  .unknown-row .col-known {{ color: var(--muted); }}
+  .known-row td {{ color: #d29922; }}
+  .known-row .col-detail {{ color: #d29922; }}
+  .known-row .col-known {{ color: #d29922; }}
+  tr:hover td {{ background: rgba(255,255,255,0.03); }}
+  .footer {{ color: var(--muted); font-size: 0.7rem; margin-top: 0.8rem; }}
+</style>
+</head>
+<body>
+<h1>AgentBin A2A Report Card</h1>
+<p class="subtitle">Generated {timestamp} &bull; Target: <code>{base_url}</code></p>
+
+{sections_html}
+
+<p class="footer">
+  Known failures shown in <span style="color:#d29922">orange</span> &bull;
+  Unknown failures shown in <span style="color:#f85149">red</span> &bull;
+  Clients: {', '.join(CLIENTS[c]["name"] for c in ordered_clients)}
+</p>
+</body>
+</html>"""
+    return html
+
+
 def main():
     base_url = BASE_URL
     dashboard_only = False
@@ -592,6 +736,12 @@ def main():
     out_path.write_text(html, encoding="utf-8")
     print(f"\n✅ Dashboard written to {out_path}")
 
+    # Local report card
+    rc_html = generate_report_card(all_results, base_url)
+    rc_path = TESTS_DIR / "report-card.html"
+    rc_path.write_text(rc_html, encoding="utf-8")
+    print(f"✅ Report card written to {rc_path}")
+
     # Public dashboard (docs/) is gated behind --publish and filtered to publishable clients
     if publish:
         publishable = {cid: data for cid, data in all_results.items() if CLIENTS.get(cid, {}).get("publish", False)}
@@ -600,6 +750,11 @@ def main():
             public_html = generate_dashboard(publishable, base_url)
             docs_path.write_text(public_html, encoding="utf-8")
             print(f"✅ Public dashboard updated (docs/dashboard.html) — {len(publishable)} of {len(all_results)} clients included")
+
+            rc_docs_path = TESTS_DIR.parent / "docs" / "report-card.html"
+            public_rc_html = generate_report_card(publishable, base_url)
+            rc_docs_path.write_text(public_rc_html, encoding="utf-8")
+            print(f"✅ Public report card updated (docs/report-card.html)")
     else:
         print("📌 Public dashboard NOT updated (use --publish to update docs/)")
 
