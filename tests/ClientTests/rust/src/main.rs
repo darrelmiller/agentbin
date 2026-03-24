@@ -11,7 +11,6 @@ use a2a_rs_core::{
     AgentCard, ListTasksRequest, Message, Part, PushNotificationConfig, Role,
     SendMessageConfiguration, SendMessageResult, StreamingMessageResult, TaskState,
 };
-use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use tokio_stream::StreamExt;
 
@@ -240,20 +239,6 @@ fn record(
     });
 }
 
-// ── Fetch agent card via raw HTTP (works for any version) ──────────
-
-async fn fetch_card_raw(url: &str) -> Result<serde_json::Value> {
-    let client = reqwest::Client::new();
-    let resp = client
-        .get(url)
-        .header("A2A-Version", "1.0")
-        .send()
-        .await?
-        .error_for_status()?;
-    let val: serde_json::Value = resp.json().await?;
-    Ok(val)
-}
-
 // ── JSON-RPC Tests ─────────────────────────────────────────────────
 
 async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
@@ -262,69 +247,80 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
     let mut _saved_context_id: Option<String> = None;
     let mut failed_task_id: Option<String> = None;
 
-    // ── 1. Discovery: Echo Agent Card ──
+    // ── 1. Discovery: Echo Agent Card (via SDK) ──
     {
         let start = Instant::now();
-        let card_url = format!("{base_url}/echo/.well-known/agent-card.json");
-        match fetch_card_raw(&card_url).await {
-            Ok(val) => {
-                let name = val
-                    .get("name")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("unknown");
-                let skills_count = val
-                    .get("skills")
-                    .and_then(|v| v.as_array())
-                    .map(|a| a.len())
-                    .unwrap_or(0);
-                record(
-                    results,
-                    "jsonrpc/agent-card-echo",
-                    "Echo Agent Card",
-                    true,
-                    &format!("name={name}, skills={skills_count}"),
-                    start.elapsed(),
-                );
-            }
+        let server_url = format!("{base_url}/echo");
+        match A2aClient::with_server(&server_url) {
+            Ok(client) => match client.fetch_agent_card().await {
+                Ok(card) => {
+                    let name = &card.name;
+                    let skills_count = card.skills.len();
+                    record(
+                        results,
+                        "jsonrpc/agent-card-echo",
+                        "Echo Agent Card",
+                        true,
+                        &format!("name={name}, skills={skills_count}"),
+                        start.elapsed(),
+                    );
+                }
+                Err(e) => {
+                    record(
+                        results,
+                        "jsonrpc/agent-card-echo",
+                        "Echo Agent Card",
+                        false,
+                        &truncate(&e.to_string(), 120),
+                        start.elapsed(),
+                    );
+                }
+            },
             Err(e) => {
                 record(
                     results,
                     "jsonrpc/agent-card-echo",
                     "Echo Agent Card",
                     false,
-                    &truncate(&e.to_string(), 120),
+                    &truncate(&format!("SDK client creation failed: {e}"), 120),
                     start.elapsed(),
                 );
             }
         }
     }
 
-    // ── 2. Discovery: Spec Agent Card ──
+    // ── 2. Discovery: Spec Agent Card (via SDK) ──
     let _spec_card: Option<AgentCard>;
     {
         let start = Instant::now();
-        let card_url = format!("{base_url}/spec/.well-known/agent-card.json");
-        match fetch_card_raw(&card_url).await {
-            Ok(val) => {
-                let name = val
-                    .get("name")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("unknown");
-                let skills_count = val
-                    .get("skills")
-                    .and_then(|v| v.as_array())
-                    .map(|a| a.len())
-                    .unwrap_or(0);
-                _spec_card = serde_json::from_value(val.clone()).ok();
-                record(
-                    results,
-                    "jsonrpc/agent-card-spec",
-                    "Spec Agent Card",
-                    true,
-                    &format!("name={name}, skills={skills_count}"),
-                    start.elapsed(),
-                );
-            }
+        let server_url = format!("{base_url}/spec");
+        match A2aClient::with_server(&server_url) {
+            Ok(client) => match client.fetch_agent_card().await {
+                Ok(card) => {
+                    let name = card.name.clone();
+                    let skills_count = card.skills.len();
+                    _spec_card = Some(card);
+                    record(
+                        results,
+                        "jsonrpc/agent-card-spec",
+                        "Spec Agent Card",
+                        true,
+                        &format!("name={name}, skills={skills_count}"),
+                        start.elapsed(),
+                    );
+                }
+                Err(e) => {
+                    _spec_card = None;
+                    record(
+                        results,
+                        "jsonrpc/agent-card-spec",
+                        "Spec Agent Card",
+                        false,
+                        &truncate(&e.to_string(), 120),
+                        start.elapsed(),
+                    );
+                }
+            },
             Err(e) => {
                 _spec_card = None;
                 record(
@@ -332,7 +328,7 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
                     "jsonrpc/agent-card-spec",
                     "Spec Agent Card",
                     false,
-                    &truncate(&e.to_string(), 120),
+                    &truncate(&format!("SDK client creation failed: {e}"), 120),
                     start.elapsed(),
                 );
             }
