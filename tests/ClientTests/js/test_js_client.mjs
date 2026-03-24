@@ -20,11 +20,10 @@ import {
 } from "@a2a-js/sdk";
 import {
   Client,
+  JsonRpcTransport,
   RestTransport,
+  DefaultAgentCardResolver,
 } from "@a2a-js/sdk/client";
-
-// V1 wire-format compatibility layer (bridges SDK proto format ↔ v1.0 server)
-import { V1JsonRpcTransport, createV1RestFetch } from "./v1_compat.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -60,14 +59,12 @@ function record(testId, name, passed, detail, durationMs) {
 
 // -- SDK Helpers -------------------------------------------------------
 
-/** Fetch the agent card JSON and return it as a plain object. */
-async function fetchAgentCard(url) {
-  const resp = await fetch(`${url}/.well-known/agent-card.json`);
-  if (!resp.ok) throw new Error(`Failed to fetch agent card: ${resp.status}`);
-  return await resp.json();
-}
+const cardResolver = new DefaultAgentCardResolver();
 
-const v1RestFetch = createV1RestFetch();
+/** Fetch the agent card using the SDK's DefaultAgentCardResolver. */
+async function fetchAgentCard(url) {
+  return await cardResolver.resolve(url);
+}
 
 async function makeClient(url, { binding = "JSONRPC" } = {}) {
   const card = await fetchAgentCard(url);
@@ -97,8 +94,8 @@ async function makeClient(url, { binding = "JSONRPC" } = {}) {
   }
   const transport =
     binding === "REST"
-      ? new RestTransport({ endpoint: endpointUrl, fetchImpl: v1RestFetch })
-      : new V1JsonRpcTransport({ endpoint: endpointUrl });
+      ? new RestTransport({ endpoint: endpointUrl })
+      : new JsonRpcTransport({ endpoint: endpointUrl });
   return new Client(transport, card);
 }
 
