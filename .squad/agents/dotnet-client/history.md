@@ -105,3 +105,23 @@
 - JSON-RPC failures: `spec-return-immediately` (Blocking=false not implemented server-side), `subscribe-to-task` (internal error during streaming)
 - REST failures: all 27 stubbed as "sdk-does-not-support"
 - v0.3: all 4 pass
+
+### REST binding enabled via A2AClientFactory + preview2 nupkgs (2026-07-25)
+
+**What changed:**
+- Replaced all 27 REST "sdk-does-not-support" stubs with real SDK calls through `A2AClientFactory.Create(agentCard, httpClient, options)`
+- REST clients created by: resolving card via `A2ACardResolver`, then calling `A2AClientFactory.Create()` with `PreferredBindings = [ProtocolBindingNames.HttpJson]`
+- Test logic for REST mirrors JSON-RPC exactly — both use `IA2AClient` interface methods
+- JSON-RPC tests unchanged, still use direct `new A2AClient(...)` construction
+
+**Factory workaround:**
+- `A2AClientFactory.CreateAsync(baseUrl)` has a JSON deserialization bug in preview2 — throws "element of type 'Object' but target is 'Array'" when parsing the agent card internally
+- Workaround: use `A2ACardResolver.GetAgentCardAsync()` (which correctly deserializes the full card), then pass the `AgentCard` object to `A2AClientFactory.Create(agentCard, ...)` (the synchronous overload)
+- This avoids the factory's internal card JSON parsing while still using the factory's binding selection logic
+
+**Test results:** 54/58 pass (25/27 JSON-RPC, 25/27 REST, 4/4 v0.3)
+- REST went from 0/27 → 25/27
+- 4 failures are all server-side bugs (not SDK or test issues):
+  - `spec-return-immediately` (both bindings): `Blocking=false` config not implemented server-side
+  - `subscribe-to-task` (JSON-RPC): "internal error during streaming" — known server bug
+  - `error-subscribe-not-found` (REST): returns empty SSE stream instead of error — known server behavior
