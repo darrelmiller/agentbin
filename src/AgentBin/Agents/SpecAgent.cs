@@ -49,6 +49,14 @@ public sealed class SpecAgent : IAgentHandler
             return;
         }
 
+        // TCK routes on messageId prefix (tck-*), not on message text.
+        var messageId = context.Message.MessageId ?? "";
+        if (TryRouteTck(messageId, out var tckHandler))
+        {
+            await tckHandler(context, eventQueue, cancellationToken);
+            return;
+        }
+
         var text = context.UserText?.Trim().ToLowerInvariant() ?? "";
 
         // Route to the appropriate skill based on message text
@@ -413,6 +421,244 @@ public sealed class SpecAgent : IAgentHandler
             ct);
     }
 
+    // ────────────────────────────────────────────────────────────────────────
+    // TCK (Test Compatibility Kit) support
+    //
+    // The A2A TCK routes on messageId prefix (tck-*), not on message text.
+    // Each prefix maps to a Gherkin scenario in scenarios/core_operations.feature
+    // and scenarios/streaming.feature.
+    // ────────────────────────────────────────────────────────────────────────
+
+    private delegate Task TckHandlerDelegate(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct);
+
+    private static bool TryRouteTck(string messageId, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out TckHandlerDelegate? handler)
+    {
+        // TCK messageIds are formatted as "tck-{prefix}-{session_hex}"
+        if (!messageId.StartsWith("tck-", StringComparison.OrdinalIgnoreCase))
+        {
+            handler = null;
+            return false;
+        }
+
+        // Strip "tck-" prefix and the trailing session suffix (last segment after final '-')
+        // e.g. "tck-complete-task-a1b2c3d4" → "complete-task"
+        var withoutPrefix = messageId.Substring(4);
+        var lastDash = withoutPrefix.LastIndexOf('-');
+        var prefix = lastDash > 0 ? withoutPrefix.Substring(0, lastDash) : withoutPrefix;
+
+        handler = prefix switch
+        {
+            // Core operations
+            "complete-task" => TckCompleteTask,
+            "artifact-text" => TckArtifactText,
+            "artifact-file" => TckArtifactFile,
+            "artifact-file-url" => TckArtifactFileUrl,
+            "artifact-data" => TckArtifactData,
+            "message-response" => TckMessageResponse,
+            "input-required" => TckInputRequired,
+            "reject-task" => TckRejectTask,
+
+            // Streaming operations
+            "stream-001" => TckStreamBasic,
+            "stream-002" => TckStreamMessageOnly,
+            "stream-003" => TckStreamTaskLifecycle,
+            "stream-ordering-001" => TckStreamOrdering,
+            "stream-artifact-text" => TckStreamArtifactText,
+            "stream-artifact-file" => TckStreamArtifactFile,
+            "stream-artifact-chunked" => TckStreamArtifactChunked,
+
+            _ => null,
+        };
+
+        return handler is not null;
+    }
+
+    // -- Core TCK scenarios --
+
+    private static async Task TckCompleteTask(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.CompleteAsync(
+            new Message
+            {
+                Role = Role.Agent,
+                MessageId = Guid.NewGuid().ToString("N"),
+                Parts = [Part.FromText("Hello from TCK")],
+            }, ct);
+    }
+
+    private static async Task TckArtifactText(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromText("Generated text content")],
+            name: "text-artifact",
+            cancellationToken: ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
+    private static async Task TckArtifactFile(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromRaw(System.Text.Encoding.UTF8.GetBytes("file content"), mediaType: "text/plain", filename: "output.txt")],
+            name: "file-artifact",
+            cancellationToken: ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
+    private static async Task TckArtifactFileUrl(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromUrl("https://example.com/output.txt", mediaType: "text/plain", filename: "output.txt")],
+            name: "file-url-artifact",
+            cancellationToken: ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
+    private static async Task TckArtifactData(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromData(JsonSerializer.SerializeToElement(new { key = "value", count = 42 }))],
+            name: "data-artifact",
+            cancellationToken: ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
+    private static async Task TckMessageResponse(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var responder = new MessageResponder(eventQueue, context.ContextId);
+        await responder.ReplyAsync("Direct message response", ct);
+    }
+
+    private static async Task TckInputRequired(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.RequireInputAsync(
+            new Message
+            {
+                Role = Role.Agent,
+                MessageId = Guid.NewGuid().ToString("N"),
+                Parts = [Part.FromText("Input required — send a follow-up message.")],
+            }, ct);
+    }
+
+    private static async Task TckRejectTask(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.FailAsync(
+            new Message
+            {
+                Role = Role.Agent,
+                MessageId = Guid.NewGuid().ToString("N"),
+                Parts = [Part.FromText("rejected")],
+            }, ct);
+    }
+
+    // -- Streaming TCK scenarios --
+
+    private static async Task TckStreamBasic(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromText("Stream hello from TCK")],
+            name: "stream-artifact",
+            cancellationToken: ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
+    private static async Task TckStreamMessageOnly(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
+    private static async Task TckStreamTaskLifecycle(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromText("Stream task lifecycle")],
+            name: "stream-artifact",
+            cancellationToken: ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
+    private static async Task TckStreamOrdering(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromText("Ordered output")],
+            name: "stream-artifact",
+            cancellationToken: ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
+    private static async Task TckStreamArtifactText(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromText("Streamed text content")],
+            name: "stream-text-artifact",
+            cancellationToken: ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
+    private static async Task TckStreamArtifactFile(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromRaw(System.Text.Encoding.UTF8.GetBytes("file content"), mediaType: "text/plain", filename: "output.txt")],
+            name: "stream-file-artifact",
+            cancellationToken: ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
+    private static async Task TckStreamArtifactChunked(RequestContext context, AgentEventQueue eventQueue, CancellationToken ct)
+    {
+        var updater = new TaskUpdater(eventQueue, context.TaskId, context.ContextId);
+        await updater.SubmitAsync(ct);
+        await updater.StartWorkAsync(cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromText("chunk-1 ")],
+            artifactId: "chunked-artifact",
+            name: "Chunked Artifact",
+            lastChunk: false,
+            cancellationToken: ct);
+        await updater.AddArtifactAsync(
+            [Part.FromText("chunk-2")],
+            artifactId: "chunked-artifact",
+            name: "Chunked Artifact",
+            append: true,
+            lastChunk: true,
+            cancellationToken: ct);
+        await updater.CompleteAsync(cancellationToken: ct);
+    }
+
     /// <summary>
     /// Returns help text listing all available skills.
     /// </summary>
@@ -450,17 +696,19 @@ public sealed class SpecAgent : IAgentHandler
                     Url = agentUrl,
                     ProtocolBinding = "JSONRPC",
                     ProtocolVersion = "1.0",
+                    Tenant = "",
                 },
                 new AgentInterface
                 {
                     Url = agentUrl,
                     ProtocolBinding = "HTTP+JSON",
                     ProtocolVersion = "1.0",
+                    Tenant = "",
                 }
             ],
             DefaultInputModes = ["text/plain"],
             DefaultOutputModes = ["text/plain", "application/json", "image/svg+xml"],
-            Capabilities = new AgentCapabilities { Streaming = true, PushNotifications = false },
+            Capabilities = new AgentCapabilities { Streaming = true, PushNotifications = false, ExtendedAgentCard = false },
             Skills =
             [
                 new AgentSkill

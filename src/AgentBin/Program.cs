@@ -3,8 +3,15 @@ using A2A.AspNetCore;
 using AgentBin.Agents;
 using AgentBin.V03Compat;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serialize nulls as absent — matches A2A SDK conventions and TCK schema expectations
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+});
 
 // CORS — allow any origin (public test bed for browser-based A2A clients)
 builder.Services.AddCors(options =>
@@ -32,6 +39,21 @@ var app = builder.Build();
 // Intercepts POST requests without A2A-Version header and translates v0.3 ↔ v1.0.
 app.UseMiddleware<V03TranslationMiddleware>();
 app.UseCors();
+
+// Add caching headers to agent card responses
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "GET" &&
+        context.Request.Path.Value?.EndsWith("/.well-known/agent-card.json") == true)
+    {
+        context.Response.OnStarting(() =>
+        {
+            AddCardCacheHeaders(context.Response);
+            return System.Threading.Tasks.Task.CompletedTask;
+        });
+    }
+    await next();
+});
 
 // Health check
 app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTimeOffset.UtcNow }));
@@ -74,3 +96,10 @@ app.MapGet("/.well-known/agent-card.json", (HttpRequest request) =>
 });
 
 app.Run();
+
+static void AddCardCacheHeaders(HttpResponse response)
+{
+    response.Headers["Cache-Control"] = "public, max-age=3600";
+    response.Headers["ETag"] = $"\"{typeof(SpecAgent).Assembly.GetName().Version}\"";
+    response.Headers["Last-Modified"] = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero).ToString("R");
+}
