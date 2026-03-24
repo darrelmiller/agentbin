@@ -1,0 +1,413 @@
+{
+  "client": "js",
+  "sdk": "a2a-js (local build, 0.3.10)",
+  "protocolVersion": "1.0",
+  "timestamp": "2026-03-24T04:08:43Z",
+  "baseUrl": "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io",
+  "results": [
+    {
+      "id": "jsonrpc/agent-card-echo",
+      "name": "Echo Agent Card",
+      "passed": false,
+      "detail": "name=undefined, skills=undefined",
+      "durationMs": 7056
+    },
+    {
+      "id": "jsonrpc/agent-card-spec",
+      "name": "Spec Agent Card",
+      "detail": "name=undefined, skills=[]",
+      "durationMs": 110
+    },
+    {
+      "id": "jsonrpc/echo-send-message",
+      "name": "Echo Send Message",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 125
+    },
+    {
+      "id": "jsonrpc/spec-message-only",
+      "name": "Spec Message Only",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 71
+    },
+    {
+      "id": "jsonrpc/spec-task-lifecycle",
+      "name": "Spec Task Lifecycle",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 67
+    },
+    {
+      "id": "jsonrpc/spec-get-task",
+      "name": "Spec GetTask",
+      "passed": false,
+      "detail": "skipped — no taskId from lifecycle",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/spec-task-failure",
+      "name": "Spec Task Failure",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 74
+    },
+    {
+      "id": "jsonrpc/spec-data-types",
+      "name": "Spec Data Types",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 71
+    },
+    {
+      "id": "jsonrpc/spec-streaming",
+      "name": "Spec Streaming",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 70
+    },
+    {
+      "id": "jsonrpc/spec-multi-turn",
+      "name": "Spec Multi-Turn",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 64
+    },
+    {
+      "id": "jsonrpc/spec-task-cancel",
+      "name": "Spec Task Cancel",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 64
+    },
+    {
+      "id": "jsonrpc/spec-cancel-with-metadata",
+      "name": "Cancel With Metadata",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 68
+    },
+    {
+      "id": "jsonrpc/spec-list-tasks",
+      "name": "Spec ListTasks",
+      "passed": false,
+      "detail": "SDK not supported: JS SDK does not expose listTasks",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/spec-return-immediately",
+      "name": "Spec Return Immediately",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 66
+    },
+    {
+      "id": "jsonrpc/error-task-not-found",
+      "name": "Task Not Found Error",
+      "passed": false,
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as Ge",
+      "durationMs": 70
+    },
+    {
+      "id": "jsonrpc/error-cancel-not-found",
+      "name": "Cancel Not Found",
+      "passed": false,
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as Ca",
+      "durationMs": 68
+    },
+    {
+      "id": "jsonrpc/error-cancel-terminal",
+      "name": "Cancel Terminal Task",
+      "passed": false,
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as Se",
+      "durationMs": 67
+    },
+    {
+      "id": "jsonrpc/error-send-terminal",
+      "name": "Send To Terminal Task",
+      "passed": true,
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as Se",
+      "durationMs": 68
+    },
+    {
+      "id": "jsonrpc/error-send-invalid-task",
+      "name": "Send Invalid TaskId",
+      "passed": false,
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as Se",
+      "durationMs": 66
+    },
+    {
+      "id": "jsonrpc/error-push-not-supported",
+      "name": "Push Not Supported",
+      "passed": true,
+      "detail": "error=PushNotificationNotSupportedError: Push Notification is not supported",
+      "durationMs": 34
+    },
+    {
+      "id": "jsonrpc/subscribe-to-task",
+      "name": "SubscribeToTask",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 66
+    },
+    {
+      "id": "jsonrpc/error-subscribe-not-found",
+      "name": "Subscribe Not Found",
+      "passed": false,
+      "detail": "error=Error: Invalid response Content-Type for SSE stream for tasks/resubscribe. Expected 'te",
+      "durationMs": 67
+    },
+    {
+      "id": "jsonrpc/stream-message-only",
+      "name": "Stream Message Only",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 65
+    },
+    {
+      "id": "jsonrpc/stream-task-lifecycle",
+      "name": "Stream Task Lifecycle",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 65
+    },
+    {
+      "id": "jsonrpc/multi-turn-context-preserved",
+      "name": "Context Preserved",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 65
+    },
+    {
+      "id": "jsonrpc/get-task-with-history",
+      "name": "GetTask With History",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 64
+    },
+    {
+      "id": "jsonrpc/get-task-after-failure",
+      "name": "GetTask After Failure",
+      "passed": false,
+      "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
+      "durationMs": 69
+    },
+    {
+      "id": "rest/agent-card-echo",
+      "name": "REST Echo Agent Card",
+      "passed": false,
+      "detail": "name=undefined, skills=undefined",
+      "durationMs": 33
+    },
+    {
+      "id": "rest/agent-card-spec",
+      "name": "REST Spec Agent Card",
+      "detail": "name=undefined, skills=[]",
+      "durationMs": 34
+    },
+    {
+      "id": "rest/echo-send-message",
+      "name": "REST Echo Send Message",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 76
+    },
+    {
+      "id": "rest/spec-message-only",
+      "name": "REST Spec Message Only",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 65
+    },
+    {
+      "id": "rest/spec-task-lifecycle",
+      "name": "REST Spec Task Lifecycle",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 70
+    },
+    {
+      "id": "rest/spec-get-task",
+      "name": "REST Spec GetTask",
+      "passed": false,
+      "detail": "skipped — no taskId from lifecycle",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-task-failure",
+      "name": "REST Spec Task Failure",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 65
+    },
+    {
+      "id": "rest/spec-data-types",
+      "name": "REST Spec Data Types",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 66
+    },
+    {
+      "id": "rest/spec-streaming",
+      "name": "REST Spec Streaming",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 67
+    },
+    {
+      "id": "rest/spec-multi-turn",
+      "name": "REST Spec Multi-Turn",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 63
+    },
+    {
+      "id": "rest/spec-task-cancel",
+      "name": "REST Spec Task Cancel",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 65
+    },
+    {
+      "id": "rest/spec-cancel-with-metadata",
+      "name": "Cancel With Metadata",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 67
+    },
+    {
+      "id": "rest/spec-list-tasks",
+      "name": "REST Spec ListTasks",
+      "passed": false,
+      "detail": "SDK not supported: JS SDK does not expose listTasks",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-return-immediately",
+      "name": "REST Return Immediately",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 64
+    },
+    {
+      "id": "rest/error-task-not-found",
+      "name": "REST Task Not Found Error",
+      "passed": true,
+      "detail": "error=Error: HTTP error for /v1/tasks/nonexistent-task-id-12345?historyLength=0! Status: 404 ",
+      "durationMs": 78
+    },
+    {
+      "id": "rest/error-cancel-not-found",
+      "name": "Cancel Not Found",
+      "passed": true,
+      "detail": "error=Error: HTTP error for /v1/tasks/bogus-cancel-id-99999:cancel! Status: 404 Not Found. Re",
+      "durationMs": 69
+    },
+    {
+      "id": "rest/error-cancel-terminal",
+      "name": "Cancel Terminal Task",
+      "passed": true,
+      "detail": "error=Error: HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 66
+    },
+    {
+      "id": "rest/error-send-terminal",
+      "name": "Send To Terminal Task",
+      "passed": true,
+      "detail": "error=Error: HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 81
+    },
+    {
+      "id": "rest/error-send-invalid-task",
+      "name": "Send Invalid TaskId",
+      "passed": false,
+      "detail": "error=Error: HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 63
+    },
+    {
+      "id": "rest/error-push-not-supported",
+      "name": "Push Not Supported",
+      "passed": true,
+      "detail": "error=PushNotificationNotSupportedError: Push Notification is not supported",
+      "durationMs": 33
+    },
+    {
+      "id": "rest/subscribe-to-task",
+      "name": "SubscribeToTask",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 67
+    },
+    {
+      "id": "rest/error-subscribe-not-found",
+      "name": "Subscribe Not Found",
+      "passed": true,
+      "detail": "error=Error: HTTP error for /v1/tasks/bogus-subscribe-id:subscribe! Status: 404 Not Found. Re",
+      "durationMs": 65
+    },
+    {
+      "id": "rest/stream-message-only",
+      "name": "Stream Message Only",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 65
+    },
+    {
+      "id": "rest/stream-task-lifecycle",
+      "name": "Stream Task Lifecycle",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 64
+    },
+    {
+      "id": "rest/multi-turn-context-preserved",
+      "name": "Context Preserved",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 65
+    },
+    {
+      "id": "rest/get-task-with-history",
+      "name": "GetTask With History",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 75
+    },
+    {
+      "id": "rest/get-task-after-failure",
+      "name": "GetTask After Failure",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: ",
+      "durationMs": 67
+    },
+    {
+      "id": "v03/spec03-agent-card",
+      "name": "v0.3 Agent Card",
+      "passed": true,
+      "detail": "protocolVersion=0.3.0, hasUrl=true",
+      "durationMs": 35
+    },
+    {
+      "id": "v03/spec03-send-message",
+      "name": "v0.3 Send Message",
+      "passed": false,
+      "detail": "SDK v0.3 failed: JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (C",
+      "durationMs": 99
+    },
+    {
+      "id": "v03/spec03-task-lifecycle",
+      "name": "v0.3 Task Lifecycle",
+      "passed": false,
+      "detail": "SDK v0.3 failed: JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (C",
+      "durationMs": 66
+    },
+    {
+      "id": "v03/spec03-streaming",
+      "name": "v0.3 Streaming",
+      "passed": false,
+      "detail": "SDK v0.3 failed: JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (C",
+      "durationMs": 65
+    }
+  ]
+}
