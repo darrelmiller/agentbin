@@ -453,7 +453,7 @@ public sealed class SpecAgent : IAgentHandler
                 },
                 new AgentInterface
                 {
-                    Url = agentUrl + "/v1",
+                    Url = agentUrl,
                     ProtocolBinding = "HTTP+JSON",
                     ProtocolVersion = "1.0",
                 }

@@ -32,7 +32,7 @@ public sealed class EchoAgent : IAgentHandler
                 },
                 new AgentInterface
                 {
-                    Url = agentUrl + "/v1",
+                    Url = agentUrl,
                     ProtocolBinding = "HTTP+JSON",
                     ProtocolVersion = "1.0",
                 }
