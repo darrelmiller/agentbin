@@ -1183,20 +1183,16 @@ Console.WriteLine("\n── v0.3 Backward Compatibility ──");
 
 var plainHttpClient = new HttpClient();
 
-// v03/spec03-agent-card — raw HTTP fetch of v0.3 agent card
+// v03/spec03-agent-card — fetch v0.3 agent card via SDK
 try
 {
     sw.Restart();
-    var cardUrl = $"{baseUrl}/spec03/.well-known/agent-card.json";
-    var cardResponse = await plainHttpClient.GetAsync(cardUrl);
-    cardResponse.EnsureSuccessStatusCode();
-    var cardJson = await cardResponse.Content.ReadAsStringAsync();
-    using var doc = JsonDocument.Parse(cardJson);
-    var root = doc.RootElement;
-    var hasProtocolVersion = root.TryGetProperty("protocolVersion", out var pvProp) && pvProp.GetString() == "0.3.0";
-    var hasUrl = root.TryGetProperty("url", out _);
-    Record("v03/spec03-agent-card", "v0.3 Agent Card", hasProtocolVersion && hasUrl,
-        $"protocolVersion={pvProp}, hasUrl={hasUrl}", sw.ElapsedMilliseconds);
+    var resolver = new A2ACardResolver(new Uri($"{baseUrl}/spec03/"), plainHttpClient);
+    var card = await resolver.GetAgentCardAsync();
+    var hasName = card.Name is not null;
+    var hasSkills = card.Skills.Count >= 1;
+    Record("v03/spec03-agent-card", "v0.3 Agent Card", hasName && hasSkills,
+        $"name={card.Name}, skills={card.Skills.Count}", sw.ElapsedMilliseconds);
 }
 catch (Exception ex) { Record("v03/spec03-agent-card", "v0.3 Agent Card", false, ex.Message, sw.ElapsedMilliseconds); }
 

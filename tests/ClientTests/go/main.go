@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -1801,34 +1799,29 @@ func main() {
 	// ── v0.3 Backward Compatibility Tests ──
 	fmt.Println("\n── v0.3 Backward Compatibility ──")
 
-	// v03/spec03-agent-card — Raw HTTP GET to verify v0.3 card format
+	// v03/spec03-agent-card — SDK resolve of v0.3 agent card
 	{
 		start := time.Now()
-		cardURL := baseURL + "/spec03/.well-known/agent-card.json"
-		httpResp, err := http.Get(cardURL)
+		spec03CardURL := baseURL + "/spec03"
+		card, err := agentcard.DefaultResolver.Resolve(ctx, spec03CardURL)
 		dur := time.Since(start)
 		if err != nil {
-			record("v03/spec03-agent-card", "v0.3 Agent Card", false, fmt.Sprintf("HTTP error: %v", err), dur)
+			record("v03/spec03-agent-card", "v0.3 Agent Card", false,
+				fmt.Sprintf("SDK resolve error (may not support v0.3): %v", err), dur)
 		} else {
-			body, readErr := io.ReadAll(httpResp.Body)
-			httpResp.Body.Close()
-			if readErr != nil {
-				record("v03/spec03-agent-card", "v0.3 Agent Card", false, fmt.Sprintf("read error: %v", readErr), dur)
-			} else if httpResp.StatusCode != 200 {
-				record("v03/spec03-agent-card", "v0.3 Agent Card", false,
-					fmt.Sprintf("status=%d, body=%s", httpResp.StatusCode, truncate(string(body), 100)), dur)
-			} else {
-				var cardData map[string]interface{}
-				if jsonErr := json.Unmarshal(body, &cardData); jsonErr != nil {
-					record("v03/spec03-agent-card", "v0.3 Agent Card", false, fmt.Sprintf("JSON parse error: %v", jsonErr), dur)
-				} else {
-					pv, _ := cardData["protocolVersion"].(string)
-					_, hasURL := cardData["url"]
-					passed := pv == "0.3.0" && hasURL
-					record("v03/spec03-agent-card", "v0.3 Agent Card", passed,
-						fmt.Sprintf("protocolVersion=%s, hasUrl=%v", pv, hasURL), dur)
+			var pvStr string
+			hasURL := false
+			for _, iface := range card.SupportedInterfaces {
+				if string(iface.ProtocolVersion) != "" {
+					pvStr = string(iface.ProtocolVersion)
+				}
+				if iface.URL != "" {
+					hasURL = true
 				}
 			}
+			passed := pvStr == "0.3.0" && hasURL
+			record("v03/spec03-agent-card", "v0.3 Agent Card", passed,
+				fmt.Sprintf("protocolVersion=%s, hasUrl=%v", pvStr, hasURL), dur)
 		}
 	}
 

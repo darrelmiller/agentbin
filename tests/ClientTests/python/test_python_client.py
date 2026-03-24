@@ -1377,22 +1377,21 @@ async def make_v03_client(url: str, *, streaming: bool = False):
 
 
 async def test_v03_agent_card():
-    """Fetch the v0.3 agent card with raw httpx and verify its structure."""
+    """Fetch the v0.3 agent card via SDK A2ACardResolver and verify its structure."""
     t0 = time.time()
-    card_url = f"{BASE_URL}/spec03/.well-known/agent-card.json"
-    async with httpx.AsyncClient(timeout=httpx.Timeout(15.0)) as hc:
-        resp = await hc.get(card_url)
-    ms = int((time.time() - t0) * 1000)
-    if resp.status_code != 200:
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
+            resolver = A2ACardResolver(httpx_client=hc, base_url=f"{BASE_URL}/spec03")
+            card = await resolver.get_agent_card()
+        ms = int((time.time() - t0) * 1000)
+        has_url = bool(card.url)
+        ok = card.protocol_version == "0.3.0" and has_url
+        record("v03/spec03-agent-card", "v0.3 Agent Card", ok,
+               f"protocolVersion={card.protocol_version!r}, hasUrl={has_url}", ms)
+    except Exception as exc:
+        ms = int((time.time() - t0) * 1000)
         record("v03/spec03-agent-card", "v0.3 Agent Card", False,
-               f"HTTP {resp.status_code}", ms)
-        return
-    data = resp.json()
-    proto_ver = data.get("protocolVersion", "")
-    has_url = "url" in data
-    ok = proto_ver == "0.3.0" and has_url
-    record("v03/spec03-agent-card", "v0.3 Agent Card", ok,
-           f"protocolVersion={proto_ver!r}, hasUrl={has_url}", ms)
+               f"SDK resolver failed: {type(exc).__name__}: {str(exc)[:120]}", ms)
 
 
 async def test_v03_send_message():

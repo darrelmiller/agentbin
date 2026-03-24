@@ -1606,39 +1606,39 @@ async fn run_v03_tests(base_url: &str, results: &mut Vec<TestResult>) {
     // ── v03/spec03-agent-card ──
     {
         let start = Instant::now();
-        let card_url = format!("{base_url}/spec03/.well-known/agent-card.json");
-        // Fetch WITHOUT A2A-Version header to get the v0.3 format card
-        let card_result = async {
-            let resp = reqwest::get(&card_url).await?.error_for_status()?;
-            let val: serde_json::Value = resp.json().await?;
-            Ok::<_, anyhow::Error>(val)
-        }
-        .await;
-        match card_result {
-            Ok(val) => {
-                let pv = val
-                    .get("protocolVersion")
-                    .or_else(|| val.get("version"))
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("unknown");
-                let has_url = val.get("url").is_some()
-                    || val.get("supportedInterfaces").is_some();
-                record(
-                    results,
-                    "v03/spec03-agent-card",
-                    "v0.3 Agent Card",
-                    true,
-                    &format!("protocolVersion={pv}, hasUrl={has_url}"),
-                    start.elapsed(),
-                );
-            }
+        let server_url = format!("{base_url}/spec03");
+        match A2aClient::with_server(&server_url) {
+            Ok(client) => match client.fetch_agent_card().await {
+                Ok(card) => {
+                    let name = &card.name;
+                    let skills_count = card.skills.len();
+                    record(
+                        results,
+                        "v03/spec03-agent-card",
+                        "v0.3 Agent Card",
+                        true,
+                        &format!("name={name}, skills={skills_count}"),
+                        start.elapsed(),
+                    );
+                }
+                Err(e) => {
+                    record(
+                        results,
+                        "v03/spec03-agent-card",
+                        "v0.3 Agent Card",
+                        false,
+                        &truncate(&e.to_string(), 120),
+                        start.elapsed(),
+                    );
+                }
+            },
             Err(e) => {
                 record(
                     results,
                     "v03/spec03-agent-card",
                     "v0.3 Agent Card",
                     false,
-                    &truncate(&e.to_string(), 120),
+                    &truncate(&format!("SDK client creation failed: {e}"), 120),
                     start.elapsed(),
                 );
             }
@@ -1903,57 +1903,22 @@ async fn build_client_for(base_url: &str, path_prefix: &str) -> Option<A2aClient
     }
 }
 
-/// Build a client for the v0.3 agent. The v0.3 card has a `url` field
-/// (not `supportedInterfaces`), so we point the SDK directly at that URL.
+/// Build a client for the v0.3 agent via SDK card resolution.
 async fn build_v03_client(base_url: &str) -> Option<A2aClient> {
-    let card_url = format!("{base_url}/spec03/.well-known/agent-card.json");
-    let card_val: serde_json::Value = match reqwest::get(&card_url).await {
-        Ok(resp) => match resp.error_for_status() {
-            Ok(r) => match r.json().await {
-                Ok(v) => v,
+    let server_url = format!("{base_url}/spec03");
+    match A2aClient::with_server(&server_url) {
+        Ok(client) => {
+            // Validate card is fetchable; SDK handles endpoint discovery
+            match client.fetch_agent_card().await {
+                Ok(_) => Some(client),
                 Err(e) => {
-                    eprintln!("  ⚠ Failed to parse v0.3 card: {e}");
-                    return None;
+                    eprintln!("  ⚠ Failed to fetch v0.3 agent card via SDK: {e}");
+                    None
                 }
-            },
-            Err(e) => {
-                eprintln!("  ⚠ Failed to fetch v0.3 card: {e}");
-                return None;
             }
-        },
-        Err(e) => {
-            eprintln!("  ⚠ Failed to fetch v0.3 card: {e}");
-            return None;
         }
-    };
-
-    // v0.3 cards have a `url` field pointing to the RPC endpoint
-    let endpoint = card_val
-        .get("url")
-        .and_then(|v| v.as_str())
-        .map(|s| s.to_string());
-
-    let endpoint_url = match endpoint {
-        Some(url) => url,
-        None => {
-            eprintln!("  ⚠ v0.3 card has no 'url' field");
-            return None;
-        }
-    };
-
-    let config = ClientConfig {
-        server_url: format!("{base_url}/spec03"),
-        max_polls: 30,
-        poll_interval_ms: 2000,
-        oauth: None,
-        endpoint_url: Some(endpoint_url),
-        http_client: None,
-    };
-
-    match A2aClient::new(config) {
-        Ok(client) => Some(client),
         Err(e) => {
-            eprintln!("  ⚠ Failed to create v0.3 client: {e}");
+            eprintln!("  ⚠ Failed to create v0.3 SDK client: {e}");
             None
         }
     }

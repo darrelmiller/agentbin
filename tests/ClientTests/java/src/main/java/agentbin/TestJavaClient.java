@@ -17,10 +17,6 @@ import io.a2a.client.transport.spi.interceptors.PayloadAndHeaders;
 import io.a2a.spec.*;
 
 import java.io.*;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
@@ -1018,21 +1014,14 @@ public class TestJavaClient {
     static void testV03AgentCard(String id, String agentUrl) {
         long start = System.currentTimeMillis();
         try {
-            var httpClient = HttpClient.newHttpClient();
-            var request = HttpRequest.newBuilder()
-                    .uri(URI.create(agentUrl + "/.well-known/agent-card.json"))
-                    .GET()
-                    .build();
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            String body = response.body();
-            int status = response.statusCode();
-
-            boolean hasProtocolVersion = body.contains("\"protocolVersion\"")
-                    && body.contains("\"0.3.0\"");
-            boolean hasUrl = body.contains("\"url\"");
-            boolean ok = status == 200 && hasProtocolVersion && hasUrl;
+            AgentCard card = A2A.getAgentCard(agentUrl, null, Map.of());
+            boolean hasProtocolVersion = "0.3.0".equals(card.version());
+            boolean hasUrl = card.supportedInterfaces() != null
+                    && card.supportedInterfaces().stream()
+                            .anyMatch(i -> i.url() != null && !i.url().isEmpty());
+            boolean ok = hasProtocolVersion && hasUrl;
             record(id, "v0.3 Agent Card", ok,
-                    "status=" + status + ", protocolVersion=0.3.0=" + hasProtocolVersion
+                    "protocolVersion=0.3.0=" + hasProtocolVersion
                             + ", hasUrl=" + hasUrl,
                     System.currentTimeMillis() - start);
         } catch (Exception e) {

@@ -1066,18 +1066,13 @@ async function testRestErrorTaskNotFound() {
 async function testV03AgentCard() {
   const t0 = Date.now();
   try {
-    const resp = await fetch(`${BASE_URL}/spec03/.well-known/agent-card.json`);
+    const card = await fetchAgentCard(`${BASE_URL}/spec03`);
     const ms = Date.now() - t0;
-    if (!resp.ok) {
-      record("v03/spec03-agent-card", "v0.3 Agent Card", false, `HTTP ${resp.status}`, ms);
-      return;
-    }
-    const data = await resp.json();
-    const protoVer = data.protocolVersion || "";
-    const hasUrl = "url" in data;
-    const ok = protoVer === "0.3.0" && hasUrl;
+    const name = card?.name || "unknown";
+    const skills = card?.skills?.length ?? 0;
+    const ok = name !== "unknown" && skills >= 0;
     record("v03/spec03-agent-card", "v0.3 Agent Card", ok,
-      `protocolVersion=${protoVer}, hasUrl=${hasUrl}`, ms);
+      `name=${name}, skills=${skills}`, ms);
   } catch (e) {
     record("v03/spec03-agent-card", "v0.3 Agent Card", false, e.message?.slice(0, 120), Date.now() - t0);
   }

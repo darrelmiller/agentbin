@@ -814,27 +814,9 @@ func testV03AgentCard(state: TestState, baseURL: String) async {
         state.record("v03/spec03-agent-card", "v0.3 Agent Card", hasName,
                      "name=\(card.name), skills=\(card.skills.count)", ms)
     } catch {
-        // Try raw HTTP fallback for v0.3 card (might be at agent-card.json)
-        let fallbackURL = URL(string: "\(baseURL)/spec03/.well-known/agent-card.json")!
-        do {
-            let (data, response) = try await URLSession.shared.data(from: fallbackURL)
-            let ms = elapsedMs(since: start)
-            if let httpResp = response as? HTTPURLResponse, httpResp.statusCode == 200,
-               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                let protoVer = json["protocolVersion"] as? String ?? ""
-                let hasUrl = json["url"] != nil
-                let ok = protoVer == "0.3.0" && hasUrl
-                state.record("v03/spec03-agent-card", "v0.3 Agent Card", ok,
-                             "protocolVersion=\(protoVer), hasUrl=\(hasUrl)", ms)
-            } else {
-                state.record("v03/spec03-agent-card", "v0.3 Agent Card", false,
-                             "HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0)", ms)
-            }
-        } catch {
-            let ms = elapsedMs(since: start)
-            state.record("v03/spec03-agent-card", "v0.3 Agent Card", false,
-                         "error: \(truncate(String(describing: error), 120))", ms)
-        }
+        let ms = elapsedMs(since: start)
+        state.record("v03/spec03-agent-card", "v0.3 Agent Card", false,
+                     "error: \(truncate(String(describing: error), 120))", ms)
     }
 }
 
