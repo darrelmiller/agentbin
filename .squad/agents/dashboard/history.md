@@ -61,3 +61,11 @@
 - Without `--publish`, prints "📌 Public dashboard NOT updated" reminder
 - Verified: `--dashboard-only` produces 7 clients locally; `--dashboard-only --publish` produces 6 of 7 in docs/ (swift excluded)
 - Docstring updated to document new `--publish` flag usage
+
+### 2026-03-25 — Smoke test update needed for endpoint restructuring
+- Spec agent deployed successfully with REST transport enabled (commit ca2d27e)
+- Root `/.well-known/agent-card.json` endpoint removed (commit 39cad22) — not part of agent spec v1.0
+- Smoke test deployment validation shows 9/10 pass, 1 expected failure
+- **Action required:** Update `tests/smoke-test.py` to remove root endpoint check, rely on individual agent endpoints (/spec, /echo, /spec03)
+- Current smoke test still expects root catalog endpoint — will consistently fail in future deployments until updated
+- Once updated, smoke test will be accurate baseline for all future production deployments
