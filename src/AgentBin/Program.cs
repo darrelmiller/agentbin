@@ -40,11 +40,13 @@ var app = builder.Build();
 app.UseMiddleware<V03TranslationMiddleware>();
 app.UseCors();
 
-// Add caching headers to agent card responses
+// Add caching headers to agent card responses (both .well-known and base URL GET)
+var agentCardPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "/spec", "/echo", "/spec03" };
 app.Use(async (context, next) =>
 {
     if (context.Request.Method == "GET" &&
-        context.Request.Path.Value?.EndsWith("/.well-known/agent-card.json") == true)
+        (context.Request.Path.Value?.EndsWith("/.well-known/agent-card.json") == true ||
+         agentCardPaths.Contains(context.Request.Path.Value ?? "")))
     {
         context.Response.OnStarting(() =>
         {
@@ -75,8 +77,9 @@ var echoServer = new A2AServer(
 app.MapA2A(echoServer, "/echo");
 app.MapHttpA2A(echoServer, echoCard, "/echo");
 
-// Echo agent card — MapA2A(server, path) doesn't register the card endpoint
+// Base-URL GET returns the agent card (future A2A proposal: GET on agent URL serves its card)
 app.MapGet("/echo/.well-known/agent-card.json", () => Results.Ok(echoCard));
+app.MapGet("/echo", () => Results.Ok(echoCard));
 
 // Map Spec v0.3 agent — same handler, but serves a v0.3-format agent card.
 // Clients discovering this agent should see protocolVersion "0.3.0" and fall back.
@@ -88,12 +91,10 @@ var spec03Server = new A2AServer(
     app.Services.GetRequiredService<ILogger<A2AServer>>());
 app.MapA2A(spec03Server, "/spec03");
 app.MapGet("/spec03/.well-known/agent-card.json", () => Results.Ok(spec03Card));
+app.MapGet("/spec03", () => Results.Ok(spec03Card));
 
-// Root listing endpoint — not covered by MapA2A, so this is safe to add
-app.MapGet("/.well-known/agent-card.json", (HttpRequest request) =>
-{
-    return Results.Ok(new[] { specCard, echoCard, spec03Card });
-});
+// Base-URL GET for spec agent — MapA2A registers .well-known but not the bare GET
+app.MapGet("/spec", () => Results.Ok(specCard));
 
 app.Run();
 

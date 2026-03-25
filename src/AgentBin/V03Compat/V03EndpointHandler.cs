@@ -24,20 +24,9 @@ public sealed class V03TranslationMiddleware
     {
         var hasVersionHeader = !string.IsNullOrEmpty(context.Request.Headers["A2A-Version"].FirstOrDefault());
 
-        // For GET requests to agent card endpoints — translate v1.0 card to v0.3 when no header.
-        // Skip /spec03 which already serves a native v0.3-format card.
-        // Skip /spec and /echo — these are v1.0 agents and should always return v1.0 cards.
-        // Only translate the root listing endpoint for v0.3 clients.
-        if (context.Request.Method == "GET" &&
-            context.Request.Path.Value?.EndsWith("/.well-known/agent-card.json") == true &&
-            !context.Request.Path.StartsWithSegments("/spec03") &&
-            !context.Request.Path.StartsWithSegments("/spec") &&
-            !context.Request.Path.StartsWithSegments("/echo") &&
-            !hasVersionHeader)
-        {
-            await TranslateAgentCardResponse(context);
-            return;
-        }
+        // V0.3 agent card translation is no longer needed for GET requests.
+        // Root /.well-known/agent-card.json was removed (non-standard).
+        // /spec, /echo, /spec03 all serve their own cards directly.
 
         // Only intercept POST requests to A2A endpoints without A2A-Version header
         if (context.Request.Method != "POST" || hasVersionHeader)
