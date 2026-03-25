@@ -2,113 +2,113 @@
   "client": "dotnet",
   "sdk": "A2A 1.0.0-preview",
   "protocolVersion": "1.0",
-  "timestamp": "2026-03-22T18:20:09.9355706Z",
-  "baseUrl": "http://localhost:5555",
+  "timestamp": "2026-03-25T02:42:16.9792306Z",
+  "baseUrl": "http://localhost:5100",
   "results": [
     {
       "Id": "jsonrpc/agent-card-echo",
       "name": "Echo Agent Card",
       "Passed": true,
       "detail": "name=Echo Agent, skills=1",
-      "DurationMs": 377
+      "DurationMs": 188
     },
     {
       "Id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "Passed": true,
       "detail": "skills=8",
-      "DurationMs": 5
+      "DurationMs": 3
     },
     {
       "Id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
       "Passed": true,
       "detail": "text=Echo: hello from .NET SDK",
-      "DurationMs": 208
+      "DurationMs": 235
     },
     {
       "Id": "jsonrpc/spec-message-only",
       "name": "Message Only",
       "Passed": true,
       "detail": "role=Agent",
-      "DurationMs": 11
+      "DurationMs": 15
     },
     {
       "Id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "Passed": true,
       "detail": "state=Completed, artifacts=1",
-      "DurationMs": 16
+      "DurationMs": 26
     },
     {
       "Id": "jsonrpc/spec-get-task",
       "name": "GetTask",
       "Passed": true,
       "detail": "state=Completed",
-      "DurationMs": 7
+      "DurationMs": 16
     },
     {
       "Id": "jsonrpc/spec-task-failure",
       "name": "Task Failure",
       "Passed": true,
       "detail": "state=Failed",
-      "DurationMs": 3
+      "DurationMs": 4
     },
     {
       "Id": "jsonrpc/spec-data-types",
       "name": "Data Types",
       "Passed": true,
       "detail": "text=True, data=True, file=True",
-      "DurationMs": 21
+      "DurationMs": 32
     },
     {
       "Id": "jsonrpc/spec-streaming",
       "name": "Streaming",
       "Passed": true,
       "detail": "events=7, artifact=True, completed=True",
-      "DurationMs": 2063
+      "DurationMs": 2062
     },
     {
       "Id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found",
       "Passed": true,
       "detail": "errorCode=TaskNotFound",
-      "DurationMs": 8
+      "DurationMs": 10
     },
     {
       "Id": "jsonrpc/spec-multi-turn",
       "name": "Multi-Turn",
       "Passed": true,
       "detail": "step1=InputRequired, step2=InputRequired, step3=Completed",
-      "DurationMs": 8
+      "DurationMs": 9
     },
     {
       "Id": "jsonrpc/spec-task-cancel",
       "name": "Task Cancel",
       "Passed": true,
-      "detail": "taskId=f43a1e41cc8841168315dc1ab8fef66e, state=Canceled",
-      "DurationMs": 20
+      "detail": "taskId=e4fa0c6f424a44db87dde0b5e1430903, state=Canceled",
+      "DurationMs": 25
     },
     {
       "Id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "Passed": true,
-      "detail": "taskId=6fe2f7740d014fa7a4c4abc5632742c5, state=Canceled, metadataKeys=[reason,requestedBy]",
-      "DurationMs": 24
+      "detail": "taskId=fc143db175244daca6d3fd019d2009e6, state=Canceled, metadataKeys=[reason,requestedBy]",
+      "DurationMs": 46
     },
     {
       "Id": "jsonrpc/spec-list-tasks",
       "name": "List Tasks",
       "Passed": true,
       "detail": "tasks=7, totalSize=7",
-      "DurationMs": 28
+      "DurationMs": 50
     },
     {
       "Id": "jsonrpc/spec-return-immediately",
       "name": "Return Immediately",
       "Passed": false,
-      "detail": "state=Completed, time=10022ms (expected Working within 2s)",
-      "DurationMs": 10023
+      "detail": "state=Completed, time=10033ms (expected Working within 2s)",
+      "DurationMs": 10034
     },
     {
       "Id": "jsonrpc/error-cancel-not-found",
@@ -136,280 +136,280 @@
       "name": "Send Invalid TaskId",
       "Passed": true,
       "detail": "errorCode=TaskNotFound",
-      "DurationMs": 1
+      "DurationMs": 0
     },
     {
       "Id": "jsonrpc/error-push-not-supported",
       "name": "Push Not Supported",
       "Passed": true,
       "detail": "errorCode=PushNotificationNotSupported: Push notifications not supported.",
-      "DurationMs": 4
+      "DurationMs": 5
     },
     {
       "Id": "jsonrpc/subscribe-to-task",
       "name": "SubscribeToTask",
       "Passed": false,
       "detail": "An internal error occurred during streaming.",
-      "DurationMs": 30067
+      "DurationMs": 30013
     },
     {
       "Id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found",
       "Passed": true,
       "detail": "errorCode=InternalError: An internal error occurred during streaming.",
-      "DurationMs": 8
+      "DurationMs": 1
     },
     {
       "Id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
       "Passed": true,
       "detail": "events=1, hasMessage=True",
-      "DurationMs": 3
+      "DurationMs": 1
     },
     {
       "Id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "Passed": true,
       "detail": "firstHasTask=True, lastTerminal=True, events=4",
-      "DurationMs": 2
+      "DurationMs": 0
     },
     {
       "Id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "Passed": true,
-      "detail": "ctx1=0b071e17fd8d43528a4e9edf069db6da, ctx2=0b071e17fd8d43528a4e9edf069db6da",
-      "DurationMs": 17
+      "detail": "ctx1=06520392bfaa4409bfef1ce185466747, ctx2=06520392bfaa4409bfef1ce185466747",
+      "DurationMs": 2
     },
     {
       "Id": "jsonrpc/get-task-with-history",
       "name": "GetTask With History",
       "Passed": true,
       "detail": "state=Completed, history=0",
-      "DurationMs": 15
+      "DurationMs": 2
     },
     {
       "Id": "jsonrpc/get-task-after-failure",
       "name": "GetTask After Failure",
       "Passed": true,
       "detail": "state=Failed, msg=[task-failure] Simulated failure: this task was designed to fail for testing purposes.",
-      "DurationMs": 15
+      "DurationMs": 1
     },
     {
       "Id": "rest/agent-card-echo",
       "name": "Echo Agent Card",
-      "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
-      "DurationMs": 0
+      "Passed": true,
+      "detail": "name=Echo Agent, skills=1, httpJson=True",
+      "DurationMs": 1
     },
     {
       "Id": "rest/agent-card-spec",
       "name": "Spec Agent Card",
-      "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "Passed": true,
+      "detail": "skills=8, httpJson=True",
       "DurationMs": 0
     },
     {
       "Id": "rest/echo-send-message",
       "name": "Echo Send Message",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST echo client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-message-only",
       "name": "Message Only",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-get-task",
       "name": "GetTask",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "skipped",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-task-failure",
       "name": "Task Failure",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-data-types",
       "name": "Data Types",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-streaming",
       "name": "Streaming",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/error-task-not-found",
       "name": "Task Not Found",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-multi-turn",
       "name": "Multi-Turn",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-task-cancel",
       "name": "Task Cancel",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-list-tasks",
       "name": "List Tasks",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/spec-return-immediately",
       "name": "Return Immediately",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/error-cancel-not-found",
       "name": "Cancel Not Found",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/error-send-terminal",
       "name": "Send To Terminal Task",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/error-push-not-supported",
       "name": "Push Not Supported",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/subscribe-to-task",
       "name": "SubscribeToTask",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/error-subscribe-not-found",
       "name": "Subscribe Not Found",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/stream-message-only",
       "name": "Stream Message Only",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/get-task-with-history",
       "name": "GetTask With History",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "rest/get-task-after-failure",
       "name": "GetTask After Failure",
       "Passed": false,
-      "detail": "sdk-does-not-support: A2AHttpJsonClient not in A2A 1.0.0-preview",
+      "detail": "REST spec client not available",
       "DurationMs": 0
     },
     {
       "Id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
-      "Passed": true,
-      "detail": "protocolVersion=0.3.0, hasUrl=True",
-      "DurationMs": 42
+      "Passed": false,
+      "detail": "Failed to parse JSON: JSON deserialization for type \u0027A2A.AgentCard\u0027 was missing required properties including: \u0027supportedInterfaces\u0027.",
+      "DurationMs": 8
     },
     {
       "Id": "v03/spec03-send-message",
       "name": "v0.3 Send Message",
       "Passed": true,
       "detail": "text=[message-only] You said: message-only hello",
-      "DurationMs": 89
+      "DurationMs": 7
     },
     {
       "Id": "v03/spec03-task-lifecycle",
       "name": "v0.3 Task Lifecycle",
       "Passed": true,
       "detail": "state=Completed, artifacts=1",
-      "DurationMs": 3
+      "DurationMs": 1
     },
     {
       "Id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
       "Passed": true,
       "detail": "events=7, artifact=True, completed=True",
-      "DurationMs": 2055
+      "DurationMs": 2019
     }
   ]
 }

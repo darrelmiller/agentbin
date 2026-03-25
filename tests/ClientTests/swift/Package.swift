@@ -5,7 +5,7 @@ let package = Package(
     name: "TestSwiftClient",
     platforms: [.macOS(.v12)],
     dependencies: [
-        .package(url: "https://github.com/tolgaki/a2a-client-swift.git", from: "1.0.12"),
+        .package(url: "https://github.com/tolgaki/a2a-client-swift.git", from: "1.0.13"),
     ],
     targets: [
         .executableTarget(

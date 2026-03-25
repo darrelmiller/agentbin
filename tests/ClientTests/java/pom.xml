@@ -11,7 +11,7 @@
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <a2a.version>1.0.0.Beta1-SNAPSHOT</a2a.version>
+        <a2a.version>1.0.0.Alpha4</a2a.version>
     </properties>
 
     <dependencies>

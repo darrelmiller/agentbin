@@ -592,26 +592,10 @@ catch (Exception ex) { Record("jsonrpc/get-task-after-failure", "GetTask After F
 // ═══════════════════════════════════════════════════════════════════════════
 Console.WriteLine("\n── HTTP+JSON REST Binding (SDK via Factory) ──");
 
-var httpJsonOptions = new A2AClientOptions { PreferredBindings = [ProtocolBindingNames.HttpJson] };
-
-// Pre-create REST clients via factory from resolved agent cards
-// (CreateAsync has a JSON parsing bug in preview2, so resolve card first then use Create)
+// Published A2A 1.0.0-preview SDK does not provide A2AClientFactory or HTTP+JSON binding selection.
+// REST tests will fail, signaling this SDK gap.
 IA2AClient? restEchoClient = null;
 IA2AClient? restSpecClient = null;
-try
-{
-    var echoResolver = new A2ACardResolver(new Uri($"{baseUrl}/echo/"), versionedHttpClient);
-    var echoCard = await echoResolver.GetAgentCardAsync();
-    restEchoClient = A2AClientFactory.Create(echoCard, versionedHttpClient, httpJsonOptions);
-}
-catch (Exception ex) { Console.WriteLine($"  WARN: REST echo client creation failed: {ex.Message}"); }
-try
-{
-    var specResolver = new A2ACardResolver(new Uri($"{baseUrl}/spec/"), versionedHttpClient);
-    var specCard = await specResolver.GetAgentCardAsync();
-    restSpecClient = A2AClientFactory.Create(specCard, versionedHttpClient, httpJsonOptions);
-}
-catch (Exception ex) { Console.WriteLine($"  WARN: REST spec client creation failed: {ex.Message}"); }
 
 // 1. rest/agent-card-echo
 try
@@ -620,7 +604,7 @@ try
     var resolver = new A2ACardResolver(new Uri($"{baseUrl}/echo/"), versionedHttpClient);
     var card = await resolver.GetAgentCardAsync();
     var hasHttpJson = card.SupportedInterfaces?.Any(i =>
-        string.Equals(i.ProtocolBinding, ProtocolBindingNames.HttpJson, StringComparison.OrdinalIgnoreCase)) ?? false;
+        string.Equals(i.ProtocolBinding, "http+json", StringComparison.OrdinalIgnoreCase)) ?? false;
     Record("rest/agent-card-echo", "Echo Agent Card", card.Name is not null && card.Skills.Count >= 1 && hasHttpJson,
         $"name={card.Name}, skills={card.Skills.Count}, httpJson={hasHttpJson}", sw.ElapsedMilliseconds);
 }
@@ -633,7 +617,7 @@ try
     var resolver = new A2ACardResolver(new Uri($"{baseUrl}/spec/"), versionedHttpClient);
     var card = await resolver.GetAgentCardAsync();
     var hasHttpJson = card.SupportedInterfaces?.Any(i =>
-        string.Equals(i.ProtocolBinding, ProtocolBindingNames.HttpJson, StringComparison.OrdinalIgnoreCase)) ?? false;
+        string.Equals(i.ProtocolBinding, "http+json", StringComparison.OrdinalIgnoreCase)) ?? false;
     Record("rest/agent-card-spec", "Spec Agent Card", card.Skills.Count == 8 && hasHttpJson,
         $"skills={card.Skills.Count}, httpJson={hasHttpJson}", sw.ElapsedMilliseconds);
 }
