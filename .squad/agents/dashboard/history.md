@@ -144,3 +144,10 @@
 - Spec's nupkg work was critical — REST support depends on preview2 packages containing the client implementation
 - The test client version mismatch pattern (csproj vs local feed) is a known gotcha — other agents may hit it
 - With baseline established, we can now measure server-side bugs accurately: 5 .NET failures are all infrastructure gaps, not SDK issues
+
+### 2026-07-28 — Favicon added to all docs/ pages (commit abb7835)
+- Created `docs/favicon.svg` — SVG icon showing two agent nodes (blue + green) connected by a dashed line with a checkmark in the center
+- Design represents A2A interop testing: agents, connections, validation
+- Added `<link rel="icon" type="image/svg+xml" href="favicon.svg">` to all 5 HTML pages: index, dashboard, compliance, report-card, tests
+- No existing favicon references existed — all additions were clean inserts
+- SVG chosen for scalability: renders clearly at 16×16 and 32×32 tab icon sizes
