@@ -96,6 +96,10 @@ app.MapGet("/spec03", () => Results.Ok(spec03Card));
 // Base-URL GET for spec agent — MapA2A registers .well-known but not the bare GET
 app.MapGet("/spec", () => Results.Ok(specCard));
 
+// Root-level agent card — many SDKs discover agents at /.well-known/agent-card.json on the domain root.
+// Returns the Spec agent's card (primary agent); URLs still point to /spec/ endpoints.
+app.MapGet("/.well-known/agent-card.json", () => Results.Ok(specCard));
+
 app.Run();
 
 static void AddCardCacheHeaders(HttpResponse response)
