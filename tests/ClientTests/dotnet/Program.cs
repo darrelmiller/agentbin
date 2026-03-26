@@ -592,10 +592,35 @@ catch (Exception ex) { Record("jsonrpc/get-task-after-failure", "GetTask After F
 // ═══════════════════════════════════════════════════════════════════════════
 Console.WriteLine("\n── HTTP+JSON REST Binding (SDK via Factory) ──");
 
-// Published A2A 1.0.0-preview SDK does not provide A2AClientFactory or HTTP+JSON binding selection.
-// REST tests will fail, signaling this SDK gap.
+// Create REST clients using A2AClientFactory with HTTP+JSON binding preference.
+// Resolve the agent card first, then pass it to the factory (avoids factory's internal card parsing issue).
+var restOptions = new A2AClientOptions { PreferredBindings = [ProtocolBindingNames.HttpJson] };
 IA2AClient? restEchoClient = null;
 IA2AClient? restSpecClient = null;
+
+try
+{
+    var echoResolver = new A2ACardResolver(new Uri($"{baseUrl}/echo/"), versionedHttpClient);
+    var echoCard = await echoResolver.GetAgentCardAsync();
+    restEchoClient = A2AClientFactory.Create(echoCard, versionedHttpClient, restOptions);
+    Console.WriteLine($"  REST echo client created via {echoCard.SupportedInterfaces?.FirstOrDefault(i => string.Equals(i.ProtocolBinding, ProtocolBindingNames.HttpJson, StringComparison.OrdinalIgnoreCase))?.Url ?? "unknown"}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"  ⚠ REST echo client unavailable: {ex.Message}");
+}
+
+try
+{
+    var specResolver = new A2ACardResolver(new Uri($"{baseUrl}/spec/"), versionedHttpClient);
+    var specCard = await specResolver.GetAgentCardAsync();
+    restSpecClient = A2AClientFactory.Create(specCard, versionedHttpClient, restOptions);
+    Console.WriteLine($"  REST spec client created via {specCard.SupportedInterfaces?.FirstOrDefault(i => string.Equals(i.ProtocolBinding, ProtocolBindingNames.HttpJson, StringComparison.OrdinalIgnoreCase))?.Url ?? "unknown"}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"  ⚠ REST spec client unavailable: {ex.Message}");
+}
 
 // 1. rest/agent-card-echo
 try
