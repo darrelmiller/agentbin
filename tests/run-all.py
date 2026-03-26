@@ -203,13 +203,16 @@ KNOWN_FAILURES: dict[tuple[str, str], str] = {
         "Known: .NET A2A server does not implement returnImmediately. "
         "The SDK blocks until the task completes instead of returning early.",
 
-    # ── .NET SDK — no REST transport, subscribe streaming error ──
-    ("dotnet", "rest/"):
-        "Known: .NET A2A SDK does not support REST (HTTP+JSON) transport. "
-        "Only JSON-RPC binding is available.",
+    # ── .NET SDK (preview2) — subscribe streaming, v0.3 agent card parsing ──
     ("dotnet", "jsonrpc/subscribe-to-task"):
-        "Known: SubscribeToTask returns 'internal error during streaming' — "
+        "Known: SubscribeToTask returns 'Task is in a terminal state' — "
         "server-side issue with resubscription to completed tasks.",
+    ("dotnet", "rest/error-subscribe-not-found"):
+        "Known: REST subscribe returns events instead of NotFound error. "
+        "Server-side issue with REST SSE error handling for non-existent tasks.",
+    ("dotnet", "v03/spec03-agent-card"):
+        "Known: .NET SDK rejects v0.3 agent card — missing 'supportedInterfaces'. "
+        "V1.0 SDK cannot parse v0.3 agent cards that lack supportedInterfaces field.",
 
     # ── Go SDK — REST cancel metadata, subscribe, v0.3 not supported ──
     ("go", "rest/spec-cancel-with-metadata"):
