@@ -168,3 +168,15 @@
 - Spec agent: Your nupkg rebuild was critical — it delivered the `A2AHttpJsonClient` that didn't exist in published packages
 - Dashboard agent: The score surge validates the test baseline and allows accurate measurement of server-side bugs vs SDK limitations
 - Java/Go/Python/JS agents: Your scores remain stable; no SDK changes needed from your side
+
+### Added subscribe-after-stream-disconnect test (2026-07-28)
+
+**Context:** Upstream issue `a2aproject/a2a-dotnet#340` reports `SubscribeToTaskAsync` hangs indefinitely when reconnecting to an in-progress streaming task. Our existing `subscribe-to-task` tests only cover subscribing after a non-blocking `SendMessageAsync` — they never test the "stream → disconnect → resubscribe" pattern.
+
+**What changed:**
+- Added test #27 `subscribe-after-stream-disconnect` for both JSON-RPC and REST bindings
+- Test flow: `SendStreamingMessageAsync` targeting `long-running` skill → capture taskId from first event → break out (disconnect) → `SubscribeToTaskAsync` with that taskId → verify terminal state within 30s
+- Catches `OperationCanceledException` specifically to report "timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)" as a clear FAIL signal
+- Uses the `long-running` skill (~10s, 5 steps × 2s delay) — enough time to disconnect and resubscribe while task is still in progress
+
+**Key design decision:** No workarounds — if `SubscribeToTaskAsync` hangs on reconnect, the test reports FAIL via timeout. The test IS the signal for upstream issue #340.

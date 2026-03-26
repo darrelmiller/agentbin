@@ -57,3 +57,24 @@
 - Dashboard re-ran full suite after DotNet upgrade
 - Final baseline established: .NET 53/58, Go 51/58, Python 51/58, Java 27/58, JS 49/58
 - All agents' results updated in dashboard and published to GitHub Pages
+
+### 2026-03-26: Deployment — preview2 nupkg rebuild + .NET REST + dashboard
+- **Trigger:** Nupkgs rebuilt from upstream PR#335, .NET test client upgraded (53/58), dashboard regenerated
+- ACR cloud build: `az acr build --registry agentbinacr --image agentbin:latest .` — succeeded (Run ID: cag, 48s)
+- Image digest: `sha256:1efc5791629fabd105566644f4cf4d6ac8a0c85037d3dc6c9ff3d1a9a1f48361`
+- Container app updated: `az containerapp update -n agentbin -g agentbin-rg`
+- **Verification:**
+  - `/health` → `{"status":"Healthy"}` ✅
+  - `/spec/.well-known/agent-card.json` → v1.0 JSONRPC+HTTP+JSON ✅
+  - `/echo/.well-known/agent-card.json` → Echo Agent v1.0.0 ✅
+  - `/spec03/.well-known/agent-card.json` → v0.3 compat agent ✅
+- All 3 agents live with REST transport enabled in production
+
+### 2026-07-28: Restored root /.well-known/agent-card.json endpoint
+- Commit 39cad22 removed the domain-root `/.well-known/agent-card.json` as "non-standard"
+- This broke JS, Rust, and other SDKs that hardcode agent discovery at the domain root
+- Root `.well-known` IS a valid A2A pattern — many SDKs try it before trying sub-paths
+- Fix: Added `app.MapGet("/.well-known/agent-card.json", ...)` returning the Spec agent's card
+- Card URLs still point to `/spec/` paths — no ambiguity about which agent endpoints to use
+- Caching middleware already covers any path ending in `/.well-known/agent-card.json` — no extra changes needed
+- Build verified, committed as 9899743

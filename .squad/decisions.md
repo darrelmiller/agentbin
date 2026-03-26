@@ -142,6 +142,36 @@
 - **Null-ID bug:** Still present in Beta1-SNAPSHOT (architectural issue in protobuf→MapStruct→Task constructor pipeline)
 - **Team impact:** Java-only; no action needed from other agents
 
+### Subscribe-After-Stream-Disconnect Test Added (2026-03-26)
+**Status:** Implemented | **Author:** DotNet
+
+Added test #27 `subscribe-after-stream-disconnect` for both JSON-RPC and REST bindings to cover upstream issue `a2aproject/a2a-dotnet#340`.
+
+- Issue #340: `SubscribeToTaskAsync` hangs indefinitely when reconnecting to an in-progress streaming task
+- Existing `subscribe-to-task` tests only subscribe after non-blocking `SendMessageAsync` — missing "stream → disconnect → resubscribe" pattern
+- **Test design:**
+  - Uses `long-running` skill (~10s runtime) to ensure task remains in-progress during resubscribe
+  - Phase 1: `SendStreamingMessageAsync` → capture taskId → disconnect
+  - Phase 2: `SubscribeToTaskAsync` with 30s timeout → PASS if terminal state, FAIL if timeout
+  - Timeout reports: "timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)"
+  - **No workarounds:** Test failures ARE the diagnostic signal
+- **Dashboard impact:** Test IDs `jsonrpc/subscribe-after-stream-disconnect` and `rest/subscribe-after-stream-disconnect` — total tests: 58 → 60
+- **Spec agent:** No server changes needed — long-running skill already supports this pattern
+- **Other clients:** Consider equivalent tests for your SDKs
+
+### Root /.well-known/agent-card.json Restored (2026-03-26)
+**Status:** Implemented | **Author:** Spec
+
+The domain-root `/.well-known/agent-card.json` endpoint is restored, returning the Spec agent's card.
+
+- **Context:** Earlier removal broke JS, Rust, and other SDKs that discover agents via domain-root `.well-known`
+- **Rationale:**
+  - Root-level `.well-known` is a valid A2A discovery pattern, not a workaround
+  - Spec agent is the primary agent; logical default discovery target
+  - Echo and v0.3 agents remain discoverable at sub-paths (`/echo/`, `/spec03/`)
+  - Card URLs point to `/spec/` endpoints — no routing ambiguity
+- **Impact:** JS, Rust clients (and any SDK using domain-root discovery) can connect again; smoke test validation resumed
+
 ## Governance
 
 - All meaningful changes require team consensus
