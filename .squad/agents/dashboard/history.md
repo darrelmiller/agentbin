@@ -87,3 +87,17 @@
 - Also fixed `rest/subscribe-to-task` (was "Server-side issue" → now "Likely client-side SSE handling issue")
 - Also fixed `rest/spec-list-tasks` to clarify client-side deserialization failure
 - Left `rest/spec-cancel-with-metadata` as "Server-side limitation" — that one genuinely is server behavior (cancel metadata not echoed)
+
+### 2026-07-28 — Full test suite run after SDK upgrades
+- Ran all 7 clients against local server (http://localhost:5100)
+- **Scores:** .NET 30/58, Go 51/58, Python 51/58, Java 10/58, JS 10/58, Rust 43/58, Swift 32/58
+- **Go v2.0.1:** Stable at 51/58 — no change, SDK upgrade confirmed working
+- **Java Beta1-SNAPSHOT:** REGRESSED 27→10 — client-side null 'id' bug persists in Beta1, plus agent-card fetch now fails (root .well-known removed); manual fallback works but REST tests mostly broken
+- **JS 0.3.10:** REGRESSED 49→10 — root `/.well-known/agent-card.json` was removed from server (commit 39cad22), JS SDK hardcodes that path for agent card discovery; nearly all tests fail with 404 on card fetch
+- **.NET 1.0.0-preview:** 30/58 (was 53/58 with preview2, 29/58 with published pkg) — REST binding unavailable without preview2 packages; +1 from published baseline
+- **Rust a2a-rs-client 1.0.11:** NEW on dashboard — 43/58 solid first showing; failures are server-side (no history, no subscribe, no return-immediately) plus agent-card discovery (uses root .well-known)
+- **Swift a2a-client-swift 1.0.12:** NEW on dashboard — 32/58; JSONRPC mostly works (22/27), REST all fail with 404 (SDK REST routing issue), v0.3 4/4
+- **Python a2a-sdk 1.0.0a0:** Stable at 51/58
+- **Root cause pattern:** Multiple clients (Java, JS, Rust) fail agent-card discovery because they fetch from root `/.well-known/agent-card.json` which no longer exists — they need per-agent paths like `/spec/.well-known/agent-card.json`
+- Dashboard committed (a20a14e) with all 7 clients on public dashboard
+- Swift changed from `publish: False` to `publish: True` in CLIENTS config (already done by prior session)

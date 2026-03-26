@@ -113,6 +113,35 @@
   - Java agent: Reference client-side `Task` constructor when filing upstream issues against `a2a-java`
   - Spec agent: Server requires no fix for these failures
 
+### Go SDK Upgrade: v2.0.0 → v2.0.1 (2026-07-25)
+**Status:** Completed | **Author:** GoLang
+
+- a2a-go/v2 SDK upgraded from v2.0.0 to v2.0.1 (already committed in `0b8285c`)
+- **Key v2.0.1 changes:**
+  - HTTP+JSON REST in v0.3 compat layer (`rest_client.go`, `rest_server.go` in `a2acompat/a2av0/`)
+  - Concurrent cancellation fix for racing cancel operations
+  - Agent executor post-execution callback API (additive)
+  - Dependency bumps: grpc, protobuf, sync
+- **No breaking API changes** — all additive or internal fixes
+- **No test client modifications needed** — `main.go` compiles unmodified
+- **Potential improvement:** v0.3 REST compat layer may fix 3 failing v0.3 tests
+- **Team impact:** Go-specific, no cross-language implications
+
+### Java SDK Upgrade: Alpha4 → Beta1-SNAPSHOT (2026-07-28)
+**Status:** Completed | **Author:** Java
+
+- Test client `pom.xml` upgraded from `1.0.0.Alpha4` to `1.0.0.Beta1-SNAPSHOT`
+- Rebuilt upstream SDK from `D:\github\a2aproject\a2a-java` HEAD (10 commits past Alpha4)
+- Test client compiles cleanly — no code changes required
+- **Notable SDK changes:**
+  - Structured error codes (`A2AErrorCodes` enum with `code()`, `grpcStatus()`, `httpCode()`)
+  - `A2AError` API change: `getData()` → `getDetails()` (returns `Map<String, Object>`)
+  - Stream interrupt fix: streams stay open on INPUT_REQUIRED, AUTH_REQUIRED states
+  - `TaskState.isInterrupted()` method added
+  - Agent card caching headers (server-side)
+- **Null-ID bug:** Still present in Beta1-SNAPSHOT (architectural issue in protobuf→MapStruct→Task constructor pipeline)
+- **Team impact:** Java-only; no action needed from other agents
+
 ## Governance
 
 - All meaningful changes require team consensus
