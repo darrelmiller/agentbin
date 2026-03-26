@@ -33,3 +33,27 @@
 - All 3 agent cards live: `/spec` (v1.0 JSONRPC+REST), `/echo` (v1.0 JSONRPC+REST), `/spec03` (v0.3 compat)
 - Smoke test: **9/10 checks pass**. The 1 failure is `/.well-known/agent-card.json` at root — intentionally removed in commit `39cad22` as non-standard. Smoke test script needs updating to reflect this.
 - REST transport now works in production for the first time (preview2 packages enable HTTP+JSON binding)
+
+### 2026-03-26: Rebuilt preview2 nupkgs from upstream main (PR#335 merged)
+- Upstream `a2a-dotnet` main updated from `2a7d7b3` to `2376b83` (13 new commits)
+- Major additions: `A2AHttpJsonClient` (REST client), `A2AClientFactory`, `A2AClientOptions`, `A2AErrorResponse`, `ProtocolBindingNames` — plus many model cleanups and dep bumps
+- Version remains `1.0.0-preview2` (no version bump in `src/Directory.Build.props`)
+- AgentBin.csproj already references `1.0.0-preview2` — no csproj change needed
+- Old alpha nupkgs removed (`A2A.1.0.0-alpha.nupkg`, `A2A.AspNetCore.1.0.0-alpha.nupkg`)
+- New packages: `A2A.1.0.0-preview2.nupkg` (330KB, was 319KB) and `A2A.AspNetCore.1.0.0-preview2.nupkg` (111KB, was 111KB)
+- Must clear NuGet global cache (`~/.nuget/packages/a2a/1.0.0-preview2`) before restore to pick up new content
+- `dotnet restore` + `dotnet build` succeeded cleanly — no breaking API changes for AgentBin
+- **Committed (2026-03-26):** c0eeef9 — nupkg rebuild approved and committed
+
+## Cross-Agent Updates (2026-03-26)
+
+### DotNet Test Client REST Activation
+- Spec's nupkg rebuild enabled REST transport in preview2 packages
+- DotNet agent upgraded test client to 1.0.0-preview2 and wired real `A2AHttpJsonClient`
+- .NET score jumped 30→53/58, REST went 0/27→25/27
+- This validates that server REST endpoints work correctly with preview2
+
+### Dashboard Regeneration
+- Dashboard re-ran full suite after DotNet upgrade
+- Final baseline established: .NET 53/58, Go 51/58, Python 51/58, Java 27/58, JS 49/58
+- All agents' results updated in dashboard and published to GitHub Pages

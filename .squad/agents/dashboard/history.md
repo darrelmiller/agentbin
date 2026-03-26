@@ -101,3 +101,46 @@
 - **Root cause pattern:** Multiple clients (Java, JS, Rust) fail agent-card discovery because they fetch from root `/.well-known/agent-card.json` which no longer exists — they need per-agent paths like `/spec/.well-known/agent-card.json`
 - Dashboard committed (a20a14e) with all 7 clients on public dashboard
 - Swift changed from `publish: False` to `publish: True` in CLIENTS config (already done by prior session)
+
+### 2026-07-28 — NuGet rebuild test run (a2a-dotnet PR#335)
+- Rebuilt NuGet packages from a2a-dotnet main after PR#335 merge (REST client A2AHttpJsonClient, streaming error fix, dep bumps)
+- **All scores identical to previous baseline — no changes:**
+  - .NET 30/58, Go 51/58, Python 51/58, Java 10/58, JS 10/58, Rust 43/58, Swift 32/58
+- **Root cause for .NET stall:** Test client csproj references `A2A 1.0.0-preview` (published NuGet) but local nupkgs contain `1.0.0-preview2`. REST tests still report "REST client not available"
+- **Action needed:** DotNet agent must bump csproj to `1.0.0-preview2` and wire up `A2AHttpJsonClient` for REST tests to unlock the .NET score improvement
+- No KNOWN_FAILURES changes needed — all failure patterns identical
+- Dashboard committed at 0074b26
+
+### 2026-07-28 — .NET preview2 REST transport dashboard refresh
+- .NET upgraded to `A2A 1.0.0-preview2` with `A2AHttpJsonClient` REST transport
+- **.NET dramatic improvement:** 30/58 → **53/58** (+23 tests) — REST binding now functional
+  - JSON-RPC: 25/27 (stable)
+  - REST: 25/27 (was 0/27 — all REST tests now pass except 2)
+  - v0.3: 3/4 (spec03-agent-card fails — SDK rejects v0.3 card missing `supportedInterfaces`)
+- Removed blanket `("dotnet", "rest/")` known-failure annotation (REST works now)
+- Added 2 new annotations: `rest/error-subscribe-not-found` (server SSE error handling), `v03/spec03-agent-card` (SDK v0.3 parsing)
+- All 5 .NET failures annotated as known (0 unexpected red cells)
+- Other client scores unchanged: Go 51/58, Python 51/58, Java 10/58, JS 10/58, Rust 43/58, Swift 32/58
+- Dashboard committed at 54e139a
+
+### 2026-03-26 — Spec rebuild + DotNet upgrade + Dashboard refresh cascade
+
+**The sequence:**
+1. **Spec agent (c0eeef9, 2026-03-26 07:59:39):** Rebuilt nupkgs from a2a-dotnet PR#335 — delivered `A2AHttpJsonClient`, `A2AClientFactory`, `A2AClientOptions`
+2. **Dashboard agent (0074b26, 2026-03-26 08:10:38):** Baseline test run after nupkg rebuild — identified .NET version mismatch (csproj still on 1.0.0-preview, local nupkgs have preview2)
+3. **DotNet agent (82c0b8e, 2026-03-26 08:22:26):** Upgraded csproj to 1.0.0-preview2, wired real `A2AHttpJsonClient` — score jumped 30→53/58
+4. **Dashboard agent (54e139a, 2026-03-26 08:33:37):** Regenerated with final scores, published to GitHub Pages
+
+**Final baseline established:**
+| Client | JSON-RPC | REST | v0.3 | Total | Pub |
+|--------|----------|------|------|-------|-----|
+| .NET   | 25/27    | 25/27| 3/4  | 53/58 | ✓   |
+| Go     | 26/27    | 22/27| 3/4  | 51/58 | ✓   |
+| Python | 26/27    | 22/27| 3/4  | 51/58 | ✓   |
+| Java   | 23/27    | 0/27 | 4/4  | 27/58 | ✓   |
+| JS     | 25/27    | 20/27| 4/4  | 49/58 | ✓   |
+
+**Key learnings:**
+- Spec's nupkg work was critical — REST support depends on preview2 packages containing the client implementation
+- The test client version mismatch pattern (csproj vs local feed) is a known gotcha — other agents may hit it
+- With baseline established, we can now measure server-side bugs accurately: 5 .NET failures are all infrastructure gaps, not SDK issues

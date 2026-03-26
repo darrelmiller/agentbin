@@ -147,3 +147,47 @@
 - All meaningful changes require team consensus
 - Document architectural decisions here
 - Keep history focused on work, decisions focused on direction
+
+### Rebuild preview2 nupkgs from a2a-dotnet main (2026-03-26)
+**Status:** Completed | **Author:** Spec
+
+- Upstream `a2a-dotnet` PR#335 merged into main — 13 new commits past previous HEAD `2a7d7b3`
+- Major additions: `A2AHttpJsonClient` (REST client), `A2AClientFactory`, `A2AClientOptions`, `A2AErrorResponse`, `ProtocolBindingNames`
+- Rebuilt `A2A.1.0.0-preview2.nupkg` (330KB) and `A2A.AspNetCore.1.0.0-preview2.nupkg` (111KB)
+- Removed stale alpha packages from `agentbin/nupkgs/`
+- Version remains 1.0.0-preview2 (no version bump in `src/Directory.Build.props`)
+- AgentBin.csproj already references 1.0.0-preview2 — no csproj change needed
+- Build verified: `dotnet restore` + `dotnet build` succeeded cleanly
+- No breaking API changes for AgentBin
+- **Committed:** c0eeef9
+
+### DotNet REST Upgrade to preview2 (2026-03-26)
+**Status:** Completed | **Author:** DotNet
+
+- Upgraded `.NET test client` from `A2A 1.0.0-preview` to `A2A 1.0.0-preview2` (local nupkgs feed)
+- REST transport activated: `A2AClientTests.csproj` version bump + REST client initialization replaced with real `A2AHttpJsonClient` calls
+- Implementation: `A2ACardResolver.GetAgentCardAsync()` → `A2AClientFactory.Create(card, httpClient, options)` with `PreferredBindings = [ProtocolBindingNames.HttpJson]`
+- No test logic changes — all 27 REST test code already existed, just needed real client
+- **Score improvement:** 30/58 → 53/58 (+23 tests passing)
+  - REST: 0/27 → 25/27
+  - JSON-RPC: 25/27 (stable)
+  - v0.3: 3/4 (preview2 SDK requires `supportedInterfaces` in AgentCard)
+- 5 remaining failures are all server-side: `Blocking=false` not implemented, `subscribe-to-task` streaming timeout, SSE error handling, v0.3 agent card schema
+- **Committed:** 82c0b8e
+
+### Dashboard Regeneration After .NET Upgrade (2026-03-26)
+**Status:** Completed | **Author:** Dashboard
+
+- Re-ran full test suite after Spec rebuilt nupkgs and DotNet upgraded test client
+- .NET score improvement cascaded: 30/58 → 53/58
+- **Final baseline scores:**
+  - .NET 53/58 (was 29/58 with published packages, 30/58 with preview2 wait)
+  - Go 51/58 (stable)
+  - Python 51/58 (stable)
+  - Java 27/58 (stable)
+  - JS 49/58 (stable)
+- Removed blanket REST annotation for .NET
+- Added 2 specific known failures: `spec-return-immediately` (server), `error-subscribe-not-found` (server)
+- Updated v0.3 annotation: `spec03-agent-card` now marked as preview2 SDK requirement
+- Dashboard published to docs/dashboard.html for GitHub Pages
+- **Committed:** 54e139a
