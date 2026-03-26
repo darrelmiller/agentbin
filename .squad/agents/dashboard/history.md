@@ -69,3 +69,21 @@
 - **Action required:** Update `tests/smoke-test.py` to remove root endpoint check, rely on individual agent endpoints (/spec, /echo, /spec03)
 - Current smoke test still expects root catalog endpoint — will consistently fail in future deployments until updated
 - Once updated, smoke test will be accurate baseline for all future production deployments
+
+### 2026-07-25 — Smoke test updated for endpoint restructuring (commit 3f2ff54)
+- Removed root `/.well-known/agent-card.json` check — endpoint was removed in 39cad22 as non-standard
+- Added `/spec/.well-known/agent-card.json` check (was missing from original smoke test)
+- Added 3 new base URL GET checks: `/spec`, `/echo`, `/spec03` — these return individual agent cards (added in 39cad22)
+- Removed dead code: `check_is_array`, `check_min_agents`, `check_has_v1_agent` (catalog-only checks no longer needed)
+- Smoke test now covers 8 endpoints (was 4): /health + 3 well-known + 3 base URLs + spec03 v0.3
+- `.github/workflows/smoke-test.yml` needed no changes — it just invokes the script
+- Resolves the "action required" item from 2026-03-25
+
+### 2026-07-25 — Java known failure annotations corrected (client-side attribution)
+- Fixed ~25 Java KNOWN_FAILURES annotations in `tests/run-all.py` (lines 255-329)
+- **Root cause clarity:** The `InvalidParamsError: Parameter 'id' may not be null` error is thrown **client-side** by the Java SDK's `Task` constructor during response deserialization — NOT by the .NET server
+- Evidence: The exact error string lives in `a2a-java/common/src/main/java/io/a2a/util/Assert.java`; the .NET server never produces this message and explicitly allows null JSON-RPC envelope `id` per spec
+- Changed all "Server rejects with" / "protobuf null 'id' bug" annotations to "client-side null 'id' bug"
+- Also fixed `rest/subscribe-to-task` (was "Server-side issue" → now "Likely client-side SSE handling issue")
+- Also fixed `rest/spec-list-tasks` to clarify client-side deserialization failure
+- Left `rest/spec-cancel-with-metadata` as "Server-side limitation" — that one genuinely is server behavior (cancel metadata not echoed)

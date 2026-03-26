@@ -103,6 +103,16 @@
 - **With unpublished preview2:** 53/58 pass (25/27 JSON-RPC, 25/27 REST, 4/4 v0.3)
 - **Team implication:** REST transport is a `1.0.0-preview2` feature; any team member needing REST must use local `nupkgs/` feed
 
+### Java Known Failure Annotations: Client-Side Attribution Fix (2026-07-25)
+**Status:** Implemented | **Author:** Dashboard
+
+- All Java `KNOWN_FAILURES` annotations referencing `InvalidParamsError: Parameter 'id' may not be null` now correctly attribute it as a **client-side Java SDK issue**, not server rejection
+- **Evidence:** Error string lives in `a2a-java/common/src/main/java/io/a2a/util/Assert.java`; fires in `Task` constructor during deserialization, not in .NET server
+- **Impact:** ~25 annotations updated in `tests/run-all.py` (lines 255–329); dashboard accuracy improved; server exonerated from these failures
+- **Team relevance:** 
+  - Java agent: Reference client-side `Task` constructor when filing upstream issues against `a2a-java`
+  - Spec agent: Server requires no fix for these failures
+
 ## Governance
 
 - All meaningful changes require team consensus

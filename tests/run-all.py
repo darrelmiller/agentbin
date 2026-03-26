@@ -253,50 +253,50 @@ KNOWN_FAILURES: dict[tuple[str, str], str] = {
         "The .NET server emits null for repeated fields which protobuf JSON parsing rejects.",
 
     # ── Java SDK (Beta1) — JSONRPC null-ID bug ──
-    # Beta1 protobuf conversion produces null message 'id'; server rejects with
-    # InvalidParamsError: Parameter 'id' may not be null.
+    # Beta1 protobuf conversion produces null task 'id'; client-side SDK throws
+    # InvalidParamsError: Parameter 'id' may not be null during response deserialization.
     ("java", "jsonrpc/spec-task-lifecycle"):
-        "Known: Java SDK Beta1 protobuf conversion produces null message 'id'. "
-        "Server rejects with InvalidParamsError: Parameter 'id' may not be null.",
+        "Known: Java SDK Beta1 protobuf conversion produces null task 'id'. "
+        "Client-side: SDK's Task constructor rejects null 'id' during response deserialization.",
     ("java", "jsonrpc/spec-get-task"):
         "Known: Skipped because task-lifecycle fails (no task ID to query).",
     ("java", "jsonrpc/spec-task-failure"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/spec-data-types"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/spec-streaming"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/spec-multi-turn"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/spec-task-cancel"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/spec-cancel-with-metadata"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/spec-list-tasks"):
         "Known: Java SDK JSONRPC listTasks returns 0 results — "
         "likely protobuf deserialization issue with task list response.",
     ("java", "jsonrpc/spec-return-immediately"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/error-cancel-terminal"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/error-send-terminal"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/error-send-invalid-task"):
         "Known: Java SDK Beta1 — expected error but got success. "
-        "SDK may not send the correct task ID due to protobuf null-ID bug.",
+        "Client-side null-ID bug causes SDK to send wrong task ID.",
     ("java", "jsonrpc/subscribe-to-task"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/error-subscribe-not-found"):
         "Known: Java SDK Beta1 — expected error but got success. "
-        "SDK may not send the correct task ID due to protobuf null-ID bug.",
+        "Client-side null-ID bug causes SDK to send wrong task ID.",
     ("java", "jsonrpc/stream-task-lifecycle"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/multi-turn-context-preserved"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/get-task-with-history"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
     ("java", "jsonrpc/get-task-after-failure"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug. Same root cause as spec-task-lifecycle.",
+        "Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.",
 
     # ── Java SDK (Beta1) — REST-specific failures ──
     # Beta1 fixed the SUBMITTED-state issue for basic REST tests (task-lifecycle,
@@ -305,8 +305,8 @@ KNOWN_FAILURES: dict[tuple[str, str], str] = {
         "Known: REST cancel succeeds but cancel metadata (reason/requestedBy) "
         "not echoed in response. Server-side limitation.",
     ("java", "rest/spec-list-tasks"):
-        "Known: Java SDK REST listTasks fails with InvalidParamsError — "
-        "protobuf null 'id' bug affects list request.",
+        "Known: Java SDK REST listTasks fails — "
+        "client-side null 'id' bug during response deserialization.",
     ("java", "rest/error-send-terminal"):
         "Known: Java SDK Beta1 — expected error but got success. "
         "REST binding may not properly propagate terminal-state errors.",
@@ -315,17 +315,17 @@ KNOWN_FAILURES: dict[tuple[str, str], str] = {
         "REST binding may not properly propagate task-not-found errors.",
     ("java", "rest/subscribe-to-task"):
         "Known: Java SDK REST subscribe times out. "
-        "Server-side issue with REST SSE subscription.",
+        "Likely client-side SSE handling issue in Java SDK.",
     ("java", "rest/error-subscribe-not-found"):
         "Known: Java SDK Beta1 — expected error but got success. "
         "REST binding may not properly propagate subscription errors.",
 
     # ── Java SDK (Beta1) — v0.3 failures ──
     ("java", "v03/spec03-task-lifecycle"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug affects v0.3 tests. "
+        "Known: Java SDK Beta1 client-side null 'id' bug affects v0.3 tests. "
         "Same root cause as JSONRPC null-ID issue.",
     ("java", "v03/spec03-streaming"):
-        "Known: Java SDK Beta1 protobuf null 'id' bug affects v0.3 tests. "
+        "Known: Java SDK Beta1 client-side null 'id' bug affects v0.3 tests. "
         "Same root cause as JSONRPC null-ID issue.",
 
     # ── JS SDK (V1.0 with compat layer) ──

@@ -38,3 +38,9 @@
 - **Artifact IDs unchanged:** `a2a-java-sdk-client`, `a2a-java-sdk-client-transport-jsonrpc`, `a2a-java-sdk-client-transport-rest`
 - **Test results:** 27/58 pass. JSONRPC transport still broken (protobuf serialization: "Parameter 'id' may not be null"), agent card unmarshalling fails on both transports. These are upstream SDK bugs.
 - **Cancel-with-metadata test** now actually sends metadata via CancelTaskParams (was impossible with Alpha3's TaskIdParams)
+
+### Dashboard corrected known failure annotations (2026-07-25)
+- Dashboard corrected ~25 Java `KNOWN_FAILURES` annotations in `tests/run-all.py` to properly attribute `InvalidParamsError: Parameter 'id' may not be null` as a **client-side Java SDK issue** (not server rejection)
+- **Root cause identified:** Error string lives in `io.a2a.util.Assert.checkNotNullParam` and fires in the `Task` constructor during response deserialization when protobuf yields null task ID
+- **Evidence:** .NET server never produces this message and explicitly allows null JSON-RPC envelope `id` per spec
+- **Action item for Java team:** When filing upstream issues against `a2a-java` SDK, reference the client-side `Task` constructor as the failure point, not the server
