@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AgentBin A2A Report Card</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>AgentBin A2A Report Card</title>
 <style>
   :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -44,21 +44,22 @@
 </head>
 <body>
 <h1>AgentBin A2A Report Card</h1>
-<p class="subtitle">Generated 2026-03-26 17:22 UTC &bull; Target: <code>http://localhost:5100</code></p>
+<p class="subtitle">Generated 2026-03-26 19:18 UTC &bull; Target: <code>http://localhost:5100</code></p>
 
 <div class="client-section">
   <div class="client-header">
     <span class="client-name">&#9726; .NET</span>
     <span class="client-sdk">A2A 1.0.0-preview2</span>
-    <span class="client-score" style="color:#f85149">53/58</span>
+    <span class="client-score" style="color:#f85149">53/60</span>
   </div>
   <div class="binding-group">
     <div class="binding-label">JSON-RPC</div>
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">state=Completed, time=10048ms (expected Working within 2s)</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">state=Completed, time=10040ms (expected Working within 2s)</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
       <tr class="known-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">Task is in a terminal state and cannot be subscribed to.</td><td class="col-known">Known: SubscribeToTask returns 'Task is in a terminal state' — server-side issue with resubscription to completed tasks.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -67,8 +68,9 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">state=Completed, time=10033ms (expected Working within 2s)</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">state=Completed, time=10026ms (expected Working within 2s)</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">expected error, got events</td><td class="col-known">Known: REST subscribe returns events instead of NotFound error. Server-side issue with REST SSE error handling for non-existent tasks.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -102,7 +104,7 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=65dcf828cfb94bc58d410fc51de24a12, state=canceled but metadata is nil</td><td class="col-known">Known: REST cancel succeeds but metadata is nil in response. Server does not echo cancel metadata back via REST binding.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=56ee871c6b3b44e8a8ec51a76741f55e, state=canceled but metadata is nil</td><td class="col-known">Known: REST cancel succeeds but metadata is nil in response. Server does not echo cancel metadata back via REST binding.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">took 10.0s, state=TASK_STATE_COMPLETED â€” returnImmediately ignored by SDK</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
       </tbody>
     </table>
@@ -141,7 +143,7 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">returnImmediately ignored by SDK — blocked 10.1s, state=TASK_STATE_COMPLETED</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=a369e79aac4149d3909faca07a18d9b3, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=b80d0fdb10b140489e1c2745f7df8272, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
       </tbody>
     </table>
   </div>
@@ -198,7 +200,7 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=AgentBin Spec Agent â€” A2A v1.0 Test Bed  Send a message starting with one of these skill keywords:    message-only    â†’ Stateless message response (no task)   task-lifecycle  â†’ Full task: submitted â†’ working â†’ completed   task-failure    â†’ Task that fails with error message   task-cancel     â†’ Task that waits to be canceled   multi-turn      â†’ Multi-turn conversation (input-required)   streaming       â†’ Streamed response with multiple chunks   long-running    â†’ Long-running task with periodic updates   data-types      â†’ Mixed content: text, JSON, file, multi-part  Example: 'task-lifecycle hello world'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=7228a0c0164a427a9f52fa2982ab7a19, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: REST cancel succeeds but cancel metadata (reason/requestedBy) not echoed in response. Server-side limitation.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=300de0ee78494fe682c7b537bf5f04f8, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: REST cancel succeeds but cancel metadata (reason/requestedBy) not echoed in response. Server-side limitation.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">InvalidParamsError: Parameter 'id' may not be null</td><td class="col-known">Known: Java SDK REST listTasks fails — client-side null 'id' bug during response deserialization.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate terminal-state errors.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate task-not-found errors.</td></tr>
@@ -323,7 +325,7 @@
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">task already terminal: Completed</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">task already terminal: Completed</td><td class="col-known">&mdash;</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">got Message instead of Task, took=0.0s â€” returnImmediately not supported</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/86f4daa0097646bd8ca5830c9e39646a/subs...</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/5017ef946d6e4deaba00a3dbf2ea980f/subs...</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">historyLength=0</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
@@ -340,9 +342,9 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;164157aca90b4f42bf462b56820d4aa7&quot;, state: A2AClient.TaskState.working, message: Optional(&quot;Tasâ€¦</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;d042ed973f734d35b6a7334e4e311d52&quot;, state: A2AClient.TaskState.working, message: Optional(&quot;Tasâ€¦</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">took 10.1s, state=TASK_STATE_COMPLETED â€” returnImmediately ignored</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;a8c1345fd75c48fe889f2e40f8f73632&quot;, state: A2AClient.TaskState.working, message: Optional(&quot;Tasâ€¦</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;7e480fbf6c3440ccac6766e381d945d0&quot;, state: A2AClient.TaskState.working, message: Optional(&quot;Tasâ€¦</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">took 10.0s, state=TASK_STATE_COMPLETED â€” returnImmediately ignored</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">error: unsupportedOperation(operation: &quot;&quot;, message: Optional(&quot;Task is in a terminal state and cannot be subscribed to.&quot;))</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>

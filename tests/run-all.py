@@ -481,6 +481,7 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>AgentBin A2A Compatibility Dashboard</title>
 <style>
   :root {{ --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; }}
@@ -652,6 +653,7 @@ def generate_report_card(all_results: dict[str, dict], base_url: str) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>AgentBin A2A Report Card</title>
 <style>
   :root {{ --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; }}
