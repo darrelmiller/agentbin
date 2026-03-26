@@ -587,6 +587,58 @@ try
 }
 catch (Exception ex) { Record("jsonrpc/get-task-after-failure", "GetTask After Failure", false, ex.Message, sw.ElapsedMilliseconds); }
 
+// 27. subscribe-after-stream-disconnect — start streaming long-running task, disconnect, resubscribe (a2a-dotnet#340)
+try
+{
+    sw.Restart();
+    var client = new A2AClient(new Uri($"{baseUrl}/spec"), versionedHttpClient);
+    var streamReq = new SendMessageRequest
+    {
+        Message = new Message
+        {
+            Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
+            Parts = [Part.FromText("long-running start process")]
+        }
+    };
+    // Phase 1: Start streaming and capture taskId from first event, then disconnect
+    string? resubTaskId = null;
+    using var streamCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+    await foreach (var ev in client.SendStreamingMessageAsync(streamReq).WithCancellation(streamCts.Token))
+    {
+        resubTaskId = ev.Task?.Id ?? ev.StatusUpdate?.TaskId ?? ev.ArtifactUpdate?.TaskId;
+        if (resubTaskId is not null) break; // disconnect after first event
+    }
+    if (resubTaskId is null)
+    {
+        Record("jsonrpc/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", false, "no taskId from streaming", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        // Phase 2: Resubscribe to the in-progress task
+        int resubEvtCount = 0;
+        bool resubTerminal = false;
+        TaskState? resubFinalState = null;
+        using var resubCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await foreach (var ev in client.SubscribeToTaskAsync(new SubscribeToTaskRequest { Id = resubTaskId }).WithCancellation(resubCts.Token))
+        {
+            resubEvtCount++;
+            var evState = ev.Task?.Status.State ?? ev.StatusUpdate?.Status.State;
+            if (evState == TaskState.Completed || evState == TaskState.Failed || evState == TaskState.Canceled)
+            {
+                resubTerminal = true;
+                resubFinalState = evState;
+                break;
+            }
+        }
+        Record("jsonrpc/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", resubTerminal,
+            resubTerminal
+                ? $"taskId={resubTaskId}, events={resubEvtCount}, finalState={resubFinalState}"
+                : $"taskId={resubTaskId}, events={resubEvtCount}, stream ended without terminal state (possible hang/timeout)", sw.ElapsedMilliseconds);
+    }
+}
+catch (OperationCanceledException) { Record("jsonrpc/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", false, "timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("jsonrpc/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", false, ex.Message, sw.ElapsedMilliseconds); }
+
 // ═══════════════════════════════════════════════════════════════════════════
 // HTTP+JSON REST BINDING (via A2AClientFactory → A2AHttpJsonClient)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1185,6 +1237,59 @@ try
     }
 }
 catch (Exception ex) { Record("rest/get-task-after-failure", "GetTask After Failure", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// 27. rest/subscribe-after-stream-disconnect — start streaming long-running task, disconnect, resubscribe (a2a-dotnet#340)
+try
+{
+    sw.Restart();
+    if (restSpecClient is null) throw new InvalidOperationException("REST spec client not available");
+    var streamReq = new SendMessageRequest
+    {
+        Message = new Message
+        {
+            Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
+            Parts = [Part.FromText("long-running start process")]
+        }
+    };
+    // Phase 1: Start streaming and capture taskId from first event, then disconnect
+    string? resubTaskId = null;
+    using var streamCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+    await foreach (var ev in restSpecClient.SendStreamingMessageAsync(streamReq).WithCancellation(streamCts.Token))
+    {
+        resubTaskId = ev.Task?.Id ?? ev.StatusUpdate?.TaskId ?? ev.ArtifactUpdate?.TaskId;
+        if (resubTaskId is not null) break; // disconnect after first event
+    }
+    if (resubTaskId is null)
+    {
+        Record("rest/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", false, "no taskId from streaming", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        // Phase 2: Resubscribe to the in-progress task
+        int resubEvtCount = 0;
+        bool resubTerminal = false;
+        TaskState? resubFinalState = null;
+        using var resubCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await foreach (var ev in restSpecClient.SubscribeToTaskAsync(new SubscribeToTaskRequest { Id = resubTaskId }).WithCancellation(resubCts.Token))
+        {
+            resubEvtCount++;
+            var evState = ev.Task?.Status.State ?? ev.StatusUpdate?.Status.State;
+            if (evState == TaskState.Completed || evState == TaskState.Failed || evState == TaskState.Canceled)
+            {
+                resubTerminal = true;
+                resubFinalState = evState;
+                break;
+            }
+        }
+        Record("rest/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", resubTerminal,
+            resubTerminal
+                ? $"taskId={resubTaskId}, events={resubEvtCount}, finalState={resubFinalState}"
+                : $"taskId={resubTaskId}, events={resubEvtCount}, stream ended without terminal state (possible hang/timeout)", sw.ElapsedMilliseconds);
+    }
+}
+catch (OperationCanceledException) { Record("rest/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", false, "timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)", sw.ElapsedMilliseconds); }
+catch (Exception ex) { Record("rest/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", false, ex.Message, sw.ElapsedMilliseconds); }
+
 // ═══════════════════════════════════════════════════════════════════════════
 // v0.3 BACKWARD COMPATIBILITY TESTS
 // ═══════════════════════════════════════════════════════════════════════════
