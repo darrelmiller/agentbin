@@ -2,7 +2,7 @@
   "client": "rust",
   "sdk": "a2a-rs-client 1.0.11",
   "protocolVersion": "1.0",
-  "timestamp": "2026-03-26T11:25:25.328929600+00:00",
+  "timestamp": "2026-03-26T12:06:43.479947800+00:00",
   "baseUrl": "http://localhost:5100",
   "results": [
     {
@@ -10,7 +10,7 @@
       "name": "Echo Agent Card",
       "passed": false,
       "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5100/.well-known/agent-card.json)",
-      "durationMs": 12
+      "durationMs": 16
     },
     {
       "id": "jsonrpc/agent-card-spec",
@@ -37,8 +37,8 @@
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=Completed, taskId=37c6039c3b2c4b3381ce...",
-      "durationMs": 1
+      "detail": "state=Completed, taskId=28789df04ba44bc09ae8...",
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/spec-get-task",
@@ -52,7 +52,7 @@
       "name": "Task Failure",
       "passed": true,
       "detail": "state=Failed",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-data-types",
@@ -66,7 +66,7 @@
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
-      "durationMs": 2020
+      "durationMs": 2029
     },
     {
       "id": "jsonrpc/spec-multi-turn",
@@ -80,7 +80,7 @@
       "name": "Task Cancel (via streaming)",
       "passed": false,
       "detail": "task already terminal: Completed",
-      "durationMs": 30006
+      "durationMs": 30016
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
@@ -94,21 +94,21 @@
       "name": "ListTasks",
       "passed": true,
       "detail": "returned 10 tasks",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-return-immediately",
       "name": "Return Immediately",
       "passed": false,
       "detail": "got Message instead of Task, took=0.0s — returnImmediately not supported",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
@@ -129,7 +129,7 @@
       "name": "Send To Terminal Task",
       "passed": true,
       "detail": "got expected error: Server error -32004: Task is in a terminal state and cannot accept messages.",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-send-invalid-task",
@@ -149,14 +149,14 @@
       "id": "jsonrpc/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
-      "detail": "Server error -32603: An internal error occurred during streaming.",
+      "detail": "Server error -32004: Task is in a terminal state and cannot be subscribed to.",
       "durationMs": 1
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found",
       "passed": true,
-      "detail": "got expected error: Server error -32603: An internal error occurred during streaming.",
+      "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
       "durationMs": 0
     },
     {
@@ -177,7 +177,7 @@
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": true,
-      "detail": "contextId1=44d9b83b-4c3b-4847-b..., contextId2=44d9b83b-4c3b-4847-b..., match=true",
+      "detail": "contextId1=02ecc649-57f1-46e8-b..., contextId2=02ecc649-57f1-46e8-b..., match=true",
       "durationMs": 1
     },
     {
@@ -226,7 +226,7 @@
       "id": "rest/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=Completed, taskId=4b610e145dfc4522bcc9...",
+      "detail": "state=Completed, taskId=6c990837370046df88c6...",
       "durationMs": 0
     },
     {
@@ -255,28 +255,28 @@
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
-      "durationMs": 2020
+      "durationMs": 2017
     },
     {
       "id": "rest/spec-multi-turn",
       "name": "Multi-Turn",
       "passed": true,
       "detail": "turn1=Some(InputRequired), turn2=Some(InputRequired), contextMatch=true",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "rest/spec-task-cancel",
       "name": "Task Cancel (via streaming)",
       "passed": false,
       "detail": "task already terminal: Completed",
-      "durationMs": 30010
+      "durationMs": 30007
     },
     {
       "id": "rest/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": false,
       "detail": "task already terminal: Completed",
-      "durationMs": 30006
+      "durationMs": 30001
     },
     {
       "id": "rest/spec-list-tasks",
@@ -290,7 +290,7 @@
       "name": "Return Immediately",
       "passed": false,
       "detail": "got Message instead of Task, took=0.0s — returnImmediately not supported",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "rest/error-task-not-found",
@@ -310,7 +310,7 @@
       "id": "rest/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": true,
-      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100/spec/tasks/4b610e14...",
+      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100/spec/tasks/6c990837...",
       "durationMs": 0
     },
     {
@@ -318,7 +318,7 @@
       "name": "Send To Terminal Task",
       "passed": true,
       "detail": "got expected error: HTTP status client error (400 Bad Request) for url (http://localhost:5100/spec/message:send)",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/error-send-invalid-task",
@@ -338,7 +338,7 @@
       "id": "rest/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
-      "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/bd3d56553d4a459494b5886eed6879a0/subs...",
+      "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/8c5a3fbe6b1446ebbc399592b4473aea/subs...",
       "durationMs": 1
     },
     {
@@ -353,7 +353,7 @@
       "name": "Stream Message Only",
       "passed": true,
       "detail": "events=1, gotMessage=true",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/stream-task-lifecycle",
@@ -366,8 +366,8 @@
       "id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": true,
-      "detail": "contextId1=72a1c4d4-94af-43cf-8..., contextId2=72a1c4d4-94af-43cf-8..., match=true",
-      "durationMs": 1
+      "detail": "contextId1=4e26209e-9cda-4cab-a..., contextId2=4e26209e-9cda-4cab-a..., match=true",
+      "durationMs": 2
     },
     {
       "id": "rest/get-task-with-history",
@@ -388,7 +388,7 @@
       "name": "v0.3 Agent Card",
       "passed": false,
       "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5100/.well-known/agent-card.json)",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "v03/spec03-send-message",
@@ -402,14 +402,14 @@
       "name": "v0.3 Task Lifecycle",
       "passed": true,
       "detail": "state=Completed",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed)",
-      "durationMs": 2018
+      "durationMs": 2022
     }
   ]
 }

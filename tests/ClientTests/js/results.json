@@ -2,7 +2,7 @@
   "client": "js",
   "sdk": "a2a-js (local build, 0.3.10)",
   "protocolVersion": "1.0",
-  "timestamp": "2026-03-26T11:21:51Z",
+  "timestamp": "2026-03-26T12:04:27Z",
   "baseUrl": "http://localhost:5100",
   "results": [
     {
@@ -10,14 +10,14 @@
       "name": "Echo Agent Card",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 99
+      "durationMs": 105
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 4
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/echo-send-message",
@@ -52,14 +52,14 @@
       "name": "Spec Task Failure",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-data-types",
       "name": "Spec Data Types",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-streaming",
@@ -87,7 +87,7 @@
       "name": "Cancel With Metadata",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-list-tasks",
@@ -115,14 +115,14 @@
       "name": "Cancel Not Found",
       "passed": true,
       "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.jso",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": false,
       "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.jso",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/error-send-terminal",
@@ -136,7 +136,7 @@
       "name": "Send Invalid TaskId",
       "passed": true,
       "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.jso",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-push-not-supported",
@@ -150,21 +150,21 @@
       "name": "SubscribeToTask",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found",
       "passed": true,
       "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.jso",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
@@ -199,7 +199,7 @@
       "name": "REST Echo Agent Card",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/agent-card-spec",
@@ -248,7 +248,7 @@
       "name": "REST Spec Data Types",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "rest/spec-streaming",
@@ -297,14 +297,14 @@
       "name": "REST Task Not Found Error",
       "passed": true,
       "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.jso",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "rest/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": true,
       "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.jso",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/error-cancel-terminal",
@@ -318,14 +318,14 @@
       "name": "Send To Terminal Task",
       "passed": true,
       "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.jso",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "passed": true,
       "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.jso",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/error-push-not-supported",
@@ -339,7 +339,7 @@
       "name": "SubscribeToTask",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/error-subscribe-not-found",
@@ -353,21 +353,21 @@
       "name": "Stream Message Only",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "rest/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": false,
       "detail": "Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/get-task-with-history",
@@ -402,14 +402,14 @@
       "name": "v0.3 Task Lifecycle",
       "passed": false,
       "detail": "SDK v0.3 failed: Error: Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
       "passed": false,
       "detail": "SDK v0.3 failed: Error: Failed to fetch Agent Card from http://localhost:5100/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "durationMs": 2
     }
   ]
 }
