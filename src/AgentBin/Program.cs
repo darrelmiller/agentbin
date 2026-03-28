@@ -93,7 +93,9 @@ app.MapA2A(spec03Server, "/spec03");
 app.MapGet("/spec03/.well-known/agent-card.json", () => Results.Ok(spec03Card));
 app.MapGet("/spec03", () => Results.Ok(spec03Card));
 
-// Base-URL GET for spec agent — MapA2A registers .well-known but not the bare GET
+// Base-URL GET and .well-known for spec agent
+// (MapA2A no longer registers .well-known as of PR#339)
+app.MapGet("/spec/.well-known/agent-card.json", () => Results.Ok(specCard));
 app.MapGet("/spec", () => Results.Ok(specCard));
 
 // Root-level agent card — many SDKs discover agents at /.well-known/agent-card.json on the domain root.
