@@ -78,3 +78,16 @@
 - Card URLs still point to `/spec/` paths — no ambiguity about which agent endpoints to use
 - Caching middleware already covers any path ending in `/.well-known/agent-card.json` — no extra changes needed
 - Build verified, committed as 9899743
+
+### 2026-03-28: Rebuilt preview2 nupkgs from upstream PR#339 (ReturnImmediately)
+- Upstream `a2a-dotnet` main updated from `2376b83` to `ce46aa0` (PR#339 merge)
+- Key changes: `Blocking` renamed to `ReturnImmediately` with full server-side implementation, atomic `GetOrAdd` for CTS management
+- **Breaking change discovered:** `MapA2A()` no longer registers `/.well-known/agent-card.json` routes — this was removed in PR#339
+- `/spec/.well-known/agent-card.json` went 404 in first deploy; fixed by adding explicit `MapGet` route (echo/spec03 already had manual routes)
+- Version remains `1.0.0-preview2` — no version bump in `src/Directory.Build.props`
+- No csproj changes needed — AgentBin code doesn't reference `Blocking` or `ReturnImmediately` directly
+- Two ACR builds: first caught the .well-known regression, second deployed the fix
+- **Committed:** b88e8e4
+- **Deployed:** ACR Run IDs caj + cak, image `sha256:7f8f3c55e66bcf0bb4d25d492f32dadf41f030b14e3e063c5d941f8d6e873187`
+- All 5 production endpoints verified: /health, root .well-known, /spec, /echo, /spec03
+- This should unblock `spec-return-immediately` test failures across all 7 clients

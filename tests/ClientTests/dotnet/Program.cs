@@ -317,7 +317,7 @@ try
             Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
             Parts = [Part.FromText("long-running test")]
         },
-        Configuration = new SendMessageConfiguration { Blocking = false }
+        Configuration = new SendMessageConfiguration { ReturnImmediately = true }
     };
     var riSw = Stopwatch.StartNew();
     var response = await client.SendMessageAsync(request);
@@ -439,7 +439,7 @@ try
             Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
             Parts = [Part.FromText("task-cancel start")]
         },
-        Configuration = new SendMessageConfiguration { Blocking = false }
+        Configuration = new SendMessageConfiguration { ReturnImmediately = true }
     };
     var subResponse = await client.SendMessageAsync(subReq);
     var subTaskId = subResponse.Task?.Id;
@@ -962,7 +962,7 @@ try
             Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
             Parts = [Part.FromText("long-running test")]
         },
-        Configuration = new SendMessageConfiguration { Blocking = false }
+        Configuration = new SendMessageConfiguration { ReturnImmediately = true }
     };
     var riSw = Stopwatch.StartNew();
     var response = await restSpecClient.SendMessageAsync(request);
@@ -1089,7 +1089,7 @@ try
             Role = Role.User, MessageId = Guid.NewGuid().ToString("N"),
             Parts = [Part.FromText("task-cancel start")]
         },
-        Configuration = new SendMessageConfiguration { Blocking = false }
+        Configuration = new SendMessageConfiguration { ReturnImmediately = true }
     };
     var subResponse = await restSpecClient.SendMessageAsync(subReq);
     var subTaskId = subResponse.Task?.Id;
