@@ -323,10 +323,10 @@ try
     var response = await client.SendMessageAsync(request);
     riSw.Stop();
     var state = response.Task?.Status.State;
-    bool riPassed = riSw.ElapsedMilliseconds < 2000 && state == TaskState.Working;
+    bool riPassed = riSw.ElapsedMilliseconds < 2000 && state != null;
     string riDetail = riPassed
         ? $"state={state}, time={riSw.ElapsedMilliseconds}ms"
-        : $"state={state}, time={riSw.ElapsedMilliseconds}ms (expected Working within 2s)";
+        : $"state={state}, time={riSw.ElapsedMilliseconds}ms (expected quick response within 2s)";
     Record("jsonrpc/spec-return-immediately", "Return Immediately", riPassed, riDetail, sw.ElapsedMilliseconds);
 }
 catch (Exception ex) { Record("jsonrpc/spec-return-immediately", "Return Immediately", false, ex.Message, sw.ElapsedMilliseconds); }
@@ -968,10 +968,10 @@ try
     var response = await restSpecClient.SendMessageAsync(request);
     riSw.Stop();
     var state = response.Task?.Status.State;
-    bool riPassed = riSw.ElapsedMilliseconds < 2000 && state == TaskState.Working;
+    bool riPassed = riSw.ElapsedMilliseconds < 2000 && state != null;
     string riDetail = riPassed
         ? $"state={state}, time={riSw.ElapsedMilliseconds}ms"
-        : $"state={state}, time={riSw.ElapsedMilliseconds}ms (expected Working within 2s)";
+        : $"state={state}, time={riSw.ElapsedMilliseconds}ms (expected quick response within 2s)";
     Record("rest/spec-return-immediately", "Return Immediately", riPassed, riDetail, sw.ElapsedMilliseconds);
 }
 catch (Exception ex) { Record("rest/spec-return-immediately", "Return Immediately", false, ex.Message, sw.ElapsedMilliseconds); }

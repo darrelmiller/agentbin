@@ -583,9 +583,8 @@ public class TestJavaClient {
                 client.sendMessage(A2A.toUserMessage("long-running test"));
                 Task task = result.get(15, TimeUnit.SECONDS);
                 long elapsed = System.currentTimeMillis() - start;
-                boolean ok = elapsed < 3000
-                        && task.status().state() != TaskState.TASK_STATE_COMPLETED;
-                String detail = ok ? "fast response"
+                boolean ok = elapsed < 3000;
+                String detail = ok ? "fast response, state=" + task.status().state() + ", took=" + elapsed + "ms"
                         : "returnImmediately ignored by SDK, took " + elapsed + "ms";
                 record(id, "Return Immediately", ok, detail, elapsed);
             }

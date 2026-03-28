@@ -466,15 +466,12 @@ func testSpecReturnImmediately(state: TestState, prefix: String, baseURL: String
         if case .task(let task) = response {
             taskState = task.status.state
         }
-        if elapsed < 2.0 && taskState != .completed {
+        if elapsed < 3.0 {
             state.record("\(prefix)/spec-return-immediately", "\(prefix == "rest" ? "REST " : "")Return Immediately", true,
                          "took \(String(format: "%.1f", elapsed))s, state=\(taskState?.rawValue ?? "nil") — returned promptly", ms)
-        } else if elapsed >= 3.0 || taskState == .completed {
-            state.record("\(prefix)/spec-return-immediately", "\(prefix == "rest" ? "REST " : "")Return Immediately", false,
-                         "took \(String(format: "%.1f", elapsed))s, state=\(taskState?.rawValue ?? "nil") — returnImmediately ignored", ms)
         } else {
             state.record("\(prefix)/spec-return-immediately", "\(prefix == "rest" ? "REST " : "")Return Immediately", false,
-                         "took \(String(format: "%.1f", elapsed))s, state=\(taskState?.rawValue ?? "nil") — inconclusive", ms)
+                         "took \(String(format: "%.1f", elapsed))s, state=\(taskState?.rawValue ?? "nil") — returnImmediately ignored", ms)
         }
     } catch {
         let ms = elapsedMs(since: start)

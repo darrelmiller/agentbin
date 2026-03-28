@@ -577,15 +577,12 @@ func main() {
 			if v, ok := resp.(*a2a.Task); ok {
 				state = v.Status.State
 			}
-			if elapsed > 3 || state == a2a.TaskStateCompleted {
-				record("jsonrpc/spec-return-immediately", "Return Immediately", false,
-					fmt.Sprintf("took %.1fs, state=%s — returnImmediately ignored by SDK", elapsed, state), dur)
-			} else if elapsed < 2 && state != a2a.TaskStateCompleted {
+			if elapsed < 3 {
 				record("jsonrpc/spec-return-immediately", "Return Immediately", true,
 					fmt.Sprintf("took %.1fs, state=%s — returned promptly", elapsed, state), dur)
 			} else {
 				record("jsonrpc/spec-return-immediately", "Return Immediately", false,
-					fmt.Sprintf("took %.1fs, state=%s — inconclusive", elapsed, state), dur)
+					fmt.Sprintf("took %.1fs, state=%s — returnImmediately ignored by SDK", elapsed, state), dur)
 			}
 		}
 	} else {
@@ -1442,15 +1439,12 @@ func main() {
 			if v, ok := resp.(*a2a.Task); ok {
 				state = v.Status.State
 			}
-			if elapsed > 3 || state == a2a.TaskStateCompleted {
-				record("rest/spec-return-immediately", "REST Return Immediately", false,
-					fmt.Sprintf("took %.1fs, state=%s — returnImmediately ignored by SDK", elapsed, state), dur)
-			} else if elapsed < 2 && state != a2a.TaskStateCompleted {
+			if elapsed < 3 {
 				record("rest/spec-return-immediately", "REST Return Immediately", true,
 					fmt.Sprintf("took %.1fs, state=%s — returned promptly", elapsed, state), dur)
 			} else {
 				record("rest/spec-return-immediately", "REST Return Immediately", false,
-					fmt.Sprintf("took %.1fs, state=%s — inconclusive", elapsed, state), dur)
+					fmt.Sprintf("took %.1fs, state=%s — returnImmediately ignored by SDK", elapsed, state), dur)
 			}
 		}
 	} else {

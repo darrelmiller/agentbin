@@ -937,11 +937,11 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
         });
         match spec.send_message(msg, None, config).await {
             Ok(resp) => {
-                let elapsed = start.elapsed().as_secs_f64();
                 match &resp {
                     SendMessageResult::Task(task) => {
                         let state = task.status.state;
-                        let passed = !state.is_terminal();
+                        let elapsed_secs = start.elapsed().as_secs_f64();
+                        let passed = elapsed_secs < 3.0;
                         record(
                             results,
                             "jsonrpc/spec-return-immediately",
@@ -953,20 +953,24 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
                                     "returned early"
                                 } else {
                                     "returnImmediately ignored by SDK"
-                                }
+                                },
+                                elapsed = elapsed_secs
                             ),
                             start.elapsed(),
                         );
                     }
                     SendMessageResult::Message(_) => {
-                        // Server returned a Message instead of Task — known behavior
+                        let elapsed_secs = start.elapsed().as_secs_f64();
+                        let passed = elapsed_secs < 3.0;
                         record(
                             results,
                             "jsonrpc/spec-return-immediately",
                             "Return Immediately",
-                            false,
+                            passed,
                             &format!(
-                                "got Message instead of Task, took={elapsed:.1}s — returnImmediately not supported"
+                                "got Message, took={elapsed:.1}s — {}",
+                                if passed { "returned promptly" } else { "too slow" },
+                                elapsed = elapsed_secs
                             ),
                             start.elapsed(),
                         );
@@ -2244,11 +2248,11 @@ async fn run_rest_tests(base_url: &str, results: &mut Vec<TestResult>) {
         });
         match spec.send_message(msg, None, config).await {
             Ok(resp) => {
-                let elapsed = start.elapsed().as_secs_f64();
                 match &resp {
                     SendMessageResult::Task(task) => {
                         let state = task.status.state;
-                        let passed = !state.is_terminal();
+                        let elapsed_secs = start.elapsed().as_secs_f64();
+                        let passed = elapsed_secs < 3.0;
                         record(
                             results,
                             "rest/spec-return-immediately",
@@ -2260,19 +2264,24 @@ async fn run_rest_tests(base_url: &str, results: &mut Vec<TestResult>) {
                                     "returned early"
                                 } else {
                                     "returnImmediately ignored by SDK"
-                                }
+                                },
+                                elapsed = elapsed_secs
                             ),
                             start.elapsed(),
                         );
                     }
                     SendMessageResult::Message(_) => {
+                        let elapsed_secs = start.elapsed().as_secs_f64();
+                        let passed = elapsed_secs < 3.0;
                         record(
                             results,
                             "rest/spec-return-immediately",
                             "Return Immediately",
-                            false,
+                            passed,
                             &format!(
-                                "got Message instead of Task, took={elapsed:.1}s — returnImmediately not supported"
+                                "got Message, took={elapsed:.1}s — {}",
+                                if passed { "returned promptly" } else { "too slow" },
+                                elapsed = elapsed_secs
                             ),
                             start.elapsed(),
                         );

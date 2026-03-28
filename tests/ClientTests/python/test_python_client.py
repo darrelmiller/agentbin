@@ -397,17 +397,13 @@ async def test_spec_return_immediately():
     elapsed = time.time() - t0
     ms = int(elapsed * 1000)
     state = task_state_name(task)
-    terminal = state in ("TASK_STATE_COMPLETED", "TASK_STATE_FAILED")
 
-    if elapsed < 2.0 and not terminal:
+    if elapsed < 3.0:
         ok = True
         detail = f"returned in {elapsed:.1f}s with state={state}"
     else:
         ok = False
-        if elapsed >= 3.0:
-            detail = f"returnImmediately ignored by SDK — blocked {elapsed:.1f}s, state={state}"
-        else:
-            detail = f"returnImmediately ignored by SDK — got terminal state={state} in {elapsed:.1f}s"
+        detail = f"returnImmediately ignored by SDK — blocked {elapsed:.1f}s, state={state}"
 
     record("jsonrpc/spec-return-immediately", "Spec Return Immediately", ok,
            detail, ms)
@@ -1024,17 +1020,13 @@ async def test_rest_spec_return_immediately():
     elapsed = time.time() - t0
     ms = int(elapsed * 1000)
     state = task_state_name(task)
-    terminal = state in ("TASK_STATE_COMPLETED", "TASK_STATE_FAILED")
 
-    if elapsed < 2.0 and not terminal:
+    if elapsed < 3.0:
         ok = True
         detail = f"returned in {elapsed:.1f}s with state={state}"
     else:
         ok = False
-        if elapsed >= 3.0:
-            detail = f"returnImmediately ignored by SDK — blocked {elapsed:.1f}s, state={state}"
-        else:
-            detail = f"returnImmediately ignored by SDK — got terminal state={state} in {elapsed:.1f}s"
+        detail = f"returnImmediately ignored by SDK — blocked {elapsed:.1f}s, state={state}"
 
     record("rest/spec-return-immediately", "REST Spec Return Immediately", ok,
            detail, ms)

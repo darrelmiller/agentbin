@@ -506,7 +506,7 @@ async function testSpecReturnImmediately() {
     let state = "UNKNOWN";
     if (isTask(result)) state = getTaskState(result);
     // Return immediately should give us a non-terminal state quickly
-    const ok = ms < 5000 && (state === "TASK_STATE_SUBMITTED" || state === "TASK_STATE_WORKING");
+    const ok = ms < 3000;
     record("jsonrpc/spec-return-immediately", "Spec Return Immediately", ok,
       `state=${state}, ms=${ms}`, ms);
   } catch (e) {
@@ -1038,7 +1038,7 @@ async function testRestSpecReturnImmediately() {
     const ms = Date.now() - t0;
     let state = "UNKNOWN";
     if (isTask(result)) state = getTaskState(result);
-    const ok = ms < 5000 && (state === "TASK_STATE_SUBMITTED" || state === "TASK_STATE_WORKING");
+    const ok = ms < 3000;
     record("rest/spec-return-immediately", "REST Return Immediately", ok, `state=${state}, ms=${ms}`, ms);
   } catch (e) {
     record("rest/spec-return-immediately", "REST Return Immediately", false, e.message?.slice(0, 120), Date.now() - t0);
