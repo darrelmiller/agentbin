@@ -2,7 +2,7 @@
   "client": "rust",
   "sdk": "a2a-rs-client 1.0.11",
   "protocolVersion": "1.0",
-  "timestamp": "2026-03-28T17:11:20.989570700+00:00",
+  "timestamp": "2026-03-28T18:06:26.123141100+00:00",
   "baseUrl": "http://localhost:5100",
   "results": [
     {
@@ -10,7 +10,7 @@
       "name": "Echo Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 13
+      "durationMs": 12
     },
     {
       "id": "jsonrpc/agent-card-spec",
@@ -31,13 +31,13 @@
       "name": "Message Only",
       "passed": true,
       "detail": "isMessage=true, text=[message-only] You said: message-only",
-      "durationMs": 3
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=Completed, taskId=c8dba407bfae4793af02...",
+      "detail": "state=Completed, taskId=893393525ab44bb4b949...",
       "durationMs": 0
     },
     {
@@ -66,14 +66,14 @@
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
-      "durationMs": 2015
+      "durationMs": 2019
     },
     {
       "id": "jsonrpc/spec-multi-turn",
       "name": "Multi-Turn",
       "passed": true,
       "detail": "turn1=Some(InputRequired), turn2=Some(InputRequired), contextMatch=true",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-task-cancel",
@@ -94,14 +94,14 @@
       "name": "ListTasks",
       "passed": true,
       "detail": "returned 10 tasks",
-      "durationMs": 2
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-return-immediately",
       "name": "Return Immediately",
-      "passed": false,
-      "detail": "got Message instead of Task, took=0.0s — returnImmediately not supported",
-      "durationMs": 1
+      "passed": true,
+      "detail": "got Message, took=0.0s — returned promptly",
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-task-not-found",
@@ -122,7 +122,7 @@
       "name": "Cancel Terminal Task",
       "passed": true,
       "detail": "got expected error: Server error -32002: Task is already in a terminal state.",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-send-terminal",
@@ -136,7 +136,7 @@
       "name": "Send Invalid TaskId",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-push-not-supported",
@@ -177,7 +177,7 @@
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": true,
-      "detail": "contextId1=54f0036f-247f-431d-b..., contextId2=54f0036f-247f-431d-b..., match=true",
+      "detail": "contextId1=2f815008-7499-4fb7-b..., contextId2=2f815008-7499-4fb7-b..., match=true",
       "durationMs": 1
     },
     {
@@ -213,20 +213,20 @@
       "name": "Echo Send Message",
       "passed": true,
       "detail": "response contains 'hello': true, text=Echo: hello from Rust REST",
-      "durationMs": 4
+      "durationMs": 1
     },
     {
       "id": "rest/spec-message-only",
       "name": "Message Only",
       "passed": true,
       "detail": "isMessage=true, text=[message-only] You said: message-only",
-      "durationMs": 3
+      "durationMs": 2
     },
     {
       "id": "rest/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=Completed, taskId=69bf48ca9e9e45d28c4b...",
+      "detail": "state=Completed, taskId=ebb795c5a0de4262af58...",
       "durationMs": 0
     },
     {
@@ -241,7 +241,7 @@
       "name": "Task Failure",
       "passed": true,
       "detail": "state=Failed",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/spec-data-types",
@@ -255,7 +255,7 @@
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
-      "durationMs": 2018
+      "durationMs": 2035
     },
     {
       "id": "rest/spec-multi-turn",
@@ -283,13 +283,13 @@
       "name": "ListTasks",
       "passed": true,
       "detail": "returned 50 tasks",
-      "durationMs": 2
+      "durationMs": 5
     },
     {
       "id": "rest/spec-return-immediately",
       "name": "Return Immediately",
-      "passed": false,
-      "detail": "got Message instead of Task, took=0.0s — returnImmediately not supported",
+      "passed": true,
+      "detail": "got Message, took=0.0s — returned promptly",
       "durationMs": 0
     },
     {
@@ -310,7 +310,7 @@
       "id": "rest/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": true,
-      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100/spec/tasks/69bf48ca...",
+      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100/spec/tasks/ebb795c5...",
       "durationMs": 0
     },
     {
@@ -325,20 +325,20 @@
       "name": "Send Invalid TaskId",
       "passed": true,
       "detail": "got expected error: HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/message:send)",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/error-push-not-supported",
       "name": "Push Not Supported",
       "passed": true,
       "detail": "got expected error: Server error -32003: Push notifications not supported.",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "rest/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
-      "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/71ef18ff24924335845dc130328effbb/subs...",
+      "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/bb2673a6dd1d4df5acc53ddd3657da9d/subs...",
       "durationMs": 1
     },
     {
@@ -366,7 +366,7 @@
       "id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": true,
-      "detail": "contextId1=9bf1985c-9cab-4949-8..., contextId2=9bf1985c-9cab-4949-8..., match=true",
+      "detail": "contextId1=06dfd788-4fec-4c8a-9..., contextId2=06dfd788-4fec-4c8a-9..., match=true",
       "durationMs": 1
     },
     {
@@ -374,7 +374,7 @@
       "name": "GetTask With History",
       "passed": false,
       "detail": "historyLength=0",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/get-task-after-failure",
@@ -395,7 +395,7 @@
       "name": "v0.3 Send Message",
       "passed": true,
       "detail": "text=[message-only] You said: message-only hello",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "v03/spec03-task-lifecycle",
@@ -409,7 +409,7 @@
       "name": "v0.3 Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed)",
-      "durationMs": 2034
+      "durationMs": 2045
     }
   ]
 }
