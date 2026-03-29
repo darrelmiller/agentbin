@@ -38,6 +38,22 @@ type TestReport struct {
 
 var results []TestResult
 
+// authBearerInterceptor adds a Bearer token to GetExtendedAgentCard requests
+type authBearerInterceptor struct {
+	token string
+}
+
+func (a *authBearerInterceptor) Before(ctx context.Context, req *a2aclient.Request) (context.Context, any, error) {
+	if req.Method == "GetExtendedAgentCard" {
+		req.ServiceParams["Authorization"] = []string{fmt.Sprintf("Bearer %s", a.token)}
+	}
+	return ctx, nil, nil
+}
+
+func (a *authBearerInterceptor) After(ctx context.Context, resp *a2aclient.Response) error {
+	return nil
+}
+
 func detectSDKSource() string {
 	// Check if go.mod has a replace directive for a2a-go (local build)
 	goMod, err := os.ReadFile("go.mod")
@@ -930,6 +946,54 @@ func main() {
 		record("jsonrpc/get-task-after-failure", "Get Task After Failure", false, "skipped — no spec client", 0)
 	}
 
+	// 27. spec-extended-card (JSON-RPC)
+	if specCard != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			// 1. Check that public card has extendedAgentCard capability
+			if !specCard.Capabilities.ExtendedAgentCard {
+				return false, "public card does not declare extendedAgentCard capability"
+			}
+
+			// 2. Create a client with auth interceptor
+			authInt := &authBearerInterceptor{token: "agentbin-test-token"}
+			extClient, err := a2aclient.NewFromCard(ctx, specCard, a2aclient.WithCallInterceptors(authInt))
+			if err != nil {
+				return false, fmt.Sprintf("client creation error: %v", err)
+			}
+			defer extClient.Destroy()
+
+			// 3. Call GetExtendedAgentCard
+			extCard, err := extClient.GetExtendedAgentCard(ctx, &a2a.GetExtendedAgentCardRequest{})
+			if err != nil {
+				return false, fmt.Sprintf("GetExtendedAgentCard error: %v", err)
+			}
+
+			// 4. Verify it's a valid card
+			if extCard.Name == "" {
+				return false, "extended card has no name"
+			}
+
+			// 5. Check that extended card has more skills or has admin-status skill
+			hasMoreSkills := len(extCard.Skills) > len(specCard.Skills)
+			hasAdminStatus := false
+			for _, skill := range extCard.Skills {
+				if skill.Name == "admin-status" {
+					hasAdminStatus = true
+					break
+				}
+			}
+			if !hasMoreSkills && !hasAdminStatus {
+				return false, fmt.Sprintf("extended card skills=%d (public=%d), no admin-status found", len(extCard.Skills), len(specCard.Skills))
+			}
+
+			return true, fmt.Sprintf("name=%s, skills=%d (public=%d), hasAdminStatus=%v", extCard.Name, len(extCard.Skills), len(specCard.Skills), hasAdminStatus)
+		}()
+		record("jsonrpc/spec-extended-card", "Spec Extended Card", passed, detail, time.Since(start))
+	} else {
+		record("jsonrpc/spec-extended-card", "Spec Extended Card", false, "skipped — no spec card", 0)
+	}
+
 	// ── HTTP+JSON REST Binding ──
 	fmt.Println("\n── HTTP+JSON REST Binding ──")
 
@@ -1788,6 +1852,54 @@ func main() {
 		record("rest/get-task-after-failure", "REST Get Task After Failure", passed, detail, time.Since(start))
 	} else {
 		record("rest/get-task-after-failure", "REST Get Task After Failure", false, "skipped — no REST spec client", 0)
+	}
+
+	// 27. rest/spec-extended-card
+	if restSpecCard != nil {
+		start := time.Now()
+		passed, detail := func() (bool, string) {
+			// 1. Check that public card has extendedAgentCard capability
+			if !restSpecCard.Capabilities.ExtendedAgentCard {
+				return false, "public card does not declare extendedAgentCard capability"
+			}
+
+			// 2. Create a REST client with auth interceptor
+			authInt := &authBearerInterceptor{token: "agentbin-test-token"}
+			extClient, err := a2aclient.NewFromCard(ctx, restSpecCard, a2aclient.WithCallInterceptors(authInt))
+			if err != nil {
+				return false, fmt.Sprintf("client creation error: %v", err)
+			}
+			defer extClient.Destroy()
+
+			// 3. Call GetExtendedAgentCard
+			extCard, err := extClient.GetExtendedAgentCard(ctx, &a2a.GetExtendedAgentCardRequest{})
+			if err != nil {
+				return false, fmt.Sprintf("GetExtendedAgentCard error: %v", err)
+			}
+
+			// 4. Verify it's a valid card
+			if extCard.Name == "" {
+				return false, "extended card has no name"
+			}
+
+			// 5. Check that extended card has more skills or has admin-status skill
+			hasMoreSkills := len(extCard.Skills) > len(restSpecCard.Skills)
+			hasAdminStatus := false
+			for _, skill := range extCard.Skills {
+				if skill.Name == "admin-status" {
+					hasAdminStatus = true
+					break
+				}
+			}
+			if !hasMoreSkills && !hasAdminStatus {
+				return false, fmt.Sprintf("extended card skills=%d (public=%d), no admin-status found", len(extCard.Skills), len(restSpecCard.Skills))
+			}
+
+			return true, fmt.Sprintf("name=%s, skills=%d (public=%d), hasAdminStatus=%v", extCard.Name, len(extCard.Skills), len(restSpecCard.Skills), hasAdminStatus)
+		}()
+		record("rest/spec-extended-card", "REST Spec Extended Card", passed, detail, time.Since(start))
+	} else {
+		record("rest/spec-extended-card", "REST Spec Extended Card", false, "skipped — no REST spec card", 0)
 	}
 
 	// ── v0.3 Backward Compatibility Tests ──

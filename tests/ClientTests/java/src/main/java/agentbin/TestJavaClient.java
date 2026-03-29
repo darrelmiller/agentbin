@@ -17,6 +17,10 @@ import io.a2a.client.transport.spi.interceptors.PayloadAndHeaders;
 import io.a2a.spec.*;
 
 import java.io.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
@@ -101,6 +105,7 @@ public class TestJavaClient {
 
         testAgentCard(binding + "/agent-card-echo", "Echo Agent Card", echoUrl);
         testAgentCard(binding + "/agent-card-spec", "Spec Agent Card", specUrl);
+        testSpecExtendedCard(binding + "/spec-extended-card", specUrl, binding);
         testEchoSendMessage(binding + "/echo-send-message", echoUrl, tc);
         testSpecMessageOnly(binding + "/spec-message-only", specUrl, tc);
         testSpecTaskLifecycle(binding + "/spec-task-lifecycle", binding + "/spec-get-task", specUrl, tc);
@@ -166,6 +171,171 @@ public class TestJavaClient {
         } catch (Exception e) {
             record(id, name, false, e.getMessage(), System.currentTimeMillis() - start);
         }
+    }
+
+    static void testSpecExtendedCard(String id, String agentUrl, String binding) {
+        long start = System.currentTimeMillis();
+        try {
+            // Step 1: Get public card and verify extendedAgentCard capability
+            AgentCard publicCard = A2A.getAgentCard(agentUrl, null, VERSION_HEADERS);
+            if (publicCard.capabilities() == null || !publicCard.capabilities().extendedAgentCard()) {
+                record(id, "Extended Agent Card", false,
+                        "extendedAgentCard capability not true",
+                        System.currentTimeMillis() - start);
+                return;
+            }
+
+            int publicSkillCount = publicCard.skills() != null ? publicCard.skills().size() : 0;
+
+            // Step 2: Call GetExtendedAgentCard with auth header
+            HttpClient httpClient = HttpClient.newHttpClient();
+            HttpRequest request = null;
+            
+            if (binding.equals("rest")) {
+                // REST: GET /spec/extendedAgentCard with Authorization header
+                request = HttpRequest.newBuilder()
+                        .uri(URI.create(agentUrl + "/extendedAgentCard"))
+                        .header("A2A-Version", "1.0")
+                        .header("Authorization", "Bearer agentbin-test-token")
+                        .GET()
+                        .build();
+            } else {
+                // JSON-RPC: POST to /spec with GetExtendedAgentCard method
+                String requestBody = "{\"jsonrpc\":\"2.0\",\"method\":\"GetExtendedAgentCard\",\"id\":\"ext-card-1\",\"params\":{}}";
+                request = HttpRequest.newBuilder()
+                        .uri(URI.create(agentUrl))
+                        .header("Content-Type", "application/json")
+                        .header("A2A-Version", "1.0")
+                        .header("Authorization", "Bearer agentbin-test-token")
+                        .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                        .build();
+            }
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                record(id, "Extended Agent Card", false,
+                        "HTTP " + response.statusCode() + " from GetExtendedAgentCard",
+                        System.currentTimeMillis() - start);
+                return;
+            }
+
+            // Parse response
+            String json = response.body();
+            String cardJson = json;
+            
+            if (binding.equals("jsonrpc")) {
+                // Extract result from JSON-RPC response
+                if (!json.contains("\"result\"")) {
+                    record(id, "Extended Agent Card", false,
+                            "JSON-RPC response missing result field",
+                            System.currentTimeMillis() - start);
+                    return;
+                }
+
+                int resultStart = json.indexOf("\"result\"") + 9;
+                resultStart = json.indexOf("{", resultStart);
+                int depth = 0;
+                int resultEnd = resultStart;
+                for (int i = resultStart; i < json.length(); i++) {
+                    char c = json.charAt(i);
+                    if (c == '{') depth++;
+                    if (c == '}') {
+                        depth--;
+                        if (depth == 0) {
+                            resultEnd = i + 1;
+                            break;
+                        }
+                    }
+                }
+                cardJson = json.substring(resultStart, resultEnd);
+            }
+
+            // Validate card JSON
+            if (!cardJson.contains("\"name\"") || !cardJson.contains("\"skills\"")) {
+                record(id, "Extended Agent Card", false,
+                        "Extended card JSON missing name or skills",
+                        System.currentTimeMillis() - start);
+                return;
+            }
+
+            // Count skills and check for admin-status
+            int extendedSkillCount = countJsonArrayItems(cardJson, "\"skills\"");
+            boolean hasAdminStatus = cardJson.contains("\"admin-status\"");
+            boolean hasMoreSkills = extendedSkillCount > publicSkillCount || hasAdminStatus;
+
+            record(id, "Extended Agent Card", hasMoreSkills,
+                    "publicSkills=" + publicSkillCount + ", extendedSkills=" + extendedSkillCount +
+                            ", hasAdminStatus=" + hasAdminStatus,
+                    System.currentTimeMillis() - start);
+        } catch (Exception e) {
+            record(id, "Extended Agent Card", false, exDetail(e),
+                    System.currentTimeMillis() - start);
+        }
+    }
+
+    static int countJsonArrayItems(String json, String arrayKey) {
+        int keyIndex = json.indexOf(arrayKey);
+        if (keyIndex == -1) return 0;
+        int arrayStart = json.indexOf("[", keyIndex);
+        if (arrayStart == -1) return 0;
+        
+        // Find matching closing bracket
+        int depth = 0;
+        int arrayEnd = -1;
+        boolean inString = false;
+        char prevChar = ' ';
+        
+        for (int i = arrayStart; i < json.length(); i++) {
+            char c = json.charAt(i);
+            
+            if (c == '"' && prevChar != '\\') {
+                inString = !inString;
+            }
+            
+            if (!inString) {
+                if (c == '[') depth++;
+                if (c == ']') {
+                    depth--;
+                    if (depth == 0) {
+                        arrayEnd = i;
+                        break;
+                    }
+                }
+            }
+            
+            prevChar = c;
+        }
+        
+        if (arrayEnd == -1) return 0;
+        String arrayContent = json.substring(arrayStart + 1, arrayEnd);
+        if (arrayContent.trim().isEmpty()) return 0;
+        
+        // Count objects by counting opening braces at depth 0
+        int count = 0;
+        depth = 0;
+        inString = false;
+        prevChar = ' ';
+        
+        for (int i = 0; i < arrayContent.length(); i++) {
+            char c = arrayContent.charAt(i);
+            
+            if (c == '"' && prevChar != '\\') {
+                inString = !inString;
+            }
+            
+            if (!inString) {
+                if (c == '{') {
+                    if (depth == 0) count++;
+                    depth++;
+                }
+                if (c == '}') {
+                    depth--;
+                }
+            }
+            
+            prevChar = c;
+        }
+        return count;
     }
 
     static void testEchoSendMessage(String id, String agentUrl, TransportConfigurer tc) {

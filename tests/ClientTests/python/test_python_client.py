@@ -131,6 +131,66 @@ async def test_agent_card_spec():
            f"name={card.name}, skills={skill_ids}", ms)
 
 
+async def test_spec_extended_card():
+    """Test GetExtendedAgentCard for JSON-RPC binding."""
+    t0 = time.time()
+    async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
+        # Step 1: Get public card
+        resolver = A2ACardResolver(httpx_client=hc, base_url=f"{BASE_URL}/spec")
+        public_card = await resolver.get_agent_card()
+        
+        # Step 2: Verify extendedAgentCard capability
+        has_extended = False
+        if public_card.capabilities:
+            has_extended = getattr(public_card.capabilities, "extended_agent_card", False)
+        
+        if not has_extended:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/spec-extended-card", "Spec Extended Agent Card", False,
+                   "capabilities.extendedAgentCard not true", ms)
+            return
+        
+        # Step 3: Call GetExtendedAgentCard via JSON-RPC with auth header
+        auth_headers = {**A2A_HEADERS, "Authorization": "Bearer agentbin-test-token"}
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "GetExtendedAgentCard",
+            "id": "test-extended-card",
+            "params": {}
+        }
+        response = await hc.post(f"{BASE_URL}/spec", json=payload, headers=auth_headers)
+        
+        if response.status_code != 200:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/spec-extended-card", "Spec Extended Agent Card", False,
+                   f"HTTP {response.status_code}", ms)
+            return
+        
+        result = response.json()
+        if "error" in result:
+            ms = int((time.time() - t0) * 1000)
+            record("jsonrpc/spec-extended-card", "Spec Extended Agent Card", False,
+                   f"JSON-RPC error: {result['error']}", ms)
+            return
+        
+        # Step 4: Verify extended card is a valid AgentCard
+        extended_card_data = result.get("result", {})
+        extended_name = extended_card_data.get("name", "")
+        extended_skills = extended_card_data.get("skills", [])
+        
+        # Step 5: Verify extended card has more skills or has admin-status
+        public_skill_count = len(public_card.skills)
+        extended_skill_count = len(extended_skills)
+        extended_skill_ids = [s.get("id", "") for s in extended_skills]
+        has_admin_status = "admin-status" in extended_skill_ids
+        
+        ok = (extended_skill_count > public_skill_count or has_admin_status) and extended_name
+        ms = int((time.time() - t0) * 1000)
+        record("jsonrpc/spec-extended-card", "Spec Extended Agent Card", ok,
+               f"public={public_skill_count} skills, extended={extended_skill_count} skills, "
+               f"hasAdminStatus={has_admin_status}, name={extended_name!r}", ms)
+
+
 async def test_echo_send_message():
     t0 = time.time()
     events, _ = await sdk_send(f"{BASE_URL}/echo", "Hello from Python SDK!")
@@ -768,6 +828,53 @@ async def test_rest_agent_card_spec():
     ms = int((time.time() - t0) * 1000)
     record("rest/agent-card-spec", "REST Spec Agent Card", True,
            "card resolved with HTTP+JSON transport", ms)
+
+
+async def test_rest_spec_extended_card():
+    """Test GetExtendedAgentCard for REST binding."""
+    t0 = time.time()
+    async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), headers=A2A_HEADERS) as hc:
+        # Step 1: Get public card
+        resolver = A2ACardResolver(httpx_client=hc, base_url=f"{BASE_URL}/spec")
+        public_card = await resolver.get_agent_card()
+        
+        # Step 2: Verify extendedAgentCard capability
+        has_extended = False
+        if public_card.capabilities:
+            has_extended = getattr(public_card.capabilities, "extended_agent_card", False)
+        
+        if not has_extended:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/spec-extended-card", "REST Spec Extended Agent Card", False,
+                   "capabilities.extendedAgentCard not true", ms)
+            return
+        
+        # Step 3: Call GetExtendedAgentCard via REST GET with auth header
+        auth_headers = {**A2A_HEADERS, "Authorization": "Bearer agentbin-test-token"}
+        response = await hc.get(f"{BASE_URL}/spec/extendedAgentCard", headers=auth_headers)
+        
+        if response.status_code != 200:
+            ms = int((time.time() - t0) * 1000)
+            record("rest/spec-extended-card", "REST Spec Extended Agent Card", False,
+                   f"HTTP {response.status_code}", ms)
+            return
+        
+        # Step 4: Verify extended card is a valid AgentCard
+        extended_card_data = response.json()
+        extended_name = extended_card_data.get("name", "")
+        extended_skills = extended_card_data.get("skills", [])
+        
+        # Step 5: Verify extended card has more skills or has admin-status
+        public_skill_count = len(public_card.skills)
+        extended_skill_count = len(extended_skills)
+        extended_skill_ids = [s.get("id", "") for s in extended_skills]
+        has_admin_status = "admin-status" in extended_skill_ids
+        
+        ok = (extended_skill_count > public_skill_count or has_admin_status) and extended_name
+        ms = int((time.time() - t0) * 1000)
+        record("rest/spec-extended-card", "REST Spec Extended Agent Card", ok,
+               f"public={public_skill_count} skills, extended={extended_skill_count} skills, "
+               f"hasAdminStatus={has_admin_status}, name={extended_name!r}", ms)
 
 
 async def test_rest_echo_send_message():
@@ -1554,6 +1661,7 @@ ALL_TESTS = [
     # JSON-RPC (SDK) tests
     ("jsonrpc/agent-card-echo",              test_agent_card_echo),
     ("jsonrpc/agent-card-spec",              test_agent_card_spec),
+    ("jsonrpc/spec-extended-card",           test_spec_extended_card),
     ("jsonrpc/echo-send-message",            test_echo_send_message),
     ("jsonrpc/spec-message-only",            test_spec_message_only),
     ("jsonrpc/spec-task-lifecycle",          test_spec_task_lifecycle),
@@ -1582,6 +1690,7 @@ ALL_TESTS = [
     # REST binding tests
     ("rest/agent-card-echo",                 test_rest_agent_card_echo),
     ("rest/agent-card-spec",                 test_rest_agent_card_spec),
+    ("rest/spec-extended-card",              test_rest_spec_extended_card),
     ("rest/echo-send-message",               test_rest_echo_send_message),
     ("rest/spec-message-only",               test_rest_spec_message_only),
     ("rest/spec-task-lifecycle",             test_rest_spec_task_lifecycle),

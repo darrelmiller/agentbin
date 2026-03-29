@@ -639,6 +639,44 @@ try
 catch (OperationCanceledException) { Record("jsonrpc/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", false, "timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)", sw.ElapsedMilliseconds); }
 catch (Exception ex) { Record("jsonrpc/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", false, ex.Message, sw.ElapsedMilliseconds); }
 
+// 28. spec-extended-card — validate extended agent card feature with auth
+try
+{
+    sw.Restart();
+    // Step 1: Get public card and verify extendedAgentCard capability
+    var resolver = new A2ACardResolver(new Uri($"{baseUrl}/spec/"), versionedHttpClient);
+    var publicCard = await resolver.GetAgentCardAsync();
+    if (publicCard.Capabilities?.ExtendedAgentCard != true)
+    {
+        Record("jsonrpc/spec-extended-card", "Spec Extended Card", false,
+            $"extendedAgentCard capability not enabled (value={publicCard.Capabilities?.ExtendedAgentCard})", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        // Step 2: Create authenticated HTTP client with Bearer token
+        var authHttpClient = new HttpClient();
+        authHttpClient.DefaultRequestHeaders.Add("A2A-Version", "1.0");
+        authHttpClient.DefaultRequestHeaders.Add("Authorization", "Bearer agentbin-test-token");
+        
+        // Step 3: Create client and call GetExtendedAgentCardAsync
+        var client = new A2AClient(new Uri($"{baseUrl}/spec"), authHttpClient);
+        var extendedCard = await client.GetExtendedAgentCardAsync(new GetExtendedAgentCardRequest());
+        
+        // Step 4: Verify extended card properties
+        var publicSkillCount = publicCard.Skills.Count;
+        var extendedSkillCount = extendedCard.Skills.Count;
+        var hasAdminStatus = extendedCard.Skills.Any(s => s.Name.Equals("admin-status", StringComparison.OrdinalIgnoreCase));
+        var hasMoreSkills = extendedSkillCount > publicSkillCount;
+        
+        var extCardPassed = hasMoreSkills || hasAdminStatus;
+        var extCardDetail = $"public={publicSkillCount} skills, extended={extendedSkillCount} skills, " +
+                       $"hasAdminStatus={hasAdminStatus}, name={extendedCard.Name}";
+        
+        Record("jsonrpc/spec-extended-card", "Spec Extended Card", extCardPassed, extCardDetail, sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("jsonrpc/spec-extended-card", "Spec Extended Card", false, ex.Message, sw.ElapsedMilliseconds); }
+
 // ═══════════════════════════════════════════════════════════════════════════
 // HTTP+JSON REST BINDING (via A2AClientFactory → A2AHttpJsonClient)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1289,6 +1327,48 @@ try
 }
 catch (OperationCanceledException) { Record("rest/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", false, "timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)", sw.ElapsedMilliseconds); }
 catch (Exception ex) { Record("rest/subscribe-after-stream-disconnect", "Subscribe After Stream Disconnect", false, ex.Message, sw.ElapsedMilliseconds); }
+
+// 28. rest/spec-extended-card — validate extended agent card feature with auth
+try
+{
+    sw.Restart();
+    // Step 1: Get public card and verify extendedAgentCard capability
+    var resolver = new A2ACardResolver(new Uri($"{baseUrl}/spec/"), versionedHttpClient);
+    var publicCard = await resolver.GetAgentCardAsync();
+    if (publicCard.Capabilities?.ExtendedAgentCard != true)
+    {
+        Record("rest/spec-extended-card", "Spec Extended Card", false,
+            $"extendedAgentCard capability not enabled (value={publicCard.Capabilities?.ExtendedAgentCard})", sw.ElapsedMilliseconds);
+    }
+    else
+    {
+        // Step 2: Create authenticated HTTP client with Bearer token
+        var authHttpClient = new HttpClient();
+        authHttpClient.DefaultRequestHeaders.Add("A2A-Version", "1.0");
+        authHttpClient.DefaultRequestHeaders.Add("Authorization", "Bearer agentbin-test-token");
+        
+        // Step 3: Create REST client via factory with auth header
+        var authResolver = new A2ACardResolver(new Uri($"{baseUrl}/spec/"), authHttpClient);
+        var cardForFactory = await authResolver.GetAgentCardAsync();
+        var restAuthClient = A2AClientFactory.Create(cardForFactory, authHttpClient, restOptions);
+        
+        // Step 4: Call GetExtendedAgentCardAsync
+        var extendedCard = await restAuthClient.GetExtendedAgentCardAsync(new GetExtendedAgentCardRequest());
+        
+        // Step 5: Verify extended card properties
+        var publicSkillCount = publicCard.Skills.Count;
+        var extendedSkillCount = extendedCard.Skills.Count;
+        var hasAdminStatus = extendedCard.Skills.Any(s => s.Name.Equals("admin-status", StringComparison.OrdinalIgnoreCase));
+        var hasMoreSkills = extendedSkillCount > publicSkillCount;
+        
+        var restExtCardPassed = hasMoreSkills || hasAdminStatus;
+        var restExtCardDetail = $"public={publicSkillCount} skills, extended={extendedSkillCount} skills, " +
+                       $"hasAdminStatus={hasAdminStatus}, name={extendedCard.Name}";
+        
+        Record("rest/spec-extended-card", "Spec Extended Card", restExtCardPassed, restExtCardDetail, sw.ElapsedMilliseconds);
+    }
+}
+catch (Exception ex) { Record("rest/spec-extended-card", "Spec Extended Card", false, ex.Message, sw.ElapsedMilliseconds); }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // v0.3 BACKWARD COMPATIBILITY TESTS

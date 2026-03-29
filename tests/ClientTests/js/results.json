@@ -2,7 +2,7 @@
   "client": "js",
   "sdk": "a2a-js (local build, 0.3.10)",
   "protocolVersion": "1.0",
-  "timestamp": "2026-03-28T18:06:19Z",
+  "timestamp": "2026-03-29T11:43:33Z",
   "baseUrl": "http://localhost:5100",
   "results": [
     {
@@ -10,35 +10,42 @@
       "name": "Echo Agent Card",
       "passed": false,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 77
+      "durationMs": 187
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=[message-only,task-lifecycle,task-failure,task-cancel,multi-turn,streaming,long-running,data-types]",
-      "durationMs": 6
+      "durationMs": 5
+    },
+    {
+      "id": "jsonrpc/spec-extended-card",
+      "name": "Spec Extended Card",
+      "passed": true,
+      "detail": "public=8 skills, extended=9 skills, admin-status=true",
+      "durationMs": 13
     },
     {
       "id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
       "passed": false,
       "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
-      "durationMs": 14
+      "durationMs": 12
     },
     {
       "id": "jsonrpc/spec-message-only",
       "name": "Spec Message Only",
       "passed": false,
       "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
-      "durationMs": 6
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Spec Task Lifecycle",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 7
+      "durationMs": 6
     },
     {
       "id": "jsonrpc/spec-get-task",
@@ -73,21 +80,21 @@
       "name": "Spec Multi-Turn",
       "passed": false,
       "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-task-cancel",
       "name": "Spec Task Cancel",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 3
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-list-tasks",
@@ -101,21 +108,21 @@
       "name": "Spec Return Immediately",
       "passed": false,
       "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
-      "durationMs": 4
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": false,
       "detail": "error=JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as Ge",
-      "durationMs": 4
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": false,
       "detail": "error=JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as Ca",
-      "durationMs": 4
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-cancel-terminal",
@@ -157,28 +164,28 @@
       "name": "Subscribe Not Found",
       "passed": false,
       "detail": "error=Error: Invalid response Content-Type for SSE stream for tasks/resubscribe. Expected 'te",
-      "durationMs": 2
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 2
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": false,
       "detail": "JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {",
-      "durationMs": 4
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/get-task-with-history",
@@ -209,18 +216,25 @@
       "durationMs": 1
     },
     {
+      "id": "rest/spec-extended-card",
+      "name": "REST Spec Extended Card",
+      "passed": true,
+      "detail": "public=8 skills, extended=9 skills, admin-status=true",
+      "durationMs": 2
+    },
+    {
       "id": "rest/echo-send-message",
       "name": "REST Echo Send Message",
       "passed": false,
       "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: ",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "rest/spec-message-only",
       "name": "REST Spec Message Only",
       "passed": false,
       "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: ",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/spec-task-lifecycle",
@@ -248,21 +262,21 @@
       "name": "REST Spec Data Types",
       "passed": false,
       "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: ",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/spec-streaming",
       "name": "REST Spec Streaming",
       "passed": false,
       "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: ",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "rest/spec-multi-turn",
       "name": "REST Spec Multi-Turn",
       "passed": false,
       "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: ",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/spec-task-cancel",
@@ -304,7 +318,7 @@
       "name": "Cancel Not Found",
       "passed": true,
       "detail": "error=Error: HTTP error for /v1/tasks/bogus-cancel-id-99999:cancel! Status: 404 Not Found. Re",
-      "durationMs": 2
+      "durationMs": 7
     },
     {
       "id": "rest/error-cancel-terminal",
@@ -318,14 +332,14 @@
       "name": "Send To Terminal Task",
       "passed": true,
       "detail": "error=Error: HTTP error for /v1/message:stream! Status: 404 Not Found. Response: ",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "rest/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "passed": true,
       "detail": "error=Error: HTTP error for /v1/message:send! Status: 404 Not Found. Response: ",
-      "durationMs": 3
+      "durationMs": 2
     },
     {
       "id": "rest/error-push-not-supported",
@@ -339,7 +353,7 @@
       "name": "SubscribeToTask",
       "passed": false,
       "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: ",
-      "durationMs": 3
+      "durationMs": 2
     },
     {
       "id": "rest/error-subscribe-not-found",
@@ -360,21 +374,21 @@
       "name": "Stream Task Lifecycle",
       "passed": false,
       "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: ",
-      "durationMs": 3
+      "durationMs": 1
     },
     {
       "id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": false,
       "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: ",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "rest/get-task-with-history",
       "name": "GetTask With History",
       "passed": false,
       "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: ",
-      "durationMs": 3
+      "durationMs": 2
     },
     {
       "id": "rest/get-task-after-failure",
@@ -395,7 +409,7 @@
       "name": "v0.3 Send Message",
       "passed": false,
       "detail": "SDK v0.3 failed: JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (C",
-      "durationMs": 4
+      "durationMs": 3
     },
     {
       "id": "v03/spec03-task-lifecycle",

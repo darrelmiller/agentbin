@@ -47,3 +47,22 @@ previous partial run — producing the phantom "2 results" observation.
 ### ⚠ Cross-Team Alert: JS SDK Breaking Change (2026-03-22)
 
 **Alert from TypeScript agent:** The @a2a-js/sdk dependency (epic/1.0_breaking_changes branch) has removed `JsonRpcTransport` from client exports (commit c29f4f8 "Remove JSON-RPC Client #353"). The JS test client will break when `npm install` is run because it imports `JsonRpcTransport`. Additionally, commit a886b1a switched codebase to proto-based types (may require more import changes). The JSON-RPC transport removal appears intentional (architectural decision in the SDK), so tests should likely be adapted to REST-only rather than pinned. No action needed for Python client — this is informational cross-team awareness.
+
+### 2026-03-22 — Added spec-extended-card tests
+
+**Task:** Add `spec-extended-card` acceptance tests for both JSON-RPC and REST bindings to validate the A2A extended agent card feature.
+
+**Implementation:**
+- Added `test_spec_extended_card()` for JSON-RPC binding (`jsonrpc/spec-extended-card`)
+- Added `test_rest_spec_extended_card()` for REST binding (`rest/spec-extended-card`)
+- Both tests follow the same pattern:
+  1. Get public agent card and verify `capabilities.extendedAgentCard == true`
+  2. Call GetExtendedAgentCard with `Authorization: Bearer agentbin-test-token` header
+  3. Verify response is a valid AgentCard with name and skills
+  4. Verify extended card has more skills than public card OR has `admin-status` skill
+- JSON-RPC test uses POST to `/spec` with `{"jsonrpc":"2.0","method":"GetExtendedAgentCard",...}`
+- REST test uses GET to `/spec/extendedAgentCard`
+- Since a2a-sdk 1.0.0a0 doesn't have a `get_extended_agent_card()` method, both tests use raw httpx calls
+- Added tests to ALL_TESTS list: total tests now 60 (28 JSON-RPC, 28 REST, 4 v0.3)
+
+**Verification:** Syntax check passed with `python -c "import ast; ast.parse(...)"`

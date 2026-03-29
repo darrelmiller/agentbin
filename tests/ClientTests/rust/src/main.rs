@@ -1557,6 +1557,147 @@ async fn run_jsonrpc_tests(base_url: &str, results: &mut Vec<TestResult>) {
             }
         }
     }
+
+    // ── 28. spec-extended-card ──
+    {
+        let start = Instant::now();
+        let server_url = format!("{base_url}/spec");
+
+        // Step 1: Get public agent card and verify extendedAgentCard capability
+        match A2aClient::with_server(&server_url) {
+            Ok(client) => match client.fetch_agent_card().await {
+                Ok(public_card) => {
+                    let has_extended = public_card.capabilities.extended_agent_card.unwrap_or(false);
+                    if !has_extended {
+                        record(
+                            results,
+                            "jsonrpc/spec-extended-card",
+                            "Extended Agent Card",
+                            false,
+                            "public card missing extendedAgentCard capability",
+                            start.elapsed(),
+                        );
+                    } else {
+                        // Step 2: Call GetExtendedAgentCard with auth via raw JSON-RPC
+                        let http = reqwest::Client::new();
+                        let jsonrpc_endpoint = format!("{server_url}");
+                        
+                        let rpc_payload = serde_json::json!({
+                            "jsonrpc": "2.0",
+                            "method": "GetExtendedAgentCard",
+                            "id": uuid::Uuid::new_v4().to_string(),
+                            "params": {}
+                        });
+
+                        match http
+                            .post(&jsonrpc_endpoint)
+                            .header("Content-Type", "application/json")
+                            .header("Authorization", "Bearer agentbin-test-token")
+                            .json(&rpc_payload)
+                            .send()
+                            .await
+                        {
+                            Ok(resp) => match resp.json::<serde_json::Value>().await {
+                                Ok(rpc_result) => {
+                                    if let Some(error) = rpc_result.get("error") {
+                                        record(
+                                            results,
+                                            "jsonrpc/spec-extended-card",
+                                            "Extended Agent Card",
+                                            false,
+                                            &format!("RPC error: {}", truncate(&error.to_string(), 100)),
+                                            start.elapsed(),
+                                        );
+                                    } else if let Some(result) = rpc_result.get("result") {
+                                        // Parse as AgentCard
+                                        match serde_json::from_value::<AgentCard>(result.clone()) {
+                                            Ok(extended_card) => {
+                                                let public_skills = public_card.skills.len();
+                                                let extended_skills = extended_card.skills.len();
+                                                let has_admin = extended_card.skills.iter()
+                                                    .any(|s| s.name == "admin-status");
+                                                let passed = extended_skills > public_skills || has_admin;
+                                                record(
+                                                    results,
+                                                    "jsonrpc/spec-extended-card",
+                                                    "Extended Agent Card",
+                                                    passed,
+                                                    &format!(
+                                                        "public={} extended={} has_admin={}",
+                                                        public_skills, extended_skills, has_admin
+                                                    ),
+                                                    start.elapsed(),
+                                                );
+                                            }
+                                            Err(e) => {
+                                                record(
+                                                    results,
+                                                    "jsonrpc/spec-extended-card",
+                                                    "Extended Agent Card",
+                                                    false,
+                                                    &format!("parse error: {}", truncate(&e.to_string(), 100)),
+                                                    start.elapsed(),
+                                                );
+                                            }
+                                        }
+                                    } else {
+                                        record(
+                                            results,
+                                            "jsonrpc/spec-extended-card",
+                                            "Extended Agent Card",
+                                            false,
+                                            "no result or error in JSON-RPC response",
+                                            start.elapsed(),
+                                        );
+                                    }
+                                }
+                                Err(e) => {
+                                    record(
+                                        results,
+                                        "jsonrpc/spec-extended-card",
+                                        "Extended Agent Card",
+                                        false,
+                                        &format!("JSON parse error: {}", truncate(&e.to_string(), 100)),
+                                        start.elapsed(),
+                                    );
+                                }
+                            },
+                            Err(e) => {
+                                record(
+                                    results,
+                                    "jsonrpc/spec-extended-card",
+                                    "Extended Agent Card",
+                                    false,
+                                    &format!("HTTP error: {}", truncate(&e.to_string(), 100)),
+                                    start.elapsed(),
+                                );
+                            }
+                        }
+                    }
+                }
+                Err(e) => {
+                    record(
+                        results,
+                        "jsonrpc/spec-extended-card",
+                        "Extended Agent Card",
+                        false,
+                        &format!("fetch card error: {}", truncate(&e.to_string(), 100)),
+                        start.elapsed(),
+                    );
+                }
+            },
+            Err(e) => {
+                record(
+                    results,
+                    "jsonrpc/spec-extended-card",
+                    "Extended Agent Card",
+                    false,
+                    &format!("client create error: {}", truncate(&e.to_string(), 100)),
+                    start.elapsed(),
+                );
+            }
+        }
+    }
 }
 
 // ── REST Tests (SDK 1.0.9+ supports REST transport) ────────────────
@@ -2857,6 +2998,116 @@ async fn run_rest_tests(base_url: &str, results: &mut Vec<TestResult>) {
                     "GetTask After Failure",
                     false,
                     "no saved failed taskId",
+                    start.elapsed(),
+                );
+            }
+        }
+    }
+
+    // ── 28. spec-extended-card ──
+    {
+        let start = Instant::now();
+        let server_url = format!("{base_url}/spec");
+
+        // Step 1: Get public agent card and verify extendedAgentCard capability
+        match A2aClient::with_server(&server_url) {
+            Ok(client) => match client.fetch_agent_card().await {
+                Ok(public_card) => {
+                    let has_extended = public_card.capabilities.extended_agent_card.unwrap_or(false);
+                    if !has_extended {
+                        record(
+                            results,
+                            "rest/spec-extended-card",
+                            "Extended Agent Card",
+                            false,
+                            "public card missing extendedAgentCard capability",
+                            start.elapsed(),
+                        );
+                    } else {
+                        // Step 2: Call GET /spec/extendedAgentCard with auth
+                        let http = reqwest::Client::new();
+                        let extended_card_url = format!("{server_url}/extendedAgentCard");
+
+                        match http
+                            .get(&extended_card_url)
+                            .header("Authorization", "Bearer agentbin-test-token")
+                            .send()
+                            .await
+                        {
+                            Ok(resp) => {
+                                if resp.status() == 401 {
+                                    record(
+                                        results,
+                                        "rest/spec-extended-card",
+                                        "Extended Agent Card",
+                                        false,
+                                        "401 Unauthorized - auth required but token rejected",
+                                        start.elapsed(),
+                                    );
+                                } else {
+                                    match resp.json::<AgentCard>().await {
+                                        Ok(extended_card) => {
+                                            let public_skills = public_card.skills.len();
+                                            let extended_skills = extended_card.skills.len();
+                                            let has_admin = extended_card.skills.iter()
+                                                .any(|s| s.name == "admin-status");
+                                            let passed = extended_skills > public_skills || has_admin;
+                                            record(
+                                                results,
+                                                "rest/spec-extended-card",
+                                                "Extended Agent Card",
+                                                passed,
+                                                &format!(
+                                                    "public={} extended={} has_admin={}",
+                                                    public_skills, extended_skills, has_admin
+                                                ),
+                                                start.elapsed(),
+                                            );
+                                        }
+                                        Err(e) => {
+                                            record(
+                                                results,
+                                                "rest/spec-extended-card",
+                                                "Extended Agent Card",
+                                                false,
+                                                &format!("parse error: {}", truncate(&e.to_string(), 100)),
+                                                start.elapsed(),
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                record(
+                                    results,
+                                    "rest/spec-extended-card",
+                                    "Extended Agent Card",
+                                    false,
+                                    &format!("HTTP error: {}", truncate(&e.to_string(), 100)),
+                                    start.elapsed(),
+                                );
+                            }
+                        }
+                    }
+                }
+                Err(e) => {
+                    record(
+                        results,
+                        "rest/spec-extended-card",
+                        "Extended Agent Card",
+                        false,
+                        &format!("fetch card error: {}", truncate(&e.to_string(), 100)),
+                        start.elapsed(),
+                    );
+                }
+            },
+            Err(e) => {
+                record(
+                    results,
+                    "rest/spec-extended-card",
+                    "Extended Agent Card",
+                    false,
+                    &format!("client create error: {}", truncate(&e.to_string(), 100)),
                     start.elapsed(),
                 );
             }

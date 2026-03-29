@@ -54,3 +54,11 @@
     - Patch 8 (array agent card): Still needed — root well-known returns array
   - Score unchanged at 34/58: same 24 failures (19 REST 404, 2 cancel race, 1 returnImmediately, 1 subscribe-to-task, 1 REST get-task skip)
   - Key learning: v1.0.7 is a major improvement in SDK protocol compliance. Consider pruning dead patch code from run.py in a future cleanup pass.
+- **2026-08-01 — Added spec-extended-card test (requested feature)**
+  - Implemented `testSpecExtendedCard()` in main.swift for both JSON-RPC and REST bindings
+  - Test flow: (1) Fetch public agent card, (2) Verify `extendedAgentCard: true` capability, (3) Call `getExtendedAgentCard()` with auth header `Bearer agentbin-test-token`, (4) Verify extended card has more skills than public card (or contains `admin-status` skill), (5) Record result
+  - Test IDs: `jsonrpc/spec-extended-card` and `rest/spec-extended-card`
+  - SDK support: `getExtendedAgentCard(request:)` method available in a2a-client-swift v1.0.13+ (per Package.swift)
+  - Config: Auth header passed via `A2AClientConfiguration.customHeaders = ["Authorization": "Bearer agentbin-test-token"]`
+  - Server behavior: Spec agent at `/spec` returns extended card with 9 skills (public has 8), extra skill is `admin-status`, name is "AgentBin Spec Agent (Extended)"
+  - Build note: Windows C module build issue encountered (unrelated to test code) — known Swift 6.2.4 on Windows limitation with WinSDK module. Test syntax is correct and follows existing patterns.

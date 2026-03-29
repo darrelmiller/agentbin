@@ -32,6 +32,7 @@ BINDINGS = ["jsonrpc", "rest"]
 BASE_TESTS = [
     ("agent-card-echo", "Echo Agent Card", "Discovery"),
     ("agent-card-spec", "Spec Agent Card", "Discovery"),
+    ("spec-extended-card", "Extended Agent Card", "Discovery"),
     ("echo-send-message", "Echo Send Message", "Echo Agent"),
     ("spec-message-only", "Message Only", "Spec Agent"),
     ("spec-task-lifecycle", "Task Lifecycle", "Spec Agent"),

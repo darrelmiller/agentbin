@@ -154,6 +154,48 @@ func testAgentCardSpec(state: TestState, prefix: String, baseURL: String) async 
     }
 }
 
+func testSpecExtendedCard(state: TestState, prefix: String, baseURL: String, binding: TransportBinding) async {
+    let start = ContinuousClock.now
+    do {
+        // Step 1: Get the public agent card
+        let cardURL = URL(string: "\(baseURL)/.well-known/agent.json")!
+        let publicCard = try await A2AClient.fetchAgentCard(from: cardURL)
+        
+        // Step 2: Verify extendedAgentCard capability is true
+        guard publicCard.capabilities.extendedAgentCard == true else {
+            let ms = elapsedMs(since: start)
+            state.record("\(prefix)/spec-extended-card", "\(prefix == "rest" ? "REST " : "")Spec Extended Card", false,
+                         "extendedAgentCard capability not enabled", ms)
+            return
+        }
+        
+        let publicSkillCount = publicCard.skills.count
+        
+        // Step 3: Call GetExtendedAgentCard with auth header
+        let specURL = URL(string: baseURL)!
+        let authConfig = A2AClientConfiguration(baseURL: specURL, transportBinding: binding)
+            .withBearerToken("agentbin-test-token")
+        let authenticatedClient = A2AClient(configuration: authConfig)
+        
+        let extendedCard = try await authenticatedClient.getExtendedAgentCard()
+        
+        // Step 4 & 5: Verify extended card is valid and has more skills (or has admin-status)
+        let extendedSkillCount = extendedCard.skills.count
+        let hasAdminStatus = extendedCard.skills.contains { $0.id == "admin-status" }
+        let hasMoreSkills = extendedSkillCount > publicSkillCount
+        let isExtended = extendedCard.name.contains("Extended")
+        
+        let ok = hasMoreSkills && (hasAdminStatus || isExtended)
+        let ms = elapsedMs(since: start)
+        state.record("\(prefix)/spec-extended-card", "\(prefix == "rest" ? "REST " : "")Spec Extended Card", ok,
+                     "public=\(publicSkillCount), extended=\(extendedSkillCount), admin-status=\(hasAdminStatus)", ms)
+    } catch {
+        let ms = elapsedMs(since: start)
+        state.record("\(prefix)/spec-extended-card", "\(prefix == "rest" ? "REST " : "")Spec Extended Card", false,
+                     "error: \(truncate(String(describing: error), 120))", ms)
+    }
+}
+
 func testEchoSendMessage(state: TestState, prefix: String, baseURL: String, binding: TransportBinding) async {
     let start = ContinuousClock.now
     do {
@@ -899,6 +941,7 @@ func runBindingTests(state: TestState, prefix: String, baseURL: String, binding:
 
     await testAgentCardEcho(state: state, prefix: prefix, baseURL: baseURL)
     await testAgentCardSpec(state: state, prefix: prefix, baseURL: baseURL)
+    await testSpecExtendedCard(state: state, prefix: prefix, baseURL: baseURL, binding: binding)
     await testEchoSendMessage(state: state, prefix: prefix, baseURL: baseURL, binding: binding)
     await testSpecMessageOnly(state: state, prefix: prefix, baseURL: baseURL, binding: binding)
     await testSpecTaskLifecycle(state: state, prefix: prefix, baseURL: baseURL, binding: binding)

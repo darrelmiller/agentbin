@@ -708,7 +708,28 @@ public sealed class SpecAgent : IAgentHandler
             ],
             DefaultInputModes = ["text/plain"],
             DefaultOutputModes = ["text/plain", "application/json", "image/svg+xml"],
-            Capabilities = new AgentCapabilities { Streaming = true, PushNotifications = false, ExtendedAgentCard = false },
+            Capabilities = new AgentCapabilities { Streaming = true, PushNotifications = false, ExtendedAgentCard = true },
+            SecuritySchemes = new Dictionary<string, SecurityScheme>
+            {
+                ["bearer_token"] = new SecurityScheme
+                {
+                    HttpAuthSecurityScheme = new HttpAuthSecurityScheme
+                    {
+                        Scheme = "bearer",
+                        Description = "Bearer token authentication. Use token: agentbin-test-token",
+                    }
+                }
+            },
+            SecurityRequirements =
+            [
+                new SecurityRequirement
+                {
+                    Schemes = new Dictionary<string, StringList>
+                    {
+                        ["bearer_token"] = new StringList()
+                    }
+                }
+            ],
             Skills =
             [
                 new AgentSkill
@@ -777,6 +798,27 @@ public sealed class SpecAgent : IAgentHandler
                 },
             ],
         };
+
+    /// <summary>
+    /// Returns the extended agent card with additional skills only visible to authenticated clients.
+    /// </summary>
+    public static AgentCard GetExtendedAgentCard(string agentUrl)
+    {
+        var card = GetAgentCard(agentUrl);
+        card.Name = "AgentBin Spec Agent (Extended)";
+        card.Description = "Extended agent card with additional skills visible only to authenticated clients.";
+        card.SecuritySchemes = null;
+        card.SecurityRequirements = null;
+        card.Skills.Add(new AgentSkill
+        {
+            Id = "admin-status",
+            Name = "Admin Status",
+            Description = "Returns server diagnostic information. Only visible in extended card.",
+            Tags = ["admin", "diagnostics"],
+            Examples = ["admin-status"],
+        });
+        return card;
+    }
 
     /// <summary>
     /// Returns a v0.3-format agent card (no supportedInterfaces, has url + protocolVersion).

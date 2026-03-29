@@ -23,15 +23,17 @@ builder.Services.AddCors(options =>
               .WithExposedHeaders("A2A-Version"));
 });
 
+// Register IHttpContextAccessor for extended card auth checks
+builder.Services.AddHttpContextAccessor();
+
 // Determine base URL from environment or listening URL
 var baseUrl = builder.Configuration["BASE_URL"]
     ?? builder.Configuration["urls"]?.Split(';').FirstOrDefault()
     ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?.Split(';').FirstOrDefault()
     ?? "http://localhost:5000";
 
-// Register the SpecAgent via the easy-path DI pattern
+// Register the SpecAgent card (used for discovery endpoints)
 var specCard = SpecAgent.GetAgentCard($"{baseUrl}/spec");
-builder.Services.AddA2AAgent<SpecAgent>(specCard);
 
 var app = builder.Build();
 
@@ -39,6 +41,25 @@ var app = builder.Build();
 // Intercepts POST requests without A2A-Version header and translates v0.3 ↔ v1.0.
 app.UseMiddleware<V03TranslationMiddleware>();
 app.UseCors();
+
+// Protect REST extended agent card endpoints — returns 401 for unauthenticated requests
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "GET" &&
+        context.Request.Path.Value?.EndsWith("/extendedAgentCard", StringComparison.OrdinalIgnoreCase) == true)
+    {
+        var auth = context.Request.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrEmpty(auth) ||
+            !auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ||
+            auth["Bearer ".Length..].Trim() != ExtendedCardA2AServer.ExpectedToken)
+        {
+            context.Response.StatusCode = 401;
+            context.Response.Headers.WWWAuthenticate = "Bearer";
+            return;
+        }
+    }
+    await next();
+});
 
 // Add caching headers to agent card responses (both .well-known and base URL GET)
 var agentCardPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "/spec", "/echo", "/spec03" };
@@ -60,12 +81,21 @@ app.Use(async (context, next) =>
 // Health check
 app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTimeOffset.UtcNow }));
 
-// Map SpecAgent (uses DI-registered handler)
-app.MapA2A("/spec");
+// Map SpecAgent with extended card support (manual creation for auth override)
+var extendedCard = SpecAgent.GetExtendedAgentCard($"{baseUrl}/spec");
+var specServer = new ExtendedCardA2AServer(
+    new SpecAgent(),
+    new InMemoryTaskStore(),
+    new ChannelEventNotifier(),
+    app.Services.GetRequiredService<ILogger<A2AServer>>(),
+    app.Services.GetRequiredService<IHttpContextAccessor>(),
+    extendedCard);
+
+// Map SpecAgent (JSON-RPC)
+app.MapA2A(specServer, "/spec");
 
 // Map SpecAgent REST binding (HTTP+JSON)
-var specHandler = app.Services.GetRequiredService<IA2ARequestHandler>();
-app.MapHttpA2A(specHandler, specCard, "/spec");
+app.MapHttpA2A(specServer, specCard, "/spec");
 
 // Map EchoAgent manually (second agent — can't use AddA2AAgent twice)
 var echoCard = EchoAgent.GetAgentCard($"{baseUrl}/echo");

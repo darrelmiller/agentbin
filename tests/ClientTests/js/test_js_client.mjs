@@ -246,6 +246,74 @@ async function testAgentCardSpec() {
   }
 }
 
+async function testSpecExtendedCard() {
+  const t0 = Date.now();
+  try {
+    // Step 1: Get public card and verify extendedAgentCard capability
+    const client = await makeClient(`${BASE_URL}/spec`);
+    const publicCard = await client.getAgentCard();
+    const hasCapability = publicCard.capabilities?.extendedAgentCard === true;
+    
+    if (!hasCapability) {
+      const ms = Date.now() - t0;
+      record("jsonrpc/spec-extended-card", "Spec Extended Card", false,
+        `extendedAgentCard capability not found`, ms);
+      return;
+    }
+
+    const publicSkillCount = publicCard.skills?.length || 0;
+
+    // Step 2: Get extended card via JSON-RPC with auth header
+    // Since SDK doesn't have GetExtendedAgentCard, use raw fetch
+    const endpointUrl = `${BASE_URL}/spec`;
+    const response = await fetch(endpointUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer agentbin-test-token",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        method: "GetExtendedAgentCard",
+        id: randomUUID(),
+        params: {},
+      }),
+    });
+
+    if (!response.ok) {
+      const ms = Date.now() - t0;
+      record("jsonrpc/spec-extended-card", "Spec Extended Card", false,
+        `HTTP ${response.status}: ${response.statusText}`, ms);
+      return;
+    }
+
+    const jsonRpcResponse = await response.json();
+    
+    if (jsonRpcResponse.error) {
+      const ms = Date.now() - t0;
+      record("jsonrpc/spec-extended-card", "Spec Extended Card", false,
+        `JSON-RPC error: ${jsonRpcResponse.error.message}`, ms);
+      return;
+    }
+
+    const extendedCard = jsonRpcResponse.result;
+    const ms = Date.now() - t0;
+
+    // Step 3: Verify extended card is valid and has more skills
+    const extendedSkillCount = extendedCard.skills?.length || 0;
+    const hasAdminStatus = extendedCard.skills?.some((s) => s.id === "admin-status") || false;
+    // Card may have url (v1.0) or supportedInterfaces (v0.3)
+    const isValidCard = extendedCard.name && (extendedCard.url || extendedCard.supportedInterfaces?.length > 0);
+    const hasMoreSkills = extendedSkillCount > publicSkillCount || hasAdminStatus;
+
+    const ok = isValidCard && hasMoreSkills;
+    record("jsonrpc/spec-extended-card", "Spec Extended Card", ok,
+      `public=${publicSkillCount} skills, extended=${extendedSkillCount} skills, admin-status=${hasAdminStatus}`, ms);
+  } catch (e) {
+    record("jsonrpc/spec-extended-card", "Spec Extended Card", false, e.message?.slice(0, 120), Date.now() - t0);
+  }
+}
+
 async function testEchoSendMessage() {
   const t0 = Date.now();
   try {
@@ -836,6 +904,57 @@ async function testRestAgentCardSpec() {
   }
 }
 
+async function testRestSpecExtendedCard() {
+  const t0 = Date.now();
+  try {
+    // Step 1: Get public card and verify extendedAgentCard capability
+    const client = await makeClient(`${BASE_URL}/spec`, { binding: "REST" });
+    const publicCard = await client.getAgentCard();
+    const hasCapability = publicCard.capabilities?.extendedAgentCard === true;
+    
+    if (!hasCapability) {
+      const ms = Date.now() - t0;
+      record("rest/spec-extended-card", "REST Spec Extended Card", false,
+        `extendedAgentCard capability not found`, ms);
+      return;
+    }
+
+    const publicSkillCount = publicCard.skills?.length || 0;
+
+    // Step 2: Get extended card via REST with auth header
+    const extendedCardUrl = `${BASE_URL}/spec/extendedAgentCard`;
+    const response = await fetch(extendedCardUrl, {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer agentbin-test-token",
+      },
+    });
+
+    if (!response.ok) {
+      const ms = Date.now() - t0;
+      record("rest/spec-extended-card", "REST Spec Extended Card", false,
+        `HTTP ${response.status}: ${response.statusText}`, ms);
+      return;
+    }
+
+    const extendedCard = await response.json();
+    const ms = Date.now() - t0;
+
+    // Step 3: Verify extended card is valid and has more skills
+    const extendedSkillCount = extendedCard.skills?.length || 0;
+    const hasAdminStatus = extendedCard.skills?.some((s) => s.id === "admin-status") || false;
+    // Card may have url (v1.0) or supportedInterfaces (v0.3)
+    const isValidCard = extendedCard.name && (extendedCard.url || extendedCard.supportedInterfaces?.length > 0);
+    const hasMoreSkills = extendedSkillCount > publicSkillCount || hasAdminStatus;
+
+    const ok = isValidCard && hasMoreSkills;
+    record("rest/spec-extended-card", "REST Spec Extended Card", ok,
+      `public=${publicSkillCount} skills, extended=${extendedSkillCount} skills, admin-status=${hasAdminStatus}`, ms);
+  } catch (e) {
+    record("rest/spec-extended-card", "REST Spec Extended Card", false, e.message?.slice(0, 120), Date.now() - t0);
+  }
+}
+
 async function testRestEchoSendMessage() {
   const t0 = Date.now();
   try {
@@ -1136,6 +1255,7 @@ const ALL_TESTS = [
   // JSON-RPC tests
   ["jsonrpc/agent-card-echo", testAgentCardEcho],
   ["jsonrpc/agent-card-spec", testAgentCardSpec],
+  ["jsonrpc/spec-extended-card", testSpecExtendedCard],
   ["jsonrpc/echo-send-message", testEchoSendMessage],
   ["jsonrpc/spec-message-only", testSpecMessageOnly],
   ["jsonrpc/spec-task-lifecycle", testSpecTaskLifecycle],
@@ -1164,6 +1284,7 @@ const ALL_TESTS = [
   // REST tests
   ["rest/agent-card-echo", testRestAgentCardEcho],
   ["rest/agent-card-spec", testRestAgentCardSpec],
+  ["rest/spec-extended-card", testRestSpecExtendedCard],
   ["rest/echo-send-message", testRestEchoSendMessage],
   ["rest/spec-message-only", testRestSpecMessageOnly],
   ["rest/spec-task-lifecycle", testRestSpecTaskLifecycle],
