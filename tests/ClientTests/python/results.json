@@ -1,0 +1,429 @@
+{
+  "client": "python",
+  "sdk": "a2a-sdk 1.0.0a0",
+  "protocolVersion": "1.0",
+  "timestamp": "2026-03-31T14:01:51Z",
+  "baseUrl": "http://localhost:5000",
+  "results": [
+    {
+      "id": "jsonrpc/agent-card-echo",
+      "name": "Echo Agent Card",
+      "passed": true,
+      "detail": "name=Echo Agent, skills=1",
+      "durationMs": 431
+    },
+    {
+      "id": "jsonrpc/agent-card-spec",
+      "name": "Spec Agent Card",
+      "passed": true,
+      "detail": "name=AgentBin Spec Agent, skills=['message-only', 'task-lifecycle', 'task-failure', 'task-cancel', 'multi-turn', 'streaming', 'long-running', 'data-types']",
+      "durationMs": 28
+    },
+    {
+      "id": "jsonrpc/spec-extended-card",
+      "name": "Spec Extended Agent Card",
+      "passed": "AgentBin Spec Agent (Extended)",
+      "detail": "public=8 skills, extended=9 skills, hasAdminStatus=True, name='AgentBin Spec Agent (Extended)'",
+      "durationMs": 30
+    },
+    {
+      "id": "jsonrpc/echo-send-message",
+      "name": "Echo Send Message",
+      "passed": true,
+      "detail": "reply='Echo: Hello from Python SDK!'",
+      "durationMs": 32
+    },
+    {
+      "id": "jsonrpc/spec-message-only",
+      "name": "Spec Message Only",
+      "passed": true,
+      "detail": "gotMessage=True, text='[message-only] You said: message-only hello world'",
+      "durationMs": 27
+    },
+    {
+      "id": "jsonrpc/spec-task-lifecycle",
+      "name": "Spec Task Lifecycle",
+      "passed": true,
+      "detail": "state=TASK_STATE_COMPLETED, artifacts=True, taskId=a1bd6bc4e2a7438a875fef11a616e4aa",
+      "durationMs": 42
+    },
+    {
+      "id": "jsonrpc/spec-get-task",
+      "name": "Spec GetTask",
+      "passed": true,
+      "detail": "taskId=a1bd6bc4e2a7438a875fef11a616e4aa, state=TASK_STATE_COMPLETED",
+      "durationMs": 25
+    },
+    {
+      "id": "jsonrpc/spec-task-failure",
+      "name": "Spec Task Failure",
+      "passed": true,
+      "detail": "state=TASK_STATE_FAILED",
+      "durationMs": 24
+    },
+    {
+      "id": "jsonrpc/spec-data-types",
+      "name": "Spec Data Types",
+      "passed": true,
+      "detail": "kinds=['data', 'file', 'text']",
+      "durationMs": 35
+    },
+    {
+      "id": "jsonrpc/spec-streaming",
+      "name": "Spec Streaming",
+      "passed": true,
+      "detail": "events=7, text='[streaming] Chunk 4: Finalizing output...'",
+      "durationMs": 2062
+    },
+    {
+      "id": "jsonrpc/error-task-not-found",
+      "name": "Error Task Not Found",
+      "passed": true,
+      "detail": "got expected error: TaskNotFoundError: Task '00000000-0000-0000-0000-000000000000' not found.",
+      "durationMs": 35
+    },
+    {
+      "id": "jsonrpc/spec-multi-turn",
+      "name": "Spec Multi-Turn",
+      "passed": true,
+      "detail": "states=[TASK_STATE_INPUT_REQUIRED,TASK_STATE_INPUT_REQUIRED,TASK_STATE_COMPLETED], taskId=77ac0a7e25ea4f2ca962e5c318bb0120",
+      "durationMs": 62
+    },
+    {
+      "id": "jsonrpc/spec-task-cancel",
+      "name": "Spec Task Cancel",
+      "passed": true,
+      "detail": "taskId=0bb8cfbce81546bea6a1a03d096feeca, canceled=True",
+      "durationMs": 55
+    },
+    {
+      "id": "jsonrpc/spec-list-tasks",
+      "name": "Spec ListTasks",
+      "passed": true,
+      "detail": "taskCount=50",
+      "durationMs": 57
+    },
+    {
+      "id": "jsonrpc/spec-return-immediately",
+      "name": "Spec Return Immediately",
+      "passed": true,
+      "detail": "returned in 0.0s with state=TASK_STATE_SUBMITTED",
+      "durationMs": 38
+    },
+    {
+      "id": "jsonrpc/error-cancel-not-found",
+      "name": "Error Cancel Not Found",
+      "passed": true,
+      "detail": "got expected error: TaskNotFoundError: Task '00000000-0000-0000-0000-000000000000' not found.",
+      "durationMs": 42
+    },
+    {
+      "id": "jsonrpc/error-cancel-terminal",
+      "name": "Error Cancel Terminal",
+      "passed": true,
+      "detail": "got expected error: TaskNotCancelableError: Task is already in a terminal state.",
+      "durationMs": 55
+    },
+    {
+      "id": "jsonrpc/error-send-terminal",
+      "name": "Error Send Terminal",
+      "passed": true,
+      "detail": "got expected error: UnsupportedOperationError: Task is in a terminal state and cannot accept messages.",
+      "durationMs": 47
+    },
+    {
+      "id": "jsonrpc/error-send-invalid-task",
+      "name": "Error Send Invalid Task",
+      "passed": true,
+      "detail": "got expected error: TaskNotFoundError: Task '00000000-0000-0000-0000-000000000000' not found.",
+      "durationMs": 37
+    },
+    {
+      "id": "jsonrpc/error-push-not-supported",
+      "name": "Error Push Not Supported",
+      "passed": true,
+      "detail": "SDK does not support push notification config",
+      "durationMs": 31
+    },
+    {
+      "id": "jsonrpc/subscribe-to-task",
+      "name": "Subscribe To Task",
+      "passed": true,
+      "detail": "subscription events=1",
+      "durationMs": 1043
+    },
+    {
+      "id": "jsonrpc/error-subscribe-not-found",
+      "name": "Error Subscribe Not Found",
+      "passed": true,
+      "detail": "got expected error: NotImplementedError: client and/or server do not support resubscription.",
+      "durationMs": 70
+    },
+    {
+      "id": "jsonrpc/stream-message-only",
+      "name": "Stream Message Only",
+      "passed": true,
+      "detail": "events=1, hasMessage=True",
+      "durationMs": 71
+    },
+    {
+      "id": "jsonrpc/stream-task-lifecycle",
+      "name": "Stream Task Lifecycle",
+      "passed": true,
+      "detail": "hasTaskEvent=True, finalState=TASK_STATE_COMPLETED, events=4",
+      "durationMs": 58
+    },
+    {
+      "id": "jsonrpc/multi-turn-context-preserved",
+      "name": "Multi-Turn Context Preserved",
+      "passed": true,
+      "detail": "contextId1=d12ff77843864f77a80102646f70d1ce, contextId2=d12ff77843864f77a80102646f70d1ce, match=True",
+      "durationMs": 74
+    },
+    {
+      "id": "jsonrpc/get-task-with-history",
+      "name": "GetTask With History",
+      "passed": true,
+      "detail": "taskId=184ee000f8584aa38d8d374889b1f18d, historyCount=0",
+      "durationMs": 77
+    },
+    {
+      "id": "jsonrpc/get-task-after-failure",
+      "name": "GetTask After Failure",
+      "passed": true,
+      "detail": "state=TASK_STATE_FAILED, hasStatusMsg=True",
+      "durationMs": 52
+    },
+    {
+      "id": "jsonrpc/spec-cancel-with-metadata",
+      "name": "Spec Cancel With Metadata",
+      "passed": true,
+      "detail": "taskId=fb9ac8ff86e740e19b4d3703d9268c4f, canceled=True, metadataOk=True, keys=['requestedBy', 'reason']",
+      "durationMs": 47
+    },
+    {
+      "id": "rest/agent-card-echo",
+      "name": "REST Echo Agent Card",
+      "passed": true,
+      "detail": "card resolved with HTTP+JSON transport",
+      "durationMs": 70
+    },
+    {
+      "id": "rest/agent-card-spec",
+      "name": "REST Spec Agent Card",
+      "passed": true,
+      "detail": "card resolved with HTTP+JSON transport",
+      "durationMs": 78
+    },
+    {
+      "id": "rest/spec-extended-card",
+      "name": "REST Spec Extended Agent Card",
+      "passed": "AgentBin Spec Agent (Extended)",
+      "detail": "public=8 skills, extended=9 skills, hasAdminStatus=True, name='AgentBin Spec Agent (Extended)'",
+      "durationMs": 78
+    },
+    {
+      "id": "rest/echo-send-message",
+      "name": "REST Echo Send Message",
+      "passed": true,
+      "detail": "reply='Echo: Hello from Python SDK REST!'",
+      "durationMs": 84
+    },
+    {
+      "id": "rest/spec-message-only",
+      "name": "REST Spec Message Only",
+      "passed": true,
+      "detail": "gotMessage=True, text='[message-only] You said: message-only hello world'",
+      "durationMs": 73
+    },
+    {
+      "id": "rest/spec-task-lifecycle",
+      "name": "REST Spec Task Lifecycle",
+      "passed": true,
+      "detail": "state=TASK_STATE_COMPLETED, artifacts=True, taskId=5da8a827c6cf40d0809455bdf7d47889",
+      "durationMs": 42
+    },
+    {
+      "id": "rest/spec-get-task",
+      "name": "REST Spec GetTask",
+      "passed": true,
+      "detail": "taskId=5da8a827c6cf40d0809455bdf7d47889, state=TASK_STATE_COMPLETED",
+      "durationMs": 74
+    },
+    {
+      "id": "rest/spec-task-failure",
+      "name": "REST Spec Task Failure",
+      "passed": true,
+      "detail": "state=TASK_STATE_FAILED",
+      "durationMs": 46
+    },
+    {
+      "id": "rest/spec-data-types",
+      "name": "REST Spec Data Types",
+      "passed": true,
+      "detail": "kinds=['data', 'file', 'text']",
+      "durationMs": 47
+    },
+    {
+      "id": "rest/spec-streaming",
+      "name": "REST Spec Streaming",
+      "passed": true,
+      "detail": "events=7",
+      "durationMs": 2109
+    },
+    {
+      "id": "rest/error-task-not-found",
+      "name": "REST Error Task Not Found",
+      "passed": true,
+      "detail": "got expected error: AttributeError: 'str' object has no attribute 'get'",
+      "durationMs": 112
+    },
+    {
+      "id": "rest/spec-multi-turn",
+      "name": "REST Spec Multi-Turn",
+      "passed": true,
+      "detail": "states=[TASK_STATE_INPUT_REQUIRED,TASK_STATE_INPUT_REQUIRED,TASK_STATE_COMPLETED], taskId=c50659e5fe124a5ebc2d50333c875af0",
+      "durationMs": 80
+    },
+    {
+      "id": "rest/spec-task-cancel",
+      "name": "REST Spec Task Cancel",
+      "passed": true,
+      "detail": "taskId=316a5421fdc54a158abe7145455c57dd, canceled=True",
+      "durationMs": 71
+    },
+    {
+      "id": "rest/spec-list-tasks",
+      "name": "REST Spec ListTasks",
+      "passed": true,
+      "detail": "taskCount=50",
+      "durationMs": 70
+    },
+    {
+      "id": "rest/spec-return-immediately",
+      "name": "REST Spec Return Immediately",
+      "passed": true,
+      "detail": "returned in 0.1s with state=TASK_STATE_SUBMITTED",
+      "durationMs": 137
+    },
+    {
+      "id": "rest/error-cancel-not-found",
+      "name": "REST Error Cancel Not Found",
+      "passed": true,
+      "detail": "got expected error: AttributeError: 'str' object has no attribute 'get'",
+      "durationMs": 148
+    },
+    {
+      "id": "rest/error-cancel-terminal",
+      "name": "REST Error Cancel Terminal",
+      "passed": true,
+      "detail": "got expected error: A2AClientError: HTTP Error 400: Client error '400 Bad Request' for url 'http://localhost:5000/sp",
+      "durationMs": 69
+    },
+    {
+      "id": "rest/error-send-terminal",
+      "name": "REST Error Send Terminal",
+      "passed": true,
+      "detail": "got expected error: A2AClientError: HTTP Error 400: Client error '400 Bad Request' for url 'http://localhost:5000/sp",
+      "durationMs": 68
+    },
+    {
+      "id": "rest/error-send-invalid-task",
+      "name": "REST Error Send Invalid Task",
+      "passed": true,
+      "detail": "got expected error: AttributeError: 'str' object has no attribute 'get'",
+      "durationMs": 42
+    },
+    {
+      "id": "rest/error-push-not-supported",
+      "name": "REST Error Push Not Supported",
+      "passed": true,
+      "detail": "SDK does not support push notification config",
+      "durationMs": 24
+    },
+    {
+      "id": "rest/subscribe-to-task",
+      "name": "REST Subscribe To Task",
+      "passed": true,
+      "detail": "subscription events=1",
+      "durationMs": 1055
+    },
+    {
+      "id": "rest/error-subscribe-not-found",
+      "name": "REST Error Subscribe Not Found",
+      "passed": true,
+      "detail": "got expected error: NotImplementedError: client and/or server do not support resubscription.",
+      "durationMs": 34
+    },
+    {
+      "id": "rest/stream-message-only",
+      "name": "REST Stream Message Only",
+      "passed": true,
+      "detail": "events=1, hasMessage=True",
+      "durationMs": 43
+    },
+    {
+      "id": "rest/stream-task-lifecycle",
+      "name": "REST Stream Task Lifecycle",
+      "passed": true,
+      "detail": "hasTaskEvent=True, finalState=TASK_STATE_COMPLETED, events=4",
+      "durationMs": 64
+    },
+    {
+      "id": "rest/multi-turn-context-preserved",
+      "name": "REST Multi-Turn Context Preserved",
+      "passed": true,
+      "detail": "contextId1=3cc5f8c190c44a72b7d19f504295a002, contextId2=3cc5f8c190c44a72b7d19f504295a002, match=True",
+      "durationMs": 67
+    },
+    {
+      "id": "rest/get-task-with-history",
+      "name": "REST GetTask With History",
+      "passed": true,
+      "detail": "taskId=7c6ac3d5c7304da38ef09b44b203102a, historyCount=0",
+      "durationMs": 54
+    },
+    {
+      "id": "rest/get-task-after-failure",
+      "name": "REST GetTask After Failure",
+      "passed": true,
+      "detail": "state=TASK_STATE_FAILED, hasStatusMsg=True",
+      "durationMs": 59
+    },
+    {
+      "id": "rest/spec-cancel-with-metadata",
+      "name": "REST Spec Cancel With Metadata",
+      "passed": false,
+      "detail": "taskId=e06ac0bd40ee4661afe46152da746427, canceled=True, metadataOk=False, keys=[]",
+      "durationMs": 65
+    },
+    {
+      "id": "v03/spec03-agent-card",
+      "name": "v0.3 Agent Card",
+      "passed": false,
+      "detail": "SDK resolver failed: AttributeError: url",
+      "durationMs": 31
+    },
+    {
+      "id": "v03/spec03-send-message",
+      "name": "v0.3 Send Message",
+      "passed": false,
+      "detail": "SDK v0.3 connect failed: ImportError: Database models require SQLAlchemy. Install with one of: 'pip install a2a-sdk[postgresql]', 'pip ins",
+      "durationMs": 268
+    },
+    {
+      "id": "v03/spec03-task-lifecycle",
+      "name": "v0.3 Task Lifecycle",
+      "passed": false,
+      "detail": "SDK v0.3 connect failed: ImportError: Database models require SQLAlchemy. Install with one of: 'pip install a2a-sdk[postgresql]', 'pip ins",
+      "durationMs": 41
+    },
+    {
+      "id": "v03/spec03-streaming",
+      "name": "v0.3 Streaming",
+      "passed": false,
+      "detail": "SDK v0.3 connect failed: ImportError: Database models require SQLAlchemy. Install with one of: 'pip install a2a-sdk[postgresql]', 'pip ins",
+      "durationMs": 32
+    }
+  ]
+}
