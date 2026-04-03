@@ -1,8 +1,8 @@
 {
   "client": "go",
-  "sdk": "a2a-go v2.0.1",
+  "sdk": "a2a-go",
   "protocolVersion": "1.0",
-  "timestamp": "2026-03-31T13:59:30Z",
+  "timestamp": "2026-04-03T10:05:38Z",
   "baseUrl": "http://localhost:5000",
   "results": [
     {
@@ -10,21 +10,21 @@
       "name": "Echo Agent Card",
       "passed": true,
       "detail": "name=Echo Agent, skills=1",
-      "durationMs": 48
+      "durationMs": 450
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": false,
       "detail": "error: card parsing failed: unknown security scheme type for \"bearer_token\": found keys [httpAuthSecurityScheme]",
-      "durationMs": 1
+      "durationMs": 16
     },
     {
       "id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
       "passed": true,
       "detail": "response=Echo: hello from Go",
-      "durationMs": 1
+      "durationMs": 155
     },
     {
       "id": "jsonrpc/spec-message-only",
@@ -206,21 +206,21 @@
       "name": "REST Echo Agent Card",
       "passed": true,
       "detail": "name=Echo Agent, skills=1, hasHTTPJSON=true",
-      "durationMs": 4
+      "durationMs": 8
     },
     {
       "id": "rest/agent-card-spec",
       "name": "REST Spec Agent Card",
       "passed": false,
       "detail": "error: card parsing failed: unknown security scheme type for \"bearer_token\": found keys [httpAuthSecurityScheme]",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/echo-send-message",
       "name": "REST Echo Send Message",
       "passed": true,
       "detail": "response=Echo: hello from Go REST",
-      "durationMs": 1
+      "durationMs": 36
     },
     {
       "id": "rest/spec-message-only",
@@ -402,7 +402,7 @@
       "name": "v0.3 Agent Card",
       "passed": false,
       "detail": "protocolVersion=, hasUrl=false",
-      "durationMs": 0
+      "durationMs": 29
     },
     {
       "id": "v03/spec03-send-message",
@@ -423,7 +423,7 @@
       "name": "v0.3 Streaming",
       "passed": false,
       "detail": "client create error (SDK may not support v0.3): agent card has no supported interfaces",
-      "durationMs": 0
+      "durationMs": 2
     }
   ]
 }
