@@ -39,6 +39,11 @@
   #a2a-playground { height: calc(100vh - 180px); min-height: 600px; }
   footer { text-align: center; color: var(--muted); font-size: 0.75rem; padding: 1rem; }
   footer a { color: var(--accent); }
+  .server-tab { background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+                padding: 0.5rem 1rem; color: var(--muted); cursor: pointer; font-size: 0.85rem;
+                font-family: inherit; transition: border-color 0.2s, color 0.2s; }
+  .server-tab:hover { border-color: var(--accent); color: var(--text); }
+  .server-tab.active { border-color: var(--accent); background: rgba(88,166,255,0.1); color: var(--accent); }
 </style>
 <link rel="stylesheet" href="a2a-playground.css">
 </head>
@@ -63,18 +68,19 @@
   <div id="overview" class="tab-content active">
     <div class="section">
       <h2>What is AgentBin?</h2>
-      <p>AgentBin is a publicly accessible, unauthenticated service hosting <strong>A2A agents built with .NET</strong>
-         that support both <strong>v1.0</strong> and <strong>v0.3</strong> of the A2A specification.
+      <p>AgentBin is a publicly accessible, unauthenticated service hosting <strong>A2A agents built with .NET and Go</strong>
+         that support <strong>v1.0</strong> (and <strong>v0.3</strong> on .NET) of the A2A specification.
          It serves as a <strong>cross-language interoperability test bed</strong> — the purpose is to let client implementers
-         in <em>other</em> languages (Go, Python, Java, JavaScript, Rust, etc.) validate their A2A SDK against a live .NET-based
-         server that exercises all interaction patterns defined in the specification.</p>
+         in <em>other</em> languages (Go, Python, Java, JavaScript, Rust, etc.) validate their A2A SDK against live servers
+         that exercise all interaction patterns defined in the specification.</p>
       <p style="margin-top:0.5rem;">v0.3 clients are automatically detected (requests without an <code>A2A-Version</code> header)
          and responses are translated between v0.3 and v1.0 wire formats transparently. v1.0 clients should include the
          <code>A2A-Version: 1.0</code> header.</p>
       <p style="margin-top:0.5rem;">The agents are implemented using the
-         <a href="https://github.com/a2aproject/a2a-dotnet" style="color:var(--accent)">a2a-dotnet</a> NuGet packages and
+         <a href="https://github.com/a2aproject/a2a-dotnet" style="color:var(--accent)">a2a-dotnet</a> and
+         <a href="https://github.com/a2aproject/a2a-go" style="color:var(--accent)">a2a-go</a> SDKs,
          hosted on Azure Container Apps. The <a href="#" data-tab="dashboard" style="color:var(--accent)">compatibility dashboard</a>
-         shows live test results from .NET, Go, Python, Java, JavaScript, and Rust SDK clients calling these agents.</p>
+         shows test results from 7 SDK clients calling both servers, with per-server views to compare behavior.</p>
     </div>
 
     <div class="section">
@@ -132,7 +138,11 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
 
   <!-- Dashboard Tab -->
   <div id="dashboard" class="tab-content">
-    <iframe id="dashboard-frame" src="dashboard.html" title="Compatibility Dashboard"></iframe>
+    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+      <button class="server-tab active" data-server="dotnet" data-target="dashboard-frame" data-src-dotnet="dashboard-.net.html" data-src-go="dashboard-go.html">&#9726; .NET Server</button>
+      <button class="server-tab" data-server="go" data-target="dashboard-frame" data-src-dotnet="dashboard-.net.html" data-src-go="dashboard-go.html">&#128640; Go Server</button>
+    </div>
+    <iframe id="dashboard-frame" src="dashboard-.net.html" title="Compatibility Dashboard"></iframe>
   </div>
 
   <!-- Test Descriptions Tab -->
@@ -142,7 +152,11 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
 
   <!-- Report Card Tab -->
   <div id="report-card" class="tab-content">
-    <iframe id="report-card-frame" src="report-card.html" title="Report Card"></iframe>
+    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+      <button class="server-tab active" data-server="dotnet" data-target="report-card-frame" data-src-dotnet="report-card-.net.html" data-src-go="report-card-go.html">&#9726; .NET Server</button>
+      <button class="server-tab" data-server="go" data-target="report-card-frame" data-src-dotnet="report-card-.net.html" data-src-go="report-card-go.html">&#128640; Go Server</button>
+    </div>
+    <iframe id="report-card-frame" src="report-card-.net.html" title="Report Card"></iframe>
   </div>
 
   <!-- Server Compliance (TCK) Tab -->
@@ -288,6 +302,19 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
   }
   window.addEventListener('hashchange', onHashChange);
   onHashChange();
+
+  // Server tab switching (dashboard/report-card .NET vs Go)
+  document.querySelectorAll('.server-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+      const server = btn.dataset.server;
+      const src = server === 'go' ? btn.dataset.srcGo : btn.dataset.srcDotnet;
+      // Update active state for sibling server-tabs
+      btn.parentElement.querySelectorAll('.server-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(target).src = src;
+    });
+  });
 </script>
 </body>
 </html>

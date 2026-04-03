@@ -9,6 +9,8 @@ Usage:
     python run-all.py [baseUrl]
     python run-all.py --dashboard-only              # regenerate local dashboard from existing results.json
     python run-all.py --dashboard-only --publish     # also update docs/ dashboard (publish-gated clients only)
+    python run-all.py --dashboard-only --publish --server=.NET     # label as .NET Server dashboard
+    python run-all.py --dashboard-only --publish --server=Go --results-dir=path/to/go/results
 """
 
 import json
@@ -186,9 +188,13 @@ def run_client(client_id: str, base_url: str) -> dict | None:
 
 
 def load_existing_results() -> dict[str, dict]:
+    return _load_results_from(CLIENTS_DIR)
+
+
+def _load_results_from(clients_dir: Path) -> dict[str, dict]:
     all_results = {}
     for client_id, info in CLIENTS.items():
-        results_file = CLIENTS_DIR / info["dir"] / "results.json"
+        results_file = clients_dir / info["dir"] / "results.json"
         if results_file.exists():
             with open(results_file) as f:
                 all_results[client_id] = json.load(f)
@@ -376,8 +382,9 @@ def _get_known_failure(client_id: str, test_id: str) -> str | None:
     return None
 
 
-def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
+def generate_dashboard(all_results: dict[str, dict], base_url: str, server_label: str = "") -> str:
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    title_suffix = f" ({server_label} Server)" if server_label else ""
 
     # Build lookup: client -> test_id -> result
     matrix: dict[str, dict[str, dict]] = {}
@@ -483,7 +490,7 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<title>AgentBin A2A Compatibility Dashboard</title>
+<title>AgentBin A2A Compatibility Dashboard{title_suffix}</title>
 <style>
   :root {{ --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; }}
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -521,7 +528,7 @@ def generate_dashboard(all_results: dict[str, dict], base_url: str) -> str:
 </style>
 </head>
 <body>
-<h1>AgentBin A2A Compatibility Dashboard</h1>
+<h1>AgentBin A2A Compatibility Dashboard{title_suffix}</h1>
 <p class="subtitle">Generated {timestamp} &bull; Target: <code>{base_url}</code></p>
 
 <div class="summary">
@@ -564,9 +571,10 @@ def _esc(s: str) -> str:
     return s.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "&#10;")
 
 
-def generate_report_card(all_results: dict[str, dict], base_url: str) -> str:
+def generate_report_card(all_results: dict[str, dict], base_url: str, server_label: str = "") -> str:
     """Generate a standalone HTML report card showing failure details grouped by client."""
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    title_suffix = f" ({server_label} Server)" if server_label else ""
     ordered_clients = [c for c in CLIENTS if c in all_results]
 
     # Binding display names and test-id prefixes
@@ -655,7 +663,7 @@ def generate_report_card(all_results: dict[str, dict], base_url: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<title>AgentBin A2A Report Card</title>
+<title>AgentBin A2A Report Card{title_suffix}</title>
 <style>
   :root {{ --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; }}
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -694,7 +702,7 @@ def generate_report_card(all_results: dict[str, dict], base_url: str) -> str:
 </style>
 </head>
 <body>
-<h1>AgentBin A2A Report Card</h1>
+<h1>AgentBin A2A Report Card{title_suffix}</h1>
 <p class="subtitle">Generated {timestamp} &bull; Target: <code>{base_url}</code></p>
 
 {sections_html}
@@ -713,18 +721,26 @@ def main():
     base_url = BASE_URL
     dashboard_only = False
     publish = False
+    server_label = ""
+    results_dir = None
 
     for arg in sys.argv[1:]:
         if arg == "--dashboard-only":
             dashboard_only = True
         elif arg == "--publish":
             publish = True
+        elif arg.startswith("--server="):
+            server_label = arg.split("=", 1)[1]
+        elif arg.startswith("--results-dir="):
+            results_dir = arg.split("=", 1)[1]
         elif not arg.startswith("-"):
             base_url = arg.rstrip("/")
 
+    clients_dir = Path(results_dir) if results_dir else CLIENTS_DIR
+
     if dashboard_only:
         print("Dashboard-only mode — loading existing results.json files")
-        all_results = load_existing_results()
+        all_results = _load_results_from(clients_dir)
     else:
         all_results = {}
         for client_id in CLIENTS:
@@ -736,31 +752,34 @@ def main():
         print("No results collected. Exiting.")
         return 1
 
+    # Determine output filenames based on server label
+    suffix = f"-{server_label.lower()}" if server_label else ""
+
     # Local dashboard always includes ALL clients
-    html = generate_dashboard(all_results, base_url)
-    out_path = TESTS_DIR / "dashboard.html"
+    html = generate_dashboard(all_results, base_url, server_label)
+    out_path = TESTS_DIR / f"dashboard{suffix}.html"
     out_path.write_text(html, encoding="utf-8")
     print(f"\n✅ Dashboard written to {out_path}")
 
     # Local report card
-    rc_html = generate_report_card(all_results, base_url)
-    rc_path = TESTS_DIR / "report-card.html"
+    rc_html = generate_report_card(all_results, base_url, server_label)
+    rc_path = TESTS_DIR / f"report-card{suffix}.html"
     rc_path.write_text(rc_html, encoding="utf-8")
     print(f"✅ Report card written to {rc_path}")
 
     # Public dashboard (docs/) is gated behind --publish and filtered to publishable clients
     if publish:
         publishable = {cid: data for cid, data in all_results.items() if CLIENTS.get(cid, {}).get("publish", False)}
-        docs_path = TESTS_DIR.parent / "docs" / "dashboard.html"
+        docs_path = TESTS_DIR.parent / "docs" / f"dashboard{suffix}.html"
         if docs_path.parent.exists():
-            public_html = generate_dashboard(publishable, base_url)
+            public_html = generate_dashboard(publishable, base_url, server_label)
             docs_path.write_text(public_html, encoding="utf-8")
-            print(f"✅ Public dashboard updated (docs/dashboard.html) — {len(publishable)} of {len(all_results)} clients included")
+            print(f"✅ Public dashboard updated ({docs_path.name}) — {len(publishable)} of {len(all_results)} clients included")
 
-            rc_docs_path = TESTS_DIR.parent / "docs" / "report-card.html"
-            public_rc_html = generate_report_card(publishable, base_url)
+            rc_docs_path = TESTS_DIR.parent / "docs" / f"report-card{suffix}.html"
+            public_rc_html = generate_report_card(publishable, base_url, server_label)
             rc_docs_path.write_text(public_rc_html, encoding="utf-8")
-            print(f"✅ Public report card updated (docs/report-card.html)")
+            print(f"✅ Public report card updated ({rc_docs_path.name})")
     else:
         print("📌 Public dashboard NOT updated (use --publish to update docs/)")
 
