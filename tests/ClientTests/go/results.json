@@ -1,429 +1,429 @@
 {
   "client": "go",
-  "sdk": "a2a-go",
+  "sdk": "a2a-go v2.0.1",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-03T10:05:38Z",
+  "timestamp": "2026-04-04T15:28:28Z",
   "baseUrl": "http://localhost:5000",
   "results": [
     {
       "id": "jsonrpc/agent-card-echo",
       "name": "Echo Agent Card",
-      "passed": true,
-      "detail": "name=Echo Agent, skills=1",
-      "durationMs": 450
+      "passed": false,
+      "detail": "error: card request failed, status: 404 Not Found",
+      "durationMs": 15
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
-      "passed": false,
-      "detail": "error: card parsing failed: unknown security scheme type for \"bearer_token\": found keys [httpAuthSecurityScheme]",
-      "durationMs": 16
+      "passed": true,
+      "detail": "name=AgentBin Spec Agent (Java), skills=8",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
-      "passed": true,
-      "detail": "response=Echo: hello from Go",
-      "durationMs": 155
+      "passed": false,
+      "detail": "skipped — no echo card",
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/spec-message-only",
       "name": "Message Only",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-get-task",
       "name": "Get Task",
       "passed": false,
-      "detail": "skipped — no spec client",
+      "detail": "skipped — no task ID from lifecycle test",
       "durationMs": 0
     },
     {
       "id": "jsonrpc/spec-task-failure",
       "name": "Task Failure",
       "passed": false,
-      "detail": "skipped — no spec client",
+      "detail": "error: unexpected HTTP status: 405 Method Not Allowed",
       "durationMs": 0
     },
     {
       "id": "jsonrpc/spec-data-types",
       "name": "Data Types",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-streaming",
       "name": "Streaming",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found Error",
-      "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-multi-turn",
       "name": "Multi-Turn Conversation",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "step1 error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-task-cancel",
       "name": "Task Cancel",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "stream error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "stream error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-list-tasks",
       "name": "List Tasks",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-return-immediately",
       "name": "Return Immediately",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "error: unexpected HTTP status: 405 Method Not Allowed (returnImmediately ignored by SDK)",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
       "name": "Cancel Not Found Error",
-      "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-cancel-terminal",
       "name": "Cancel Terminal Error",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "send error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-send-terminal",
       "name": "Send Terminal Error",
       "passed": false,
-      "detail": "skipped — no spec client",
+      "detail": "send error: unexpected HTTP status: 405 Method Not Allowed",
       "durationMs": 0
     },
     {
       "id": "jsonrpc/error-send-invalid-task",
       "name": "Send Invalid Task Error",
-      "passed": false,
-      "detail": "skipped — no spec client",
+      "passed": true,
+      "detail": "got expected error: unexpected HTTP status: 405 Method Not Allowed",
       "durationMs": 0
     },
     {
       "id": "jsonrpc/error-push-not-supported",
       "name": "Push Not Supported Error",
-      "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got error (isPushNotSupported=false): unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/subscribe-to-task",
       "name": "Subscribe To Task",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "stream error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found Error",
-      "passed": false,
-      "detail": "skipped — no spec client",
+      "passed": true,
+      "detail": "got expected error: unexpected HTTP status: 405 Method Not Allowed",
       "durationMs": 0
     },
     {
       "id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
       "passed": false,
-      "detail": "skipped — no spec client",
+      "detail": "error: unexpected HTTP status: 405 Method Not Allowed",
       "durationMs": 0
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Multi-Turn Context Preserved",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "step1 error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/get-task-with-history",
       "name": "Get Task With History",
       "passed": false,
-      "detail": "skipped — no spec client",
+      "detail": "send error: unexpected HTTP status: 405 Method Not Allowed",
       "durationMs": 0
     },
     {
       "id": "jsonrpc/get-task-after-failure",
       "name": "Get Task After Failure",
       "passed": false,
-      "detail": "skipped — no spec client",
-      "durationMs": 0
+      "detail": "send error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-extended-card",
       "name": "Spec Extended Card",
       "passed": false,
-      "detail": "skipped — no spec card",
+      "detail": "GetExtendedAgentCard error: unexpected HTTP status: 405 Method Not Allowed",
       "durationMs": 0
     },
     {
       "id": "rest/agent-card-echo",
       "name": "REST Echo Agent Card",
-      "passed": true,
-      "detail": "name=Echo Agent, skills=1, hasHTTPJSON=true",
-      "durationMs": 8
+      "passed": false,
+      "detail": "error: card request failed, status: 404 Not Found",
+      "durationMs": 1
     },
     {
       "id": "rest/agent-card-spec",
       "name": "REST Spec Agent Card",
-      "passed": false,
-      "detail": "error: card parsing failed: unknown security scheme type for \"bearer_token\": found keys [httpAuthSecurityScheme]",
-      "durationMs": 2
+      "passed": true,
+      "detail": "name=AgentBin Spec Agent (Java), skills=8, hasHTTPJSON=true",
+      "durationMs": 3
     },
     {
       "id": "rest/echo-send-message",
       "name": "REST Echo Send Message",
-      "passed": true,
-      "detail": "response=Echo: hello from Go REST",
-      "durationMs": 36
+      "passed": false,
+      "detail": "skipped — no REST echo card",
+      "durationMs": 0
     },
     {
       "id": "rest/spec-message-only",
       "name": "REST Message Only",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-task-lifecycle",
       "name": "REST Task Lifecycle",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 1
     },
     {
       "id": "rest/spec-get-task",
       "name": "REST Get Task",
       "passed": false,
-      "detail": "skipped — no REST spec client",
+      "detail": "skipped — no task ID from lifecycle test",
       "durationMs": 0
     },
     {
       "id": "rest/spec-task-failure",
       "name": "REST Task Failure",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 1
     },
     {
       "id": "rest/spec-data-types",
       "name": "REST Data Types",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 3
     },
     {
       "id": "rest/spec-streaming",
       "name": "REST Streaming",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "error: unknown event type: map[error:[123 34 99 111 100 101 34 58 53 48 48 44 34 115 116 97 116 117 115 34 58 34 73 78 84 69 82 78 65 76 34 44 34 109 101 115 115 97 103 101 34 58 34 67 111 117 108 100 32 110 111 116 32 105 110 105 116 105 97 108 105 122 101 32 99 108 97 115 115 32 105 111 46 97 50 97 46 103 114 112 99 46 83 101 110 100 77 101 115 115 97 103 101 82 101 113 117 101 115 116 34 44 34 100 101 116 97 105 108 115 34 58 91 123 34 64 116 121 112 101 34 58 34 116 121 112 101 46 103 111 111 103 108 101 97 112 105 115 46 99 111 109 47 103 111 111 103 108 101 46 114 112 99 46 69 114 114 111 114 73 110 102 111 34 44 34 114 101 97 115 111 110 34 58 34 73 78 84 69 82 78 65 76 34 44 34 100 111 109 97 105 110 34 58 34 97 50 97 45 112 114 111 116 111 99 111 108 46 111 114 103 34 44 34 109 101 116 97 100 97 116 97 34 58 123 125 125 93 125]]",
+      "durationMs": 2
     },
     {
       "id": "rest/error-task-not-found",
       "name": "REST Task Not Found",
-      "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: Task not found",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-multi-turn",
       "name": "REST Multi-Turn Conversation",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "step1 error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-task-cancel",
       "name": "REST Task Cancel",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "stream error: unknown event type: map[error:[123 34 99 111 100 101 34 58 53 48 48 44 34 115 116 97 116 117 115 34 58 34 73 78 84 69 82 78 65 76 34 44 34 109 101 115 115 97 103 101 34 58 34 67 111 117 108 100 32 110 111 116 32 105 110 105 116 105 97 108 105 122 101 32 99 108 97 115 115 32 105 111 46 97 50 97 46 103 114 112 99 46 83 101 110 100 77 101 115 115 97 103 101 82 101 113 117 101 115 116 34 44 34 100 101 116 97 105 108 115 34 58 91 123 34 64 116 121 112 101 34 58 34 116 121 112 101 46 103 111 111 103 108 101 97 112 105 115 46 99 111 109 47 103 111 111 103 108 101 46 114 112 99 46 69 114 114 111 114 73 110 102 111 34 44 34 114 101 97 115 111 110 34 58 34 73 78 84 69 82 78 65 76 34 44 34 100 111 109 97 105 110 34 58 34 97 50 97 45 112 114 111 116 111 99 111 108 46 111 114 103 34 44 34 109 101 116 97 100 97 116 97 34 58 123 125 125 93 125]]",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-cancel-with-metadata",
       "name": "REST Cancel With Metadata",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "stream error: unknown event type: map[error:[123 34 99 111 100 101 34 58 53 48 48 44 34 115 116 97 116 117 115 34 58 34 73 78 84 69 82 78 65 76 34 44 34 109 101 115 115 97 103 101 34 58 34 67 111 117 108 100 32 110 111 116 32 105 110 105 116 105 97 108 105 122 101 32 99 108 97 115 115 32 105 111 46 97 50 97 46 103 114 112 99 46 83 101 110 100 77 101 115 115 97 103 101 82 101 113 117 101 115 116 34 44 34 100 101 116 97 105 108 115 34 58 91 123 34 64 116 121 112 101 34 58 34 116 121 112 101 46 103 111 111 103 108 101 97 112 105 115 46 99 111 109 47 103 111 111 103 108 101 46 114 112 99 46 69 114 114 111 114 73 110 102 111 34 44 34 114 101 97 115 111 110 34 58 34 73 78 84 69 82 78 65 76 34 44 34 100 111 109 97 105 110 34 58 34 97 50 97 45 112 114 111 116 111 99 111 108 46 111 114 103 34 44 34 109 101 116 97 100 97 116 97 34 58 123 125 125 93 125]]",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-list-tasks",
       "name": "REST List Tasks",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "error: Could not initialize class io.a2a.grpc.ListTasksResponse",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-return-immediately",
       "name": "REST Return Immediately",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 2
     },
     {
       "id": "rest/error-cancel-not-found",
       "name": "REST Cancel Not Found Error",
-      "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: Not a JSON Object: null",
+      "durationMs": 4
     },
     {
       "id": "rest/error-cancel-terminal",
       "name": "REST Cancel Terminal Error",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "send error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 1
     },
     {
       "id": "rest/error-send-terminal",
       "name": "REST Send Terminal Error",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "send error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 3
     },
     {
       "id": "rest/error-send-invalid-task",
       "name": "REST Send Invalid Task Error",
-      "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 2
     },
     {
       "id": "rest/error-push-not-supported",
       "name": "REST Push Not Supported Error",
-      "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got error (isPushNotSupported=true): Push Notification is not supported",
+      "durationMs": 1
     },
     {
       "id": "rest/subscribe-to-task",
       "name": "REST Subscribe To Task",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "stream error: unknown event type: map[error:[123 34 99 111 100 101 34 58 53 48 48 44 34 115 116 97 116 117 115 34 58 34 73 78 84 69 82 78 65 76 34 44 34 109 101 115 115 97 103 101 34 58 34 67 111 117 108 100 32 110 111 116 32 105 110 105 116 105 97 108 105 122 101 32 99 108 97 115 115 32 105 111 46 97 50 97 46 103 114 112 99 46 83 101 110 100 77 101 115 115 97 103 101 82 101 113 117 101 115 116 34 44 34 100 101 116 97 105 108 115 34 58 91 123 34 64 116 121 112 101 34 58 34 116 121 112 101 46 103 111 111 103 108 101 97 112 105 115 46 99 111 109 47 103 111 111 103 108 101 46 114 112 99 46 69 114 114 111 114 73 110 102 111 34 44 34 114 101 97 115 111 110 34 58 34 73 78 84 69 82 78 65 76 34 44 34 100 111 109 97 105 110 34 58 34 97 50 97 45 112 114 111 116 111 99 111 108 46 111 114 103 34 44 34 109 101 116 97 100 97 116 97 34 58 123 125 125 93 125]]",
+      "durationMs": 2
     },
     {
       "id": "rest/error-subscribe-not-found",
       "name": "REST Subscribe Not Found Error",
-      "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got expected error: unknown event type: map[error:[123 34 99 111 100 101 34 58 52 48 52 44 34 115 116 97 116 117 115 34 ...",
+      "durationMs": 4
     },
     {
       "id": "rest/stream-message-only",
       "name": "REST Stream Message Only",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "error: unknown event type: map[error:[123 34 99 111 100 101 34 58 53 48 48 44 34 115 116 97 116 117 115 34 58 34 73 78 84 69 82 78 65 76 34 44 34 109 101 115 115 97 103 101 34 58 34 67 111 117 108 100 32 110 111 116 32 105 110 105 116 105 97 108 105 122 101 32 99 108 97 115 115 32 105 111 46 97 50 97 46 103 114 112 99 46 83 101 110 100 77 101 115 115 97 103 101 82 101 113 117 101 115 116 34 44 34 100 101 116 97 105 108 115 34 58 91 123 34 64 116 121 112 101 34 58 34 116 121 112 101 46 103 111 111 103 108 101 97 112 105 115 46 99 111 109 47 103 111 111 103 108 101 46 114 112 99 46 69 114 114 111 114 73 110 102 111 34 44 34 114 101 97 115 111 110 34 58 34 73 78 84 69 82 78 65 76 34 44 34 100 111 109 97 105 110 34 58 34 97 50 97 45 112 114 111 116 111 99 111 108 46 111 114 103 34 44 34 109 101 116 97 100 97 116 97 34 58 123 125 125 93 125]]",
+      "durationMs": 5
     },
     {
       "id": "rest/stream-task-lifecycle",
       "name": "REST Stream Task Lifecycle",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "error: unknown event type: map[error:[123 34 99 111 100 101 34 58 53 48 48 44 34 115 116 97 116 117 115 34 58 34 73 78 84 69 82 78 65 76 34 44 34 109 101 115 115 97 103 101 34 58 34 67 111 117 108 100 32 110 111 116 32 105 110 105 116 105 97 108 105 122 101 32 99 108 97 115 115 32 105 111 46 97 50 97 46 103 114 112 99 46 83 101 110 100 77 101 115 115 97 103 101 82 101 113 117 101 115 116 34 44 34 100 101 116 97 105 108 115 34 58 91 123 34 64 116 121 112 101 34 58 34 116 121 112 101 46 103 111 111 103 108 101 97 112 105 115 46 99 111 109 47 103 111 111 103 108 101 46 114 112 99 46 69 114 114 111 114 73 110 102 111 34 44 34 114 101 97 115 111 110 34 58 34 73 78 84 69 82 78 65 76 34 44 34 100 111 109 97 105 110 34 58 34 97 50 97 45 112 114 111 116 111 99 111 108 46 111 114 103 34 44 34 109 101 116 97 100 97 116 97 34 58 123 125 125 93 125]]",
+      "durationMs": 5
     },
     {
       "id": "rest/multi-turn-context-preserved",
       "name": "REST Multi-Turn Context Preserved",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "step1 error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 4
     },
     {
       "id": "rest/get-task-with-history",
       "name": "REST Get Task With History",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "send error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 2
     },
     {
       "id": "rest/get-task-after-failure",
       "name": "REST Get Task After Failure",
       "passed": false,
-      "detail": "skipped — no REST spec client",
-      "durationMs": 0
+      "detail": "send error: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-extended-card",
       "name": "REST Spec Extended Card",
       "passed": false,
-      "detail": "skipped — no REST spec card",
-      "durationMs": 0
+      "detail": "GetExtendedAgentCard error: unexpected HTTP status: 405 Method Not Allowed",
+      "durationMs": 2
     },
     {
       "id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
       "passed": false,
-      "detail": "protocolVersion=, hasUrl=false",
-      "durationMs": 29
+      "detail": "SDK resolve error (may not support v0.3): card request failed, status: 404 Not Found",
+      "durationMs": 1
     },
     {
       "id": "v03/spec03-send-message",
       "name": "v0.3 Send Message",
       "passed": false,
-      "detail": "client create error (SDK may not support v0.3): agent card has no supported interfaces",
-      "durationMs": 0
+      "detail": "card resolve error (SDK may not support v0.3): card request failed, status: 404 Not Found",
+      "durationMs": 3
     },
     {
       "id": "v03/spec03-task-lifecycle",
       "name": "v0.3 Task Lifecycle",
       "passed": false,
-      "detail": "client create error (SDK may not support v0.3): agent card has no supported interfaces",
-      "durationMs": 0
+      "detail": "card resolve error (SDK may not support v0.3): card request failed, status: 404 Not Found",
+      "durationMs": 3
     },
     {
       "id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
       "passed": false,
-      "detail": "client create error (SDK may not support v0.3): agent card has no supported interfaces",
-      "durationMs": 2
+      "detail": "card resolve error (SDK may not support v0.3): card request failed, status: 404 Not Found",
+      "durationMs": 3
     }
   ]
 }
