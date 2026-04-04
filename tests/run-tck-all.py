@@ -14,7 +14,6 @@ Prerequisites:
 """
 
 import argparse
-import glob
 import os
 import shutil
 import subprocess
@@ -35,6 +34,7 @@ SERVERS = {
     'Go':     {'url': 'http://localhost:5000/spec', 'transports': 'jsonrpc,rest'},
     'Python': {'url': 'http://localhost:5000/spec', 'transports': 'jsonrpc,rest'},
     'Rust':   {'url': 'http://localhost:5000/spec', 'transports': 'jsonrpc'},
+    'Java':   {'url': 'http://localhost:5000/spec', 'transports': 'jsonrpc,rest'},
 }
 
 
