@@ -1,0 +1,429 @@
+{
+  "client": "js",
+  "sdk": "a2a-js (local build, 0.3.13)",
+  "protocolVersion": "1.0",
+  "timestamp": "2026-04-04T00:55:40Z",
+  "baseUrl": "http://localhost:5000",
+  "results": [
+    {
+      "id": "jsonrpc/agent-card-echo",
+      "name": "Echo Agent Card",
+      "passed": false,
+      "detail": "name=AgentBin Spec Agent, skills=8",
+      "durationMs": 84
+    },
+    {
+      "id": "jsonrpc/agent-card-spec",
+      "name": "Spec Agent Card",
+      "passed": true,
+      "detail": "name=AgentBin Spec Agent, skills=[message-only,task-lifecycle,task-failure,task-cancel,multi-turn,streaming,long-running,data-types]",
+      "durationMs": 6
+    },
+    {
+      "id": "jsonrpc/spec-extended-card",
+      "name": "Spec Extended Card",
+      "passed": true,
+      "detail": "public=8 skills, extended=9 skills, admin-status=true",
+      "durationMs": 10
+    },
+    {
+      "id": "jsonrpc/echo-send-message",
+      "name": "Echo Send Message",
+      "passed": false,
+      "detail": "JSON-RPC error: Method not found (Code: -32601) Data: {}",
+      "durationMs": 10
+    },
+    {
+      "id": "jsonrpc/spec-message-only",
+      "name": "Spec Message Only",
+      "passed": false,
+      "detail": "JSON-RPC error: Method not found (Code: -32601) Data: {}",
+      "durationMs": 7
+    },
+    {
+      "id": "jsonrpc/spec-task-lifecycle",
+      "name": "Spec Task Lifecycle",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 10
+    },
+    {
+      "id": "jsonrpc/spec-get-task",
+      "name": "Spec GetTask",
+      "passed": false,
+      "detail": "skipped — no taskId from lifecycle",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/spec-task-failure",
+      "name": "Spec Task Failure",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 8
+    },
+    {
+      "id": "jsonrpc/spec-data-types",
+      "name": "Spec Data Types",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 7
+    },
+    {
+      "id": "jsonrpc/spec-streaming",
+      "name": "Spec Streaming",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 6
+    },
+    {
+      "id": "jsonrpc/spec-multi-turn",
+      "name": "Spec Multi-Turn",
+      "passed": false,
+      "detail": "JSON-RPC error: Method not found (Code: -32601) Data: {}",
+      "durationMs": 6
+    },
+    {
+      "id": "jsonrpc/spec-task-cancel",
+      "name": "Spec Task Cancel",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 6
+    },
+    {
+      "id": "jsonrpc/spec-cancel-with-metadata",
+      "name": "Cancel With Metadata",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 6
+    },
+    {
+      "id": "jsonrpc/spec-list-tasks",
+      "name": "Spec ListTasks",
+      "passed": false,
+      "detail": "SDK not supported: JS SDK does not expose listTasks",
+      "durationMs": 0
+    },
+    {
+      "id": "jsonrpc/spec-return-immediately",
+      "name": "Spec Return Immediately",
+      "passed": false,
+      "detail": "JSON-RPC error: Method not found (Code: -32601) Data: {}",
+      "durationMs": 6
+    },
+    {
+      "id": "jsonrpc/error-task-not-found",
+      "name": "Task Not Found Error",
+      "passed": true,
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: Method not found (Code: -32601) Data: {}",
+      "durationMs": 6
+    },
+    {
+      "id": "jsonrpc/error-cancel-not-found",
+      "name": "Cancel Not Found",
+      "passed": true,
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: Method not found (Code: -32601) Data: {}",
+      "durationMs": 6
+    },
+    {
+      "id": "jsonrpc/error-cancel-terminal",
+      "name": "Cancel Terminal Task",
+      "passed": false,
+      "detail": "error=Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/",
+      "durationMs": 4
+    },
+    {
+      "id": "jsonrpc/error-send-terminal",
+      "name": "Send To Terminal Task",
+      "passed": true,
+      "detail": "error=Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/",
+      "durationMs": 5
+    },
+    {
+      "id": "jsonrpc/error-send-invalid-task",
+      "name": "Send Invalid TaskId",
+      "passed": true,
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: Method not found (Code: -32601) Data: {}",
+      "durationMs": 6
+    },
+    {
+      "id": "jsonrpc/error-push-not-supported",
+      "name": "Push Not Supported",
+      "passed": true,
+      "detail": "error=PushNotificationNotSupportedError: Push Notification is not supported",
+      "durationMs": 2
+    },
+    {
+      "id": "jsonrpc/subscribe-to-task",
+      "name": "SubscribeToTask",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 5
+    },
+    {
+      "id": "jsonrpc/error-subscribe-not-found",
+      "name": "Subscribe Not Found",
+      "passed": false,
+      "detail": "error=Error: Invalid response Content-Type for SSE stream for tasks/resubscribe. Expected 'te",
+      "durationMs": 5
+    },
+    {
+      "id": "jsonrpc/stream-message-only",
+      "name": "Stream Message Only",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 4
+    },
+    {
+      "id": "jsonrpc/stream-task-lifecycle",
+      "name": "Stream Task Lifecycle",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 5
+    },
+    {
+      "id": "jsonrpc/multi-turn-context-preserved",
+      "name": "Context Preserved",
+      "passed": false,
+      "detail": "JSON-RPC error: Method not found (Code: -32601) Data: {}",
+      "durationMs": 5
+    },
+    {
+      "id": "jsonrpc/get-task-with-history",
+      "name": "GetTask With History",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 5
+    },
+    {
+      "id": "jsonrpc/get-task-after-failure",
+      "name": "GetTask After Failure",
+      "passed": false,
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 4
+    },
+    {
+      "id": "rest/agent-card-echo",
+      "name": "REST Echo Agent Card",
+      "passed": false,
+      "detail": "name=AgentBin Spec Agent, skills=8",
+      "durationMs": 2
+    },
+    {
+      "id": "rest/agent-card-spec",
+      "name": "REST Spec Agent Card",
+      "passed": true,
+      "detail": "name=AgentBin Spec Agent, skills=[message-only,task-lifecycle,task-failure,task-cancel,multi-turn,streaming,long-running,data-types]",
+      "durationMs": 2
+    },
+    {
+      "id": "rest/spec-extended-card",
+      "name": "REST Spec Extended Card",
+      "passed": false,
+      "detail": "public=8 skills, extended=9 skills, admin-status=true",
+      "durationMs": 4
+    },
+    {
+      "id": "rest/echo-send-message",
+      "name": "REST Echo Send Message",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: {\"error\":{\"code\":400,\"status\":\"INVALID_ARGUMENT\",\"me",
+      "durationMs": 6
+    },
+    {
+      "id": "rest/spec-message-only",
+      "name": "REST Spec Message Only",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: {\"error\":{\"code\":400,\"status\":\"INVALID_ARGUMENT\",\"me",
+      "durationMs": 6
+    },
+    {
+      "id": "rest/spec-task-lifecycle",
+      "name": "REST Spec Task Lifecycle",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 12
+    },
+    {
+      "id": "rest/spec-get-task",
+      "name": "REST Spec GetTask",
+      "passed": false,
+      "detail": "skipped — no taskId from lifecycle",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-task-failure",
+      "name": "REST Spec Task Failure",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 11
+    },
+    {
+      "id": "rest/spec-data-types",
+      "name": "REST Spec Data Types",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 11
+    },
+    {
+      "id": "rest/spec-streaming",
+      "name": "REST Spec Streaming",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 11
+    },
+    {
+      "id": "rest/spec-multi-turn",
+      "name": "REST Spec Multi-Turn",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: {\"error\":{\"code\":400,\"status\":\"INVALID_ARGUMENT\",\"me",
+      "durationMs": 8
+    },
+    {
+      "id": "rest/spec-task-cancel",
+      "name": "REST Spec Task Cancel",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 11
+    },
+    {
+      "id": "rest/spec-cancel-with-metadata",
+      "name": "Cancel With Metadata",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 11
+    },
+    {
+      "id": "rest/spec-list-tasks",
+      "name": "REST Spec ListTasks",
+      "passed": false,
+      "detail": "SDK not supported: JS SDK does not expose listTasks",
+      "durationMs": 0
+    },
+    {
+      "id": "rest/spec-return-immediately",
+      "name": "REST Return Immediately",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: {\"error\":{\"code\":400,\"status\":\"INVALID_ARGUMENT\",\"me",
+      "durationMs": 8
+    },
+    {
+      "id": "rest/error-task-not-found",
+      "name": "REST Task Not Found Error",
+      "passed": true,
+      "detail": "error=Error: HTTP error for /v1/tasks/nonexistent-task-id-12345?historyLength=0! Status: 404 ",
+      "durationMs": 4
+    },
+    {
+      "id": "rest/error-cancel-not-found",
+      "name": "Cancel Not Found",
+      "passed": true,
+      "detail": "error=Error: HTTP error for /v1/tasks/bogus-cancel-id-99999:cancel! Status: 404 Not Found. Re",
+      "durationMs": 4
+    },
+    {
+      "id": "rest/error-cancel-terminal",
+      "name": "Cancel Terminal Task",
+      "passed": false,
+      "detail": "error=TypeError: terminated",
+      "durationMs": 8
+    },
+    {
+      "id": "rest/error-send-terminal",
+      "name": "Send To Terminal Task",
+      "passed": true,
+      "detail": "error=TypeError: terminated",
+      "durationMs": 11
+    },
+    {
+      "id": "rest/error-send-invalid-task",
+      "name": "Send Invalid TaskId",
+      "passed": false,
+      "detail": "error=Error: HTTP error for /v1/message:send! Status: 400 Bad Request. Response: {\"error\":{\"c",
+      "durationMs": 7
+    },
+    {
+      "id": "rest/error-push-not-supported",
+      "name": "Push Not Supported",
+      "passed": true,
+      "detail": "error=PushNotificationNotSupportedError: Push Notification is not supported",
+      "durationMs": 2
+    },
+    {
+      "id": "rest/subscribe-to-task",
+      "name": "SubscribeToTask",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 11
+    },
+    {
+      "id": "rest/error-subscribe-not-found",
+      "name": "Subscribe Not Found",
+      "passed": false,
+      "detail": "error=TypeError: terminated",
+      "durationMs": 12
+    },
+    {
+      "id": "rest/stream-message-only",
+      "name": "Stream Message Only",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 10
+    },
+    {
+      "id": "rest/stream-task-lifecycle",
+      "name": "Stream Task Lifecycle",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 9
+    },
+    {
+      "id": "rest/multi-turn-context-preserved",
+      "name": "Context Preserved",
+      "passed": false,
+      "detail": "HTTP error for /v1/message:send! Status: 400 Bad Request. Response: {\"error\":{\"code\":400,\"status\":\"INVALID_ARGUMENT\",\"me",
+      "durationMs": 6
+    },
+    {
+      "id": "rest/get-task-with-history",
+      "name": "GetTask With History",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 7
+    },
+    {
+      "id": "rest/get-task-after-failure",
+      "name": "GetTask After Failure",
+      "passed": false,
+      "detail": "terminated",
+      "durationMs": 10
+    },
+    {
+      "id": "v03/spec03-agent-card",
+      "name": "v0.3 Agent Card",
+      "passed": true,
+      "detail": "name=AgentBin Spec Agent, skills=8",
+      "durationMs": 2
+    },
+    {
+      "id": "v03/spec03-send-message",
+      "name": "v0.3 Send Message",
+      "passed": false,
+      "detail": "SDK v0.3 failed: JSONRPCTransportError: JSON-RPC error: Method not found (Code: -32601) Data: {}",
+      "durationMs": 7
+    },
+    {
+      "id": "v03/spec03-task-lifecycle",
+      "name": "v0.3 Task Lifecycle",
+      "passed": false,
+      "detail": "SDK v0.3 failed: Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 5
+    },
+    {
+      "id": "v03/spec03-streaming",
+      "name": "v0.3 Streaming",
+      "passed": false,
+      "detail": "SDK v0.3 failed: Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 4
+    }
+  ]
+}

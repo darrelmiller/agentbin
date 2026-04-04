@@ -1,0 +1,443 @@
+{
+  "client": "dotnet",
+  "sdk": "A2A 1.0.0-preview2",
+  "protocolVersion": "1.0",
+  "timestamp": "2026-04-04T01:10:35.0717689Z",
+  "baseUrl": "http://localhost:5000",
+  "results": [
+    {
+      "Id": "jsonrpc/agent-card-echo",
+      "name": "Echo Agent Card",
+      "Passed": true,
+      "detail": "name=AgentBin Echo Agent, skills=1",
+      "DurationMs": 2225
+    },
+    {
+      "Id": "jsonrpc/agent-card-spec",
+      "name": "Spec Agent Card",
+      "Passed": true,
+      "detail": "skills=8",
+      "DurationMs": 2
+    },
+    {
+      "Id": "jsonrpc/echo-send-message",
+      "name": "Echo Send Message",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 93
+    },
+    {
+      "Id": "jsonrpc/spec-message-only",
+      "name": "Message Only",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 1
+    },
+    {
+      "Id": "jsonrpc/spec-task-lifecycle",
+      "name": "Task Lifecycle",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/spec-get-task",
+      "name": "GetTask",
+      "Passed": false,
+      "detail": "skipped",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/spec-task-failure",
+      "name": "Task Failure",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/spec-data-types",
+      "name": "Data Types",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/spec-streaming",
+      "name": "Streaming",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 21
+    },
+    {
+      "Id": "jsonrpc/error-task-not-found",
+      "name": "Task Not Found",
+      "Passed": false,
+      "detail": "HttpRequestException",
+      "DurationMs": 9
+    },
+    {
+      "Id": "jsonrpc/spec-multi-turn",
+      "name": "Multi-Turn",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 1
+    },
+    {
+      "Id": "jsonrpc/spec-task-cancel",
+      "name": "Task Cancel",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 1
+    },
+    {
+      "Id": "jsonrpc/spec-cancel-with-metadata",
+      "name": "Cancel With Metadata",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 1
+    },
+    {
+      "Id": "jsonrpc/spec-list-tasks",
+      "name": "List Tasks",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 24
+    },
+    {
+      "Id": "jsonrpc/spec-return-immediately",
+      "name": "Return Immediately",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 1
+    },
+    {
+      "Id": "jsonrpc/error-cancel-not-found",
+      "name": "Cancel Not Found",
+      "Passed": true,
+      "detail": "got error: HttpRequestException: Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 3
+    },
+    {
+      "Id": "jsonrpc/error-cancel-terminal",
+      "name": "Cancel Terminal Task",
+      "Passed": true,
+      "detail": "got error: HttpRequestException: Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/error-send-terminal",
+      "name": "Send To Terminal Task",
+      "Passed": true,
+      "detail": "got error: HttpRequestException: Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/error-send-invalid-task",
+      "name": "Send Invalid TaskId",
+      "Passed": true,
+      "detail": "got error: HttpRequestException",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/error-push-not-supported",
+      "name": "Push Not Supported",
+      "Passed": true,
+      "detail": "got error: HttpRequestException: Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 4
+    },
+    {
+      "Id": "jsonrpc/subscribe-to-task",
+      "name": "SubscribeToTask",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/error-subscribe-not-found",
+      "name": "Subscribe Not Found",
+      "Passed": true,
+      "detail": "got error: HttpRequestException: Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 4
+    },
+    {
+      "Id": "jsonrpc/stream-message-only",
+      "name": "Stream Message Only",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/stream-task-lifecycle",
+      "name": "Stream Task Lifecycle",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/multi-turn-context-preserved",
+      "name": "Context Preserved",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/get-task-with-history",
+      "name": "GetTask With History",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/get-task-after-failure",
+      "name": "GetTask After Failure",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/subscribe-after-stream-disconnect",
+      "name": "Subscribe After Stream Disconnect",
+      "Passed": false,
+      "detail": "Response status code does not indicate success: 405 (Method Not Allowed).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "jsonrpc/spec-extended-card",
+      "name": "Spec Extended Card",
+      "Passed": false,
+      "detail": "extendedAgentCard capability not enabled (value=)",
+      "DurationMs": 1
+    },
+    {
+      "Id": "rest/agent-card-echo",
+      "name": "Echo Agent Card",
+      "Passed": false,
+      "detail": "name=AgentBin Echo Agent, skills=1, httpJson=False",
+      "DurationMs": 44
+    },
+    {
+      "Id": "rest/agent-card-spec",
+      "name": "Spec Agent Card",
+      "Passed": false,
+      "detail": "skills=8, httpJson=False",
+      "DurationMs": 1
+    },
+    {
+      "Id": "rest/echo-send-message",
+      "name": "Echo Send Message",
+      "Passed": false,
+      "detail": "REST echo client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-message-only",
+      "name": "Message Only",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-task-lifecycle",
+      "name": "Task Lifecycle",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-get-task",
+      "name": "GetTask",
+      "Passed": false,
+      "detail": "skipped",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-task-failure",
+      "name": "Task Failure",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-data-types",
+      "name": "Data Types",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-streaming",
+      "name": "Streaming",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/error-task-not-found",
+      "name": "Task Not Found",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-multi-turn",
+      "name": "Multi-Turn",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-task-cancel",
+      "name": "Task Cancel",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-cancel-with-metadata",
+      "name": "Cancel With Metadata",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-list-tasks",
+      "name": "List Tasks",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-return-immediately",
+      "name": "Return Immediately",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/error-cancel-not-found",
+      "name": "Cancel Not Found",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/error-cancel-terminal",
+      "name": "Cancel Terminal Task",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/error-send-terminal",
+      "name": "Send To Terminal Task",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/error-send-invalid-task",
+      "name": "Send Invalid TaskId",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/error-push-not-supported",
+      "name": "Push Not Supported",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/subscribe-to-task",
+      "name": "SubscribeToTask",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/error-subscribe-not-found",
+      "name": "Subscribe Not Found",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/stream-message-only",
+      "name": "Stream Message Only",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/stream-task-lifecycle",
+      "name": "Stream Task Lifecycle",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/multi-turn-context-preserved",
+      "name": "Context Preserved",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/get-task-with-history",
+      "name": "GetTask With History",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/get-task-after-failure",
+      "name": "GetTask After Failure",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/subscribe-after-stream-disconnect",
+      "name": "Subscribe After Stream Disconnect",
+      "Passed": false,
+      "detail": "REST spec client not available",
+      "DurationMs": 0
+    },
+    {
+      "Id": "rest/spec-extended-card",
+      "name": "Spec Extended Card",
+      "Passed": false,
+      "detail": "extendedAgentCard capability not enabled (value=)",
+      "DurationMs": 1
+    },
+    {
+      "Id": "v03/spec03-agent-card",
+      "name": "v0.3 Agent Card",
+      "Passed": false,
+      "detail": "HTTP request failed",
+      "DurationMs": 2038
+    },
+    {
+      "Id": "v03/spec03-send-message",
+      "name": "v0.3 Send Message",
+      "Passed": false,
+      "detail": "SDK error: Response status code does not indicate success: 404 (Not Found).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "v03/spec03-task-lifecycle",
+      "name": "v0.3 Task Lifecycle",
+      "Passed": false,
+      "detail": "SDK error: Response status code does not indicate success: 404 (Not Found).",
+      "DurationMs": 0
+    },
+    {
+      "Id": "v03/spec03-streaming",
+      "name": "v0.3 Streaming",
+      "Passed": false,
+      "detail": "SDK error: Response status code does not indicate success: 404 (Not Found).",
+      "DurationMs": 0
+    }
+  ]
+}

@@ -139,8 +139,10 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
   <!-- Dashboard Tab -->
   <div id="dashboard" class="tab-content">
     <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
-      <button class="server-tab active" data-server="dotnet" data-target="dashboard-frame" data-src-dotnet="dashboard-.net.html" data-src-go="dashboard-go.html">&#9726; .NET Server</button>
-      <button class="server-tab" data-server="go" data-target="dashboard-frame" data-src-dotnet="dashboard-.net.html" data-src-go="dashboard-go.html">&#128640; Go Server</button>
+      <button class="server-tab active" data-target="dashboard-frame" data-src="dashboard-.net.html">&#9726; .NET</button>
+      <button class="server-tab" data-target="dashboard-frame" data-src="dashboard-go.html">&#128640; Go</button>
+      <button class="server-tab" data-target="dashboard-frame" data-src="dashboard-python.html">&#128013; Python</button>
+      <button class="server-tab" data-target="dashboard-frame" data-src="dashboard-rust.html">&#9883; Rust</button>
     </div>
     <iframe id="dashboard-frame" src="dashboard-.net.html" title="Compatibility Dashboard"></iframe>
   </div>
@@ -153,8 +155,10 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
   <!-- Report Card Tab -->
   <div id="report-card" class="tab-content">
     <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
-      <button class="server-tab active" data-server="dotnet" data-target="report-card-frame" data-src-dotnet="report-card-.net.html" data-src-go="report-card-go.html">&#9726; .NET Server</button>
-      <button class="server-tab" data-server="go" data-target="report-card-frame" data-src-dotnet="report-card-.net.html" data-src-go="report-card-go.html">&#128640; Go Server</button>
+      <button class="server-tab active" data-target="report-card-frame" data-src="report-card-.net.html">&#9726; .NET</button>
+      <button class="server-tab" data-target="report-card-frame" data-src="report-card-go.html">&#128640; Go</button>
+      <button class="server-tab" data-target="report-card-frame" data-src="report-card-python.html">&#128013; Python</button>
+      <button class="server-tab" data-target="report-card-frame" data-src="report-card-rust.html">&#9883; Rust</button>
     </div>
     <iframe id="report-card-frame" src="report-card-.net.html" title="Report Card"></iframe>
   </div>
@@ -307,9 +311,7 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
   document.querySelectorAll('.server-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.dataset.target;
-      const server = btn.dataset.server;
-      const src = server === 'go' ? btn.dataset.srcGo : btn.dataset.srcDotnet;
-      // Update active state for sibling server-tabs
+      const src = btn.dataset.src;
       btn.parentElement.querySelectorAll('.server-tab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById(target).src = src;
