@@ -1,18 +1,30 @@
 """Generate the TCK compliance page from TCK JSON report."""
+import argparse
 import json
 import sys
 from html import escape
 from pathlib import Path
+
+SDK_LABELS = {
+    '.net': '.NET SDK', 'dotnet': '.NET SDK',
+    'go': 'Go SDK', 'python': 'Python SDK', 'rust': 'Rust SDK',
+}
 
 
 def esc(s):
     return escape(str(s)) if s else ''
 
 
-def generate_compliance_html(report_path: str, output_path: str):
+def generate_compliance_html(report_path: str, output_path: str, server: str | None = None):
     d = json.loads(Path(report_path).read_text(encoding='utf-8'))
-    reqs = d['per_requirement']
     summary = d['summary']
+    sdk_label = SDK_LABELS.get(server.lower(), f'{server} SDK') if server else '.NET SDK'
+
+    # Handle reports where TCK couldn't even fetch the agent card
+    reqs = d.get('per_requirement', {})
+    if not reqs and summary.get('overall_score', -1) == 0.0:
+        _generate_card_failure_html(output_path, summary, sdk_label)
+        return
 
     # Categorize requirements
     categories: dict[str, list] = {
@@ -130,7 +142,7 @@ def generate_compliance_html(report_path: str, output_path: str):
 
 <h1>&#x1F9EA; Server Compliance &mdash; A2A TCK</h1>
 <div class="subtitle">
-  A2A Test Compatibility Kit results for AgentBin SpecAgent (.NET SDK) &bull;
+  A2A Test Compatibility Kit results for AgentBin SpecAgent ({sdk_label}) &bull;
   Tested: {timestamp} UTC &bull;
   SUT: <code>{sut_url}</code>
 </div>
@@ -140,7 +152,7 @@ def generate_compliance_html(report_path: str, output_path: str):
   <a href="https://github.com/a2aproject/a2a-tck">A2A TCK</a>
   is a conformance test suite that validates A2A server implementations against the
   <a href="https://github.com/a2aproject/a2a-spec">A2A specification</a>.
-  Failures indicate .NET SDK gaps &mdash; not SpecAgent bugs.
+  Failures indicate {sdk_label} gaps &mdash; not SpecAgent bugs.
   Each requirement maps to a specific spec section.
 </div>
 
@@ -220,7 +232,72 @@ def generate_compliance_html(report_path: str, output_path: str):
     print(f'Generated {output_path} ({len(html):,} bytes)')
 
 
+def _generate_card_failure_html(output_path: str, summary: dict, sdk_label: str):
+    """Generate a simple compliance page when TCK couldn't fetch the agent card."""
+    timestamp = esc(summary.get('timestamp', '?')[:19])
+    level = esc(summary.get('compliance_level', 'NON_COMPLIANT'))
+    html = f'''<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AgentBin — Server Compliance (TCK)</title>
+<style>
+  * {{ margin:0; padding:0; box-sizing:border-box; }}
+  body {{ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         background:#0f172a; color:#e2e8f0; padding:24px; }}
+  h1 {{ font-size:22px; margin-bottom:4px; }}
+  .subtitle {{ color:#94a3b8; font-size:13px; margin-bottom:20px; }}
+  .card {{ background:#1e293b; border-radius:10px; padding:16px 20px; margin-bottom:16px; }}
+  .fail {{ color:#ef4444; }}
+  .note {{ background:#1e293b; border-left:3px solid #ef4444; padding:12px 16px;
+           margin-bottom:16px; border-radius:0 8px 8px 0; font-size:13px; color:#94a3b8; }}
+  .note strong {{ color:#e2e8f0; }}
+</style>
+</head><body>
+<h1>&#x1F9EA; Server Compliance &mdash; A2A TCK</h1>
+<div class="subtitle">A2A TCK results for AgentBin SpecAgent ({sdk_label}) &bull; Tested: {timestamp} UTC</div>
+<div class="card">
+  <div style="font-size:28px;font-weight:700" class="fail">0%</div>
+  <div style="font-size:12px;color:#64748b;margin-top:4px">{level}</div>
+</div>
+<div class="note">
+  <strong>Agent Card Fetch Failed</strong><br>
+  The TCK could not fetch or parse the agent card from this server.
+  This typically indicates the {sdk_label} produces an agent card with non-standard
+  field names or JSON structure that the TCK cannot parse.<br><br>
+  <strong>Common causes:</strong> lowercase enum values instead of UPPER_CASE,
+  non-standard <code>kind</code> fields, missing required card fields,
+  or non-standard JSON-RPC endpoint paths.
+</div>
+</body></html>'''
+    Path(output_path).write_text(html, encoding='utf-8')
+    print(f'Generated {output_path} (card-failure mode, {len(html):,} bytes)')
+
+
 if __name__ == '__main__':
-    report = sys.argv[1] if len(sys.argv) > 1 else r'D:\github\a2aproject\a2a-tck\reports\compatibility.json'
-    output = sys.argv[2] if len(sys.argv) > 2 else r'D:\github\darrelmiller\agentbin\docs\compliance.html'
-    generate_compliance_html(report, output)
+    parser = argparse.ArgumentParser(description='Generate TCK compliance HTML page')
+    parser.add_argument('report', nargs='?',
+                        default=r'D:\github\a2aproject\a2a-tck\reports\compatibility.json',
+                        help='Path to TCK compatibility.json')
+    parser.add_argument('output', nargs='?',
+                        default=r'D:\github\darrelmiller\agentbin\docs\compliance.html',
+                        help='Output HTML path')
+    parser.add_argument('--server', default=None,
+                        help='Server name (e.g. .NET, Go, Python, Rust). '
+                             'When set, output filename becomes compliance-{server}.html')
+    parser.add_argument('--publish', action='store_true',
+                        help='Copy output to docs/ directory')
+    args = parser.parse_args()
+
+    output = args.output
+    if args.server:
+        server_slug = args.server.lower().replace('.', '')
+        output = str(Path(args.output).parent / f'compliance-{server_slug}.html')
+
+    generate_compliance_html(args.report, output, server=args.server)
+
+    if args.publish:
+        docs_dir = Path(r'D:\github\darrelmiller\agentbin\docs')
+        dest = docs_dir / Path(output).name
+        import shutil
+        shutil.copy2(output, dest)
+        print(f'Published to {dest}')

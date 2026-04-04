@@ -17,6 +17,12 @@ class SpecAgent(AgentExecutor):
     """SpecAgent implementing all 8 test skills."""
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
+        # TCK routes on messageId prefix (tck-*), not on message text
+        message_id = context.message.message_id if context.message else ""
+        if message_id.startswith("tck-"):
+            await self._route_tck(message_id, context, event_queue)
+            return
+
         text = _extract_text(context.message)
         keyword, _ = _split_keyword(text)
 
@@ -228,6 +234,146 @@ class SpecAgent(AgentExecutor):
         )
         await updater.complete(done_msg)
 
+    # --- TCK routing ---
+    async def _route_tck(self, message_id: str, ctx: RequestContext, eq: EventQueue) -> None:
+        prefix = _extract_tck_prefix(message_id)
+        handlers = {
+            "complete-task": self._tck_complete_task,
+            "artifact-text": self._tck_artifact_text,
+            "artifact-file": self._tck_artifact_file,
+            "artifact-file-url": self._tck_artifact_file_url,
+            "artifact-data": self._tck_artifact_data,
+            "message-response": self._tck_message_response,
+            "input-required": self._tck_input_required,
+            "reject-task": self._tck_reject_task,
+            "stream-001": self._tck_stream_basic,
+            "stream-002": self._tck_stream_message_only,
+            "stream-003": self._tck_stream_task_lifecycle,
+            "stream-ordering-001": self._tck_stream_ordering,
+            "stream-artifact-text": self._tck_stream_artifact_text,
+            "stream-artifact-file": self._tck_stream_artifact_file,
+            "stream-artifact-chunked": self._tck_stream_artifact_chunked,
+        }
+        handler = handlers.get(prefix)
+        if handler:
+            await handler(ctx, eq)
+        else:
+            await self._handle_help(ctx, eq)
+
+    # --- TCK core handlers ---
+    async def _tck_complete_task(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        msg = _agent_message("Hello from TCK", ctx.task_id, ctx.context_id)
+        await updater.complete(msg)
+
+    async def _tck_artifact_text(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        await updater.add_artifact(artifact_id="text-artifact", name="text-artifact",
+            parts=[Part(text="Generated text content")])
+        await updater.complete()
+
+    async def _tck_artifact_file(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        await updater.add_artifact(artifact_id="file-artifact", name="file-artifact",
+            parts=[Part(raw=b"file content", media_type="text/plain", filename="output.txt")])
+        await updater.complete()
+
+    async def _tck_artifact_file_url(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        await updater.add_artifact(artifact_id="file-url-artifact", name="file-url-artifact",
+            parts=[Part(url="https://example.com/output.txt", media_type="text/plain", filename="output.txt")])
+        await updater.complete()
+
+    async def _tck_artifact_data(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        data_value = struct_pb2.Value()
+        json_format.ParseDict({"key": "value", "count": 42}, data_value)
+        await updater.add_artifact(artifact_id="data-artifact", name="data-artifact",
+            parts=[Part(data=data_value)])
+        await updater.complete()
+
+    async def _tck_message_response(self, ctx: RequestContext, eq: EventQueue) -> None:
+        msg = _agent_message("Direct message response", ctx.task_id, ctx.context_id)
+        await eq.enqueue_event(msg)
+
+    async def _tck_input_required(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        msg = _agent_message("Input required \u2014 send a follow-up message.", ctx.task_id, ctx.context_id)
+        await updater.requires_input(msg)
+
+    async def _tck_reject_task(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        msg = _agent_message("rejected", ctx.task_id, ctx.context_id)
+        await updater.failed(msg)
+
+    # --- TCK streaming handlers ---
+    async def _tck_stream_basic(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        await updater.add_artifact(artifact_id="stream-artifact", name="stream-artifact",
+            parts=[Part(text="Stream hello from TCK")])
+        await updater.complete()
+
+    async def _tck_stream_message_only(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.complete()
+
+    async def _tck_stream_task_lifecycle(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        await updater.add_artifact(artifact_id="stream-artifact", name="stream-artifact",
+            parts=[Part(text="Stream task lifecycle")])
+        await updater.complete()
+
+    async def _tck_stream_ordering(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        await updater.add_artifact(artifact_id="stream-artifact", name="stream-artifact",
+            parts=[Part(text="Ordered output")])
+        await updater.complete()
+
+    async def _tck_stream_artifact_text(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        await updater.add_artifact(artifact_id="stream-text-artifact", name="stream-text-artifact",
+            parts=[Part(text="Streamed text content")])
+        await updater.complete()
+
+    async def _tck_stream_artifact_file(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        await updater.add_artifact(artifact_id="stream-file-artifact", name="stream-file-artifact",
+            parts=[Part(raw=b"file content", media_type="text/plain", filename="output.txt")])
+        await updater.complete()
+
+    async def _tck_stream_artifact_chunked(self, ctx: RequestContext, eq: EventQueue) -> None:
+        updater = TaskUpdater(eq, ctx.task_id, ctx.context_id)
+        await updater.submit()
+        await updater.start_work()
+        await updater.add_artifact(artifact_id="chunked-artifact", name="Chunked Artifact",
+            parts=[Part(text="chunk-1 ")], last_chunk=False)
+        await updater.add_artifact(artifact_id="chunked-artifact", name="Chunked Artifact",
+            parts=[Part(text="chunk-2")], append=True, last_chunk=True)
+        await updater.complete()
+
     # --- help ---
     async def _handle_help(self, ctx: RequestContext, eq: EventQueue) -> None:
         help_text = """AgentBin Spec Agent - A2A v1.0 Test Bed
@@ -272,3 +418,10 @@ def _split_keyword(text: str) -> tuple:
     text = text.strip().lower()
     parts = text.split(None, 1)
     return (parts[0] if parts else "", parts[1] if len(parts) > 1 else "")
+
+
+def _extract_tck_prefix(message_id: str) -> str:
+    """Extract the TCK prefix from a message ID like 'tck-{prefix}-{session_hex}'."""
+    without_prefix = message_id[4:]  # strip "tck-"
+    last_dash = without_prefix.rfind("-")
+    return without_prefix[:last_dash] if last_dash > 0 else without_prefix

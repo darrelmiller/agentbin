@@ -16,6 +16,15 @@ type specAgent struct{}
 var _ a2asrv.AgentExecutor = (*specAgent)(nil)
 
 func (s *specAgent) Execute(ctx context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	// TCK routes on messageId prefix (tck-*), not on message text
+	messageId := ""
+	if execCtx.Message != nil {
+		messageId = execCtx.Message.ID
+	}
+	if strings.HasPrefix(messageId, "tck-") {
+		return s.routeTck(messageId, ctx, execCtx)
+	}
+
 	// Multi-turn continuation
 	if execCtx.StoredTask != nil && execCtx.StoredTask.Status.State == a2a.TaskStateInputRequired {
 		return s.handleMultiTurnContinuation(ctx, execCtx)
@@ -365,6 +374,290 @@ Example: "task-lifecycle hello world"`
 
 	return func(yield func(a2a.Event, error) bool) {
 		yield(a2a.NewMessage(a2a.MessageRoleAgent, a2a.NewTextPart(helpText)), nil)
+	}
+}
+
+// --- TCK (Test Compatibility Kit) handlers ---
+
+func extractTckPrefix(messageId string) string {
+	withoutPrefix := messageId[4:] // strip "tck-"
+	lastDash := strings.LastIndex(withoutPrefix, "-")
+	if lastDash > 0 {
+		return withoutPrefix[:lastDash]
+	}
+	return withoutPrefix
+}
+
+func (s *specAgent) routeTck(messageId string, ctx context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	prefix := extractTckPrefix(messageId)
+	switch prefix {
+	case "complete-task":
+		return s.tckCompleteTask(ctx, execCtx)
+	case "artifact-text":
+		return s.tckArtifactText(ctx, execCtx)
+	case "artifact-file":
+		return s.tckArtifactFile(ctx, execCtx)
+	case "artifact-file-url":
+		return s.tckArtifactFileURL(ctx, execCtx)
+	case "artifact-data":
+		return s.tckArtifactData(ctx, execCtx)
+	case "message-response":
+		return s.tckMessageResponse(ctx, execCtx)
+	case "input-required":
+		return s.tckInputRequired(ctx, execCtx)
+	case "reject-task":
+		return s.tckRejectTask(ctx, execCtx)
+	case "stream-001":
+		return s.tckStream001(ctx, execCtx)
+	case "stream-002":
+		return s.tckStream002(ctx, execCtx)
+	case "stream-003":
+		return s.tckStream003(ctx, execCtx)
+	case "stream-ordering-001":
+		return s.tckStreamOrdering001(ctx, execCtx)
+	case "stream-artifact-text":
+		return s.tckStreamArtifactText(ctx, execCtx)
+	case "stream-artifact-file":
+		return s.tckStreamArtifactFile(ctx, execCtx)
+	case "stream-artifact-chunked":
+		return s.tckStreamArtifactChunked(ctx, execCtx)
+	default:
+		return s.handleHelp(ctx, execCtx)
+	}
+}
+
+// Core operations
+
+func (s *specAgent) tckCompleteTask(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		msg := a2a.NewMessage(a2a.MessageRoleAgent, a2a.NewTextPart("Hello from TCK"))
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, msg), nil)
+	}
+}
+
+func (s *specAgent) tckArtifactText(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		if !yield(newArtifact(execCtx, "text-artifact", "text-artifact", "", a2a.NewTextPart("Generated text content")), nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
+	}
+}
+
+func (s *specAgent) tckArtifactFile(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		filePart := a2a.NewRawPart([]byte("file content"))
+		filePart.MediaType = "text/plain"
+		filePart.Filename = "output.txt"
+		if !yield(newArtifact(execCtx, "file-artifact", "file-artifact", "", filePart), nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
+	}
+}
+
+func (s *specAgent) tckArtifactFileURL(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		urlPart := a2a.NewFileURLPart("https://example.com/output.txt", "text/plain")
+		urlPart.Filename = "output.txt"
+		if !yield(newArtifact(execCtx, "file-url-artifact", "file-url-artifact", "", urlPart), nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
+	}
+}
+
+func (s *specAgent) tckArtifactData(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		if !yield(newArtifact(execCtx, "data-artifact", "data-artifact", "",
+			a2a.NewDataPart(map[string]any{"key": "value", "count": 42})), nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
+	}
+}
+
+func (s *specAgent) tckMessageResponse(_ context.Context, _ *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		yield(a2a.NewMessage(a2a.MessageRoleAgent, a2a.NewTextPart("Direct message response")), nil)
+	}
+}
+
+func (s *specAgent) tckInputRequired(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		msg := a2a.NewMessage(a2a.MessageRoleAgent, a2a.NewTextPart("Input required — send a follow-up message."))
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateInputRequired, msg), nil)
+	}
+}
+
+func (s *specAgent) tckRejectTask(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		msg := a2a.NewMessage(a2a.MessageRoleAgent, a2a.NewTextPart("rejected"))
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateFailed, msg), nil)
+	}
+}
+
+// Streaming operations
+
+func (s *specAgent) tckStream001(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		if !yield(newArtifact(execCtx, "stream-artifact", "stream-artifact", "", a2a.NewTextPart("Stream hello from TCK")), nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
+	}
+}
+
+func (s *specAgent) tckStream002(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
+	}
+}
+
+func (s *specAgent) tckStream003(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		if !yield(newArtifact(execCtx, "stream-artifact", "stream-artifact", "", a2a.NewTextPart("Stream task lifecycle")), nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
+	}
+}
+
+func (s *specAgent) tckStreamOrdering001(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		if !yield(newArtifact(execCtx, "stream-artifact", "stream-artifact", "", a2a.NewTextPart("Ordered output")), nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
+	}
+}
+
+func (s *specAgent) tckStreamArtifactText(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		if !yield(newArtifact(execCtx, "stream-text-artifact", "stream-text-artifact", "", a2a.NewTextPart("Streamed text content")), nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
+	}
+}
+
+func (s *specAgent) tckStreamArtifactFile(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		filePart := a2a.NewRawPart([]byte("file content"))
+		filePart.MediaType = "text/plain"
+		filePart.Filename = "output.txt"
+		if !yield(newArtifact(execCtx, "stream-file-artifact", "stream-file-artifact", "", filePart), nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
+	}
+}
+
+func (s *specAgent) tckStreamArtifactChunked(_ context.Context, execCtx *a2asrv.ExecutorContext) iter.Seq2[a2a.Event, error] {
+	return func(yield func(a2a.Event, error) bool) {
+		if !yield(a2a.NewSubmittedTask(execCtx, execCtx.Message), nil) {
+			return
+		}
+		if !yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateWorking, nil), nil) {
+			return
+		}
+		evt1 := &a2a.TaskArtifactUpdateEvent{
+			TaskID:    execCtx.TaskID,
+			ContextID: execCtx.ContextID,
+			LastChunk: false,
+			Artifact: &a2a.Artifact{
+				ID:    "chunked-artifact",
+				Name:  "Chunked Artifact",
+				Parts: []*a2a.Part{a2a.NewTextPart("chunk-1 ")},
+			},
+		}
+		if !yield(evt1, nil) {
+			return
+		}
+		evt2 := &a2a.TaskArtifactUpdateEvent{
+			TaskID:    execCtx.TaskID,
+			ContextID: execCtx.ContextID,
+			Append:    true,
+			LastChunk: true,
+			Artifact: &a2a.Artifact{
+				ID:    "chunked-artifact",
+				Name:  "Chunked Artifact",
+				Parts: []*a2a.Part{a2a.NewTextPart("chunk-2")},
+			},
+		}
+		if !yield(evt2, nil) {
+			return
+		}
+		yield(a2a.NewStatusUpdateEvent(execCtx, a2a.TaskStateCompleted, nil), nil)
 	}
 }
 

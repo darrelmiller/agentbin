@@ -25,6 +25,11 @@ impl MessageHandler for SpecAgent {
         message: Message,
         _auth: Option<AuthContext>,
     ) -> HandlerResult<SendMessageResponse> {
+        // TCK routes on messageId prefix (tck-*), not on message text
+        if message.message_id.starts_with("tck-") {
+            return self.route_tck(&message);
+        }
+
         let text = extract_text(&message);
         let (keyword, _rest) = split_keyword(&text);
 
@@ -510,6 +515,293 @@ behaviors return completed tasks immediately rather than streaming events over t
         };
 
         Ok(SendMessageResponse::Message(reply))
+    }
+
+    // --- TCK (Technology Compatibility Kit) handlers ---
+
+    fn route_tck(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let prefix = extract_tck_prefix(&message.message_id);
+        match prefix {
+            "complete-task" => self.tck_complete_task(message),
+            "artifact-text" => self.tck_artifact_text(message),
+            "artifact-file" => self.tck_artifact_file(message),
+            "artifact-file-url" => self.tck_artifact_file_url(message),
+            "artifact-data" => self.tck_artifact_data(message),
+            "message-response" => self.tck_message_response(message),
+            "input-required" => self.tck_input_required(message),
+            "reject-task" => self.tck_reject_task(message),
+            "stream-001" => self.tck_stream_001(message),
+            "stream-002" => self.tck_stream_002(message),
+            "stream-003" => self.tck_stream_003(message),
+            "stream-ordering-001" => self.tck_stream_ordering_001(message),
+            "stream-artifact-text" => self.tck_stream_artifact_text(message),
+            "stream-artifact-file" => self.tck_stream_artifact_file(message),
+            "stream-artifact-chunked" => self.tck_stream_artifact_chunked(message),
+            _ => self.handle_help(),
+        }
+    }
+
+    fn tck_completed_task(
+        &self,
+        message: &Message,
+        status_text: &str,
+        artifacts: Option<Vec<Artifact>>,
+    ) -> HandlerResult<SendMessageResponse> {
+        let context_id = message.context_id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
+        let task_id = Uuid::new_v4().to_string();
+
+        let status_message = Message {
+            kind: "message".to_string(),
+            message_id: Uuid::new_v4().to_string(),
+            context_id: Some(context_id.clone()),
+            task_id: Some(task_id.clone()),
+            role: Role::Agent,
+            parts: vec![Part::text(status_text)],
+            metadata: None,
+            extensions: vec![],
+            reference_task_ids: None,
+        };
+
+        let task = Task {
+            kind: "task".to_string(),
+            id: task_id,
+            context_id,
+            status: TaskStatus {
+                state: TaskState::Completed,
+                message: Some(status_message),
+                timestamp: Some(now_iso8601()),
+            },
+            history: None,
+            artifacts,
+            metadata: None,
+        };
+
+        Ok(SendMessageResponse::Task(task))
+    }
+
+    fn tck_complete_task(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        self.tck_completed_task(message, "Hello from TCK", None)
+    }
+
+    fn tck_artifact_text(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let artifact = Artifact {
+            artifact_id: Uuid::new_v4().to_string(),
+            name: Some("text-artifact".to_string()),
+            description: None,
+            parts: vec![Part::text("Generated text content")],
+            metadata: None,
+            extensions: vec![],
+        };
+        self.tck_completed_task(message, "Generated text content", Some(vec![artifact]))
+    }
+
+    fn tck_artifact_file(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let encoded = base64::Engine::encode(
+            &base64::engine::general_purpose::STANDARD,
+            b"file content",
+        );
+        let artifact = Artifact {
+            artifact_id: Uuid::new_v4().to_string(),
+            name: Some("file-artifact".to_string()),
+            description: None,
+            parts: vec![Part::file_bytes(encoded, "text/plain")],
+            metadata: None,
+            extensions: vec![],
+        };
+        self.tck_completed_task(message, "file content", Some(vec![artifact]))
+    }
+
+    fn tck_artifact_file_url(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let artifact = Artifact {
+            artifact_id: Uuid::new_v4().to_string(),
+            name: Some("file-url-artifact".to_string()),
+            description: None,
+            parts: vec![Part::file_uri("https://example.com/output.txt", "text/plain")],
+            metadata: None,
+            extensions: vec![],
+        };
+        self.tck_completed_task(message, "https://example.com/output.txt", Some(vec![artifact]))
+    }
+
+    fn tck_artifact_data(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let artifact = Artifact {
+            artifact_id: Uuid::new_v4().to_string(),
+            name: Some("data-artifact".to_string()),
+            description: None,
+            parts: vec![Part::data(json!({"key": "value", "count": 42}))],
+            metadata: None,
+            extensions: vec![],
+        };
+        self.tck_completed_task(message, "data artifact", Some(vec![artifact]))
+    }
+
+    fn tck_message_response(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let reply = Message {
+            kind: "message".to_string(),
+            message_id: Uuid::new_v4().to_string(),
+            context_id: message.context_id.clone(),
+            task_id: None,
+            role: Role::Agent,
+            parts: vec![Part::text("Direct message response")],
+            metadata: None,
+            extensions: vec![],
+            reference_task_ids: None,
+        };
+        Ok(SendMessageResponse::Message(reply))
+    }
+
+    fn tck_input_required(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let context_id = message.context_id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
+        let task_id = Uuid::new_v4().to_string();
+
+        let status_message = Message {
+            kind: "message".to_string(),
+            message_id: Uuid::new_v4().to_string(),
+            context_id: Some(context_id.clone()),
+            task_id: Some(task_id.clone()),
+            role: Role::Agent,
+            parts: vec![Part::text("Input required — send a follow-up message.")],
+            metadata: None,
+            extensions: vec![],
+            reference_task_ids: None,
+        };
+
+        let task = Task {
+            kind: "task".to_string(),
+            id: task_id,
+            context_id,
+            status: TaskStatus {
+                state: TaskState::InputRequired,
+                message: Some(status_message),
+                timestamp: Some(now_iso8601()),
+            },
+            history: None,
+            artifacts: None,
+            metadata: None,
+        };
+
+        Ok(SendMessageResponse::Task(task))
+    }
+
+    fn tck_reject_task(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let context_id = message.context_id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
+        let task_id = Uuid::new_v4().to_string();
+
+        let status_message = Message {
+            kind: "message".to_string(),
+            message_id: Uuid::new_v4().to_string(),
+            context_id: Some(context_id.clone()),
+            task_id: Some(task_id.clone()),
+            role: Role::Agent,
+            parts: vec![Part::text("rejected")],
+            metadata: None,
+            extensions: vec![],
+            reference_task_ids: None,
+        };
+
+        let task = Task {
+            kind: "task".to_string(),
+            id: task_id,
+            context_id,
+            status: TaskStatus {
+                state: TaskState::Failed,
+                message: Some(status_message),
+                timestamp: Some(now_iso8601()),
+            },
+            history: None,
+            artifacts: None,
+            metadata: None,
+        };
+
+        Ok(SendMessageResponse::Task(task))
+    }
+
+    fn tck_stream_001(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let artifact = Artifact {
+            artifact_id: Uuid::new_v4().to_string(),
+            name: Some("stream-artifact".to_string()),
+            description: None,
+            parts: vec![Part::text("Stream hello from TCK")],
+            metadata: None,
+            extensions: vec![],
+        };
+        self.tck_completed_task(message, "Stream hello from TCK", Some(vec![artifact]))
+    }
+
+    fn tck_stream_002(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        self.tck_completed_task(message, "Completed", None)
+    }
+
+    fn tck_stream_003(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let artifact = Artifact {
+            artifact_id: Uuid::new_v4().to_string(),
+            name: Some("stream-artifact".to_string()),
+            description: None,
+            parts: vec![Part::text("Stream task lifecycle")],
+            metadata: None,
+            extensions: vec![],
+        };
+        self.tck_completed_task(message, "Stream task lifecycle", Some(vec![artifact]))
+    }
+
+    fn tck_stream_ordering_001(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let artifact = Artifact {
+            artifact_id: Uuid::new_v4().to_string(),
+            name: Some("stream-artifact".to_string()),
+            description: None,
+            parts: vec![Part::text("Ordered output")],
+            metadata: None,
+            extensions: vec![],
+        };
+        self.tck_completed_task(message, "Ordered output", Some(vec![artifact]))
+    }
+
+    fn tck_stream_artifact_text(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let artifact = Artifact {
+            artifact_id: Uuid::new_v4().to_string(),
+            name: Some("stream-text-artifact".to_string()),
+            description: None,
+            parts: vec![Part::text("Streamed text content")],
+            metadata: None,
+            extensions: vec![],
+        };
+        self.tck_completed_task(message, "Streamed text content", Some(vec![artifact]))
+    }
+
+    fn tck_stream_artifact_file(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let encoded = base64::Engine::encode(
+            &base64::engine::general_purpose::STANDARD,
+            b"file content",
+        );
+        let artifact = Artifact {
+            artifact_id: Uuid::new_v4().to_string(),
+            name: Some("stream-file-artifact".to_string()),
+            description: None,
+            parts: vec![Part::file_bytes(encoded, "text/plain")],
+            metadata: None,
+            extensions: vec![],
+        };
+        self.tck_completed_task(message, "file content", Some(vec![artifact]))
+    }
+
+    fn tck_stream_artifact_chunked(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
+        let artifact = Artifact {
+            artifact_id: Uuid::new_v4().to_string(),
+            name: Some("chunked-artifact".to_string()),
+            description: None,
+            parts: vec![Part::text("chunk-1 chunk-2")],
+            metadata: None,
+            extensions: vec![],
+        };
+        self.tck_completed_task(message, "chunk-1 chunk-2", Some(vec![artifact]))
+    }
+}
+
+fn extract_tck_prefix(message_id: &str) -> &str {
+    let without_prefix = &message_id[4..]; // strip "tck-"
+    match without_prefix.rfind('-') {
+        Some(pos) if pos > 0 => &without_prefix[..pos],
+        _ => without_prefix,
     }
 }
 

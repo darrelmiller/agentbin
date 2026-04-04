@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AgentBin — Server Compliance (TCK)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         background: #0f172a; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  .subtitle a { color: #38bdf8; }
+  .summary { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .card { background: #1e293b; border-radius: 10px; padding: 16px 20px; min-width: 160px; flex: 1; }
+  .card .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .card .detail { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .pass { color: #22c55e; }
+  .fail { color: #ef4444; }
+  .warn { color: #f59e0b; }
+  .muted { color: #64748b; }
+  .gauge { width: 100%; height: 8px; background: #334155; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+  .gauge-fill { height: 100%; border-radius: 4px; }
+  .section { background: #1e293b; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; }
+  .section h2 { font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .section h2 .count { font-size: 13px; color: #64748b; font-weight: 400; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+       color: #64748b; padding: 6px 8px; border-bottom: 1px solid #334155; }
+  td { padding: 6px 8px; border-bottom: 1px solid #1e293b; font-size: 13px; }
+  tr:hover { background: #334155; }
+  details { cursor: pointer; }
+  details summary { font-weight: 600; padding: 4px 0; }
+  details summary:hover { color: #38bdf8; }
+  .note { background: #1e293b; border-left: 3px solid #3b82f6; padding: 12px 16px;
+           margin-bottom: 16px; border-radius: 0 8px 8px 0; font-size: 13px; color: #94a3b8; }
+  .note strong { color: #e2e8f0; }
+  .note a { color: #38bdf8; }
+</style>
+</head>
+<body>
+
+<h1>&#x1F9EA; Server Compliance &mdash; A2A TCK</h1>
+<div class="subtitle">
+  A2A Test Compatibility Kit results for AgentBin SpecAgent (.NET SDK) &bull;
+  Tested: 2026-03-30T05:04:53 UTC &bull;
+  SUT: <code>http://localhost:5000/spec</code>
+</div>
+
+<div class="note">
+  <strong>What is this?</strong> The
+  <a href="https://github.com/a2aproject/a2a-tck">A2A TCK</a>
+  is a conformance test suite that validates A2A server implementations against the
+  <a href="https://github.com/a2aproject/a2a-spec">A2A specification</a>.
+  Failures indicate .NET SDK gaps &mdash; not SpecAgent bugs.
+  Each requirement maps to a specific spec section.
+</div>
+
+<div class="summary">
+  <div class="card">
+    <div class="label">Overall</div>
+    <div class="value pass">85.9%%</div>
+    <div class="gauge"><div class="gauge-fill" style="width:85.9%%;background:#22c55e"></div></div>
+  </div>
+  <div class="card">
+    <div class="label">MUST</div>
+    <div class="value pass">84.9%%</div>
+    <div class="detail">62 pass &bull; 11 fail &bull; 0 skip</div>
+  </div>
+  <div class="card">
+    <div class="label">SHOULD</div>
+    <div class="value pass">100%</div>
+    <div class="detail">2 pass</div>
+  </div>
+  <div class="card">
+    <div class="label">MAY</div>
+    <div class="value pass">100%</div>
+    <div class="detail">3 pass</div>
+  </div>
+  <div class="card">
+    <div class="label">Not Tested</div>
+    <div class="value muted">30</div>
+    <div class="detail">gRPC transport not supported</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>&#x274C; Failing Requirements <span class="count">(11)</span></h2>
+  <table>
+    <tr><th>Requirement</th><th>Status</th><th>Transports</th><th>Error</th></tr>
+    <tr><td><code style="font-size:12px">CARD-EXT-001</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Operation failed: Authentication required for extended agent card.">Operation failed: Authentication required for extended agent card.</td></tr>
+<tr><td><code style="font-size:12px">CARD-EXT-002</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Operation failed: Authentication required for extended agent card.">Operation failed: Authentication required for extended agent card.</td></tr>
+<tr><td><code style="font-size:12px">CORE-SEND-002</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Expected error code -32004 (UnsupportedOperationError), got -32001">Expected error code -32004 (UnsupportedOperationError), got -32001</td></tr>
+<tr><td><code style="font-size:12px">HTTP_JSON-ERR-001</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="AIP-193 error response must include &#x27;error&#x27; object">AIP-193 error response must include &#x27;error&#x27; object</td></tr>
+<tr><td><code style="font-size:12px">HTTP_JSON-ERR-002</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="(&#x27;D:\\github\\a2aproject\\a2a-tck\\tests\\compatibility\\core_operations\\test_error_handling.py&#x27;, 584, &#x27;Skipped: Response is not AIP-193 format&#x27;)">(&#x27;D:\\github\\a2aproject\\a2a-tck\\tests\\compatibility\\core_operations\\test_error_handling.py&#x27;, 584, &#x27;Skipped: Respon</td></tr>
+<tr><td><code style="font-size:12px">HTTP_JSON-STATUS-001</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Server MUST return VersionNotSupportedError (400) for unsupported A2A-Version, but processed the request normally">Server MUST return VersionNotSupportedError (400) for unsupported A2A-Version, but processed the request normally</td></tr>
+<tr><td><code style="font-size:12px">JSONRPC-ERR-003</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="(&#x27;D:\\github\\a2aproject\\a2a-tck\\tests\\compatibility\\jsonrpc\\test_error_info.py&#x27;, 77, &#x27;Skipped: error.data is absent&#x27;)">(&#x27;D:\\github\\a2aproject\\a2a-tck\\tests\\compatibility\\jsonrpc\\test_error_info.py&#x27;, 77, &#x27;Skipped: error.data is absen</td></tr>
+<tr><td><code style="font-size:12px">JSONRPC-SSE-002</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Error code mismatch: expected ContentTypeNotSupportedError (-32005), got ParseError (-32700)">Error code mismatch: expected ContentTypeNotSupportedError (-32005), got ParseError (-32700)</td></tr>
+<tr><td><code style="font-size:12px">STREAM-SUB-002</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="(&#x27;D:\\github\\a2aproject\\a2a-tck\\tests\\compatibility\\core_operations\\test_task_lifecycle.py&#x27;, 405, &#x27;Skipped: SubscribeToTask timed out waiting for stream to close&#x27;)">(&#x27;D:\\github\\a2aproject\\a2a-tck\\tests\\compatibility\\core_operations\\test_task_lifecycle.py&#x27;, 405, &#x27;Skipped: Subscr</td></tr>
+<tr><td><code style="font-size:12px">STREAM-SUB-003</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="SubscribeToTask on a terminal task should return an error, but succeeded">SubscribeToTask on a terminal task should return an error, but succeeded</td></tr>
+<tr><td><code style="font-size:12px">VER-SERVER-002</code></td><td style="color:#ef4444;font-weight:600">FAIL</td><td><span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td><td style="font-size:12px;color:#94a3b8;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Expected error for unsupported version, got 200">Expected error for unsupported version, got 200</td></tr>
+
+  </table>
+</div>
+
+<div class="section">
+  <details>
+    <summary><h2 style="display:inline">&#x2705; Passing Requirements <span class="count">(67)</span></h2></summary>
+    <table>
+      <tr><th>Requirement</th><th>Status</th><th>Transports</th></tr>
+      <tr><td><code style="font-size:12px">BIND-FIELD-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">agent_card</span></td></tr>
+<tr><td><code style="font-size:12px">CARD-DISC-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">agent_card</span></td></tr>
+<tr><td><code style="font-size:12px">CARD-PROTO-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">agent_card</span></td></tr>
+<tr><td><code style="font-size:12px">CARD-PROTO-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">agent_card</span></td></tr>
+<tr><td><code style="font-size:12px">CARD-STRUCT-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">agent_card</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-CANCEL-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-CANCEL-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-CANCEL-003</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-CAP-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-ERR-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-ERR-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-EXECUTION-MODE-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-EXECUTION-MODE-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-GET-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-GET-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-LIST-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-LIST-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-LIST-003</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-LIST-004</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-LIST-005</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-MULTI-001a</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-MULTI-002a</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-MULTI-003</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-MULTI-004</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-MULTI-005</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-MULTI-006</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-SEND-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-SEND-003</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-STREAM-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-STREAM-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-STREAM-003</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-ART-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-MSG-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-MSG-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-PART-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-SERIAL-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-SERIAL-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-SERIAL-003</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-SERIAL-004</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-STATUS-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-TASK-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">DM-TASK-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">HTTP_JSON-QP-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span></td></tr>
+<tr><td><code style="font-size:12px">HTTP_JSON-SSE-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span></td></tr>
+<tr><td><code style="font-size:12px">HTTP_JSON-SVC-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span></td></tr>
+<tr><td><code style="font-size:12px">HTTP_JSON-SVC-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span></td></tr>
+<tr><td><code style="font-size:12px">HTTP_JSON-URL-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span></td></tr>
+<tr><td><code style="font-size:12px">HTTP_JSON-URL-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span></td></tr>
+<tr><td><code style="font-size:12px">JSONRPC-ERR-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">JSONRPC-ERR-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">JSONRPC-FMT-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">JSONRPC-FMT-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">JSONRPC-SSE-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">JSONRPC-SVC-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">JSONRPC-SVC-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">STREAM-ORDER-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">STREAM-ORDER-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">STREAM-ORDER-003</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">STREAM-ORDER-004</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">STREAM-SUB-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">STREAM-SUB-004</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">VER-SERVER-003</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CARD-CACHE-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">agent_card</span></td></tr>
+<tr><td><code style="font-size:12px">CARD-CACHE-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">agent_card</span></td></tr>
+<tr><td><code style="font-size:12px">CARD-CACHE-003</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">agent_card</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-MULTI-001</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+<tr><td><code style="font-size:12px">CORE-MULTI-002</code></td><td style="color:#22c55e;font-weight:600">PASS</td><td><span style="background:#94a3b8;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">grpc</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">http_json</span><span style="background:#22c55e;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;margin-right:3px">jsonrpc</span></td></tr>
+
+    </table>
+  </details>
+</div>
+
+<div class="section">
+  <details>
+    <summary><h2 style="display:inline">&#x23ED;&#xFE0F; Skipped <span class="count">(0)</span></h2></summary>
+    <table>
+      <tr><th>Requirement</th><th>Status</th><th>Transports</th><th>Reason</th></tr>
+      
+    </table>
+  </details>
+</div>
+
+<div class="section">
+  <details>
+    <summary><h2 style="display:inline">&#x26AA; Not Tested <span class="count">(30)</span></h2></summary>
+    <p style="font-size:13px;color:#64748b;margin-bottom:8px">
+      These requirements target gRPC transport which AgentBin does not currently support.
+    </p>
+    <table>
+      <tr><th>Requirement</th><th>Status</th><th>Transports</th></tr>
+      <tr><td><code style="font-size:12px">AUTH-INTASK-001</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-INTASK-002</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-INTASK-003</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-INTASK-004</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-SCOPE-001</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-SCOPE-002</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-SCOPE-003</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-SERVER-002</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-TLS-001</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">BIND-EQUIV-001</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">BIND-EQUIV-002</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">BIND-EQUIV-003</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">BIND-EQUIV-004</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">CARD-SIGN-001</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">CARD-SIGN-002</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">CARD-SIGN-003</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">CARD-SIGN-004</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">CORE-CAP-004</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">GRPC-SVC-003</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">PUSH-DELIVER-001</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">PUSH-DELIVER-002</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">PUSH-DELIVER-003</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">VER-CLIENT-001</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">VER-CLIENT-002</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">VER-SERVER-001</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-INTASK-005</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-INTASK-006</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-SERVER-001</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">AUTH-TLS-002</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+<tr><td><code style="font-size:12px">DM-SERIAL-005</code></td><td style="color:#94a3b8;font-weight:600">NOT TESTED</td><td></td></tr>
+
+    </table>
+  </details>
+</div>
+
+</body>
+</html>

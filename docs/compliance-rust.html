@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AgentBin — Server Compliance (TCK)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         background:#0f172a; color:#e2e8f0; padding:24px; }
+  h1 { font-size:22px; margin-bottom:4px; }
+  .subtitle { color:#94a3b8; font-size:13px; margin-bottom:20px; }
+  .card { background:#1e293b; border-radius:10px; padding:16px 20px; margin-bottom:16px; }
+  .fail { color:#ef4444; }
+  .note { background:#1e293b; border-left:3px solid #ef4444; padding:12px 16px;
+           margin-bottom:16px; border-radius:0 8px 8px 0; font-size:13px; color:#94a3b8; }
+  .note strong { color:#e2e8f0; }
+</style>
+</head><body>
+<h1>&#x1F9EA; Server Compliance &mdash; A2A TCK</h1>
+<div class="subtitle">A2A TCK results for AgentBin SpecAgent (Rust SDK) &bull; Tested: ? UTC</div>
+<div class="card">
+  <div style="font-size:28px;font-weight:700" class="fail">0%</div>
+  <div style="font-size:12px;color:#64748b;margin-top:4px">NON_COMPLIANT</div>
+</div>
+<div class="note">
+  <strong>Agent Card Fetch Failed</strong><br>
+  The TCK could not fetch or parse the agent card from this server.
+  This typically indicates the Rust SDK produces an agent card with non-standard
+  field names or JSON structure that the TCK cannot parse.<br><br>
+  <strong>Common causes:</strong> lowercase enum values instead of UPPER_CASE,
+  non-standard <code>kind</code> fields, missing required card fields,
+  or non-standard JSON-RPC endpoint paths.
+</div>
+</body></html>

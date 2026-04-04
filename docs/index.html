@@ -165,7 +165,13 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
 
   <!-- Server Compliance (TCK) Tab -->
   <div id="compliance" class="tab-content">
-    <iframe id="compliance-frame" src="compliance.html" title="Server Compliance"></iframe>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="server-tab active" data-target="compliance-frame" data-src="compliance-net.html">&#9726; .NET</button>
+      <button class="server-tab" data-target="compliance-frame" data-src="compliance-go.html">&#128640; Go</button>
+      <button class="server-tab" data-target="compliance-frame" data-src="compliance-python.html">&#128013; Python</button>
+      <button class="server-tab" data-target="compliance-frame" data-src="compliance-rust.html">&#9883; Rust</button>
+    </div>
+    <iframe id="compliance-frame" src="compliance-net.html" title="Server Compliance"></iframe>
   </div>
 
   <!-- Endpoints Tab -->
