@@ -6,6 +6,7 @@ Usage:
     python tests/run-tck-all.py --server .NET       # Run against just .NET server
     python tests/run-tck-all.py --server Go         # Run against just Go server
     python tests/run-tck-all.py --publish            # Also copy compliance pages to docs/
+    python tests/run-tck-all.py --generate-only --publish  # Regenerate HTML from saved results
 
 Prerequisites:
     - TCK venv at D:\\github\\a2aproject\\a2a-tck\\.venv
@@ -13,7 +14,7 @@ Prerequisites:
 """
 
 import argparse
-import json
+import glob
 import os
 import shutil
 import subprocess
@@ -37,70 +38,70 @@ SERVERS = {
 }
 
 
-def run_tck(server_name: str, sut_url: str, transports: str, results_dir: Path) -> Path:
-    """Run TCK against a server and return the compatibility.json path."""
+def run_tck(server_name: str, sut_url: str, transports: str, results_dir: Path):
+    """Run TCK against a server and copy raw result files to results_dir."""
     results_dir.mkdir(parents=True, exist_ok=True)
-    report_path = results_dir / 'compatibility.json'
-    report_html = results_dir / 'tck_report.html'
+    tck_reports = TCK_ROOT / 'reports'
+
+    # Clean the TCK reports dir to avoid stale results from previous runs
+    for old in tck_reports.glob('*_results.json'):
+        old.unlink(missing_ok=True)
 
     env = os.environ.copy()
     env['PYTHONIOENCODING'] = 'utf-8'
 
+    # Pass --compliance-report to a dummy path to prevent the TCK from
+    # deleting the raw JSON result files after the run completes.
+    # (The TCK's cleanup code deletes them when no compliance report is requested.)
+    dummy_compliance = results_dir / '_compliance_dummy.json'
     cmd = [
         str(TCK_PYTHON), str(TCK_RUNNER),
         '--sut-url', sut_url,
         '--transports', transports,
         '--category', 'all',
-        '--compliance-report', str(report_path),
         '--report',
+        '--compliance-report', str(dummy_compliance),
     ]
 
     print(f'\n{"="*60}')
     print(f'Running TCK against {server_name} server')
     print(f'  SUT: {sut_url}')
     print(f'  Transports: {transports}')
-    print(f'  Output: {report_path}')
     print(f'{"="*60}\n')
 
     result = subprocess.run(cmd, env=env, cwd=str(TCK_ROOT), capture_output=False)
 
-    # Copy the HTML report if generated
-    tck_html = TCK_ROOT / 'reports' / 'tck_report.html'
-    if tck_html.exists():
-        shutil.copy2(tck_html, report_html)
+    # Copy all *_results.json files from TCK reports dir
+    copied = 0
+    for src in sorted(tck_reports.glob('*_results.json')):
+        shutil.copy2(src, results_dir / src.name)
+        copied += 1
 
-    if not report_path.exists():
-        # Fall back to TCK default output location
-        default_report = TCK_ROOT / 'reports' / 'compatibility.json'
-        if default_report.exists():
-            shutil.copy2(default_report, report_path)
+    # Clean up dummy compliance file
+    dummy_compliance = results_dir / '_compliance_dummy.json'
+    dummy_compliance.unlink(missing_ok=True)
 
-    if report_path.exists():
-        d = json.loads(report_path.read_text(encoding='utf-8'))
-        s = d.get('summary', {})
-        print(f'\n✅ {server_name}: Overall {s.get("overall_compatibility", "?")}% '
-              f'(MUST: {s.get("must_compatibility", "?")}%)')
+    if copied:
+        print(f'\n✅ {server_name}: Copied {copied} result files to {results_dir}')
     else:
-        print(f'\n❌ {server_name}: No report generated (exit code {result.returncode})')
-
-    return report_path
+        print(f'\n❌ {server_name}: No result files produced (exit code {result.returncode})')
 
 
-def generate_compliance(report_path: Path, server_name: str, publish: bool):
-    """Generate compliance HTML from TCK JSON report."""
+def generate_compliance(results_dir: Path, server_name: str, publish: bool):
+    """Generate compliance HTML from raw pytest JSON report files."""
     server_slug = server_name.lower().replace('.', '')
     output = DOCS_DIR / f'compliance-{server_slug}.html'
 
     cmd = [
         sys.executable, str(COMPLIANCE_GENERATOR),
-        str(report_path), str(output),
+        '--results-dir', str(results_dir),
         '--server', server_name,
+        '--output', str(output),
     ]
     if publish:
         cmd.append('--publish')
 
     subprocess.run(cmd, check=True)
-    print(f'Generated {output.name}')
 
 
 def main():
@@ -117,15 +118,15 @@ def main():
 
     for name, config in servers.items():
         slug = name.lower().replace('.', '')
-        results_dir = TESTS_DIR / f'TCKResults' / slug
+        results_dir = TESTS_DIR / 'TCKResults' / slug
 
         if not args.generate_only:
-            report_path = run_tck(name, config['url'], config['transports'], results_dir)
-        else:
-            report_path = results_dir / 'compatibility.json'
+            run_tck(name, config['url'], config['transports'], results_dir)
 
-        if report_path.exists():
-            generate_compliance(report_path, name, args.publish)
+        # Check if result files exist
+        result_files = list(results_dir.glob('*_results.json'))
+        if result_files:
+            generate_compliance(results_dir, name, args.publish)
         else:
             print(f'⚠️  No results for {name} — skipping compliance generation')
 

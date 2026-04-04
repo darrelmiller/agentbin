@@ -1,12 +1,26 @@
-"""Generate the TCK compliance page from TCK JSON report."""
+"""Generate TCK compliance pages from pytest-json-report files.
+
+Reads the per-category result JSON files produced by the TCK's pytest runs
+and generates a dark-themed HTML compliance dashboard.
+
+Usage:
+    python tests/generate_compliance.py --results-dir reports/ --server .NET --output docs/compliance-net.html
+    python tests/generate_compliance.py --results-dir reports/ --server Go   --output docs/compliance-go.html
+"""
 import argparse
+import glob
 import json
+import os
+import re
+import shutil
 import sys
+from collections import defaultdict
+from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
 
 SDK_LABELS = {
-    '.net': '.NET SDK', 'dotnet': '.NET SDK',
+    '.net': '.NET SDK', 'dotnet': '.NET SDK', 'net': '.NET SDK',
     'go': 'Go SDK', 'python': 'Python SDK', 'rust': 'Rust SDK',
 }
 
@@ -15,87 +29,178 @@ def esc(s):
     return escape(str(s)) if s else ''
 
 
-def generate_compliance_html(report_path: str, output_path: str, server: str | None = None):
-    d = json.loads(Path(report_path).read_text(encoding='utf-8'))
-    summary = d['summary']
-    sdk_label = SDK_LABELS.get(server.lower(), f'{server} SDK') if server else '.NET SDK'
+def _parse_results_dir(results_dir: str) -> dict:
+    """Parse all *_results.json files in a directory into a unified structure."""
+    results_dir = Path(results_dir)
+    all_tests = []
+    earliest_ts = None
 
-    # Handle reports where TCK couldn't even fetch the agent card
-    reqs = d.get('per_requirement', {})
-    if not reqs and summary.get('overall_score', -1) == 0.0:
-        _generate_card_failure_html(output_path, summary, sdk_label)
+    for fpath in sorted(results_dir.glob('*_results.json')):
+        fname = fpath.stem  # e.g. "mandatory_jsonrpc_results"
+        data = json.loads(fpath.read_text(encoding='utf-8'))
+
+        # Track earliest timestamp
+        created = data.get('created')
+        if created and (earliest_ts is None or created < earliest_ts):
+            earliest_ts = created
+
+        # Determine category and transport from filename
+        # Patterns: mandatory_jsonrpc_results, capabilities_rest_results,
+        #           transport-equivalence_results
+        parts = fname.replace('_results', '').rsplit('_', 1)
+        if len(parts) == 2 and parts[1] in ('jsonrpc', 'rest'):
+            category, transport = parts
+        else:
+            category = parts[0]
+            transport = 'multi'
+
+        for test in data.get('tests', []):
+            # Extract readable test name from nodeid
+            nodeid = test.get('nodeid', '')
+            test_name = nodeid.split('::')[-1] if '::' in nodeid else nodeid
+            test_module = nodeid.split('::')[0].split('/')[-1].replace('.py', '') if '/' in nodeid else ''
+
+            outcome = test.get('outcome', 'unknown')
+
+            # Extract error message for failed/error tests
+            error_msg = ''
+            call = test.get('call', {})
+            if call:
+                if call.get('crash', {}).get('message'):
+                    error_msg = call['crash']['message']
+                elif call.get('longrepr'):
+                    # Take last meaningful line
+                    lines = str(call['longrepr']).strip().split('\n')
+                    error_msg = lines[-1][:200] if lines else ''
+
+            all_tests.append({
+                'name': test_name,
+                'module': test_module,
+                'nodeid': nodeid,
+                'category': category,
+                'transport': transport,
+                'outcome': outcome,
+                'error': error_msg,
+            })
+
+    timestamp = datetime.fromtimestamp(earliest_ts, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S') if earliest_ts else '?'
+    return {'tests': all_tests, 'timestamp': timestamp}
+
+
+def _group_tests(tests: list) -> dict:
+    """Group tests by function name, collecting transport results per test."""
+    grouped = {}
+    for t in tests:
+        key = (t['category'], t['name'])
+        if key not in grouped:
+            grouped[key] = {
+                'name': t['name'],
+                'module': t['module'],
+                'category': t['category'],
+                'transports': {},
+                'error': t['error'],
+                'worst_outcome': t['outcome'],
+            }
+        grouped[key]['transports'][t['transport']] = t['outcome']
+        # Worst outcome: error > failed > skipped > passed
+        rank = {'error': 0, 'failed': 1, 'skipped': 2, 'passed': 3}
+        if rank.get(t['outcome'], 4) < rank.get(grouped[key]['worst_outcome'], 4):
+            grouped[key]['worst_outcome'] = t['outcome']
+            if t['error']:
+                grouped[key]['error'] = t['error']
+    return grouped
+
+
+def generate_compliance_html(results_dir: str, output_path: str, server: str | None = None):
+    sdk_label = SDK_LABELS.get(server.lower(), f'{server} SDK') if server else 'SDK'
+    parsed = _parse_results_dir(results_dir)
+    tests = parsed['tests']
+    timestamp = parsed['timestamp']
+
+    if not tests:
+        _generate_card_failure_html(output_path, {'timestamp': timestamp, 'compliance_level': 'NO_RESULTS'}, sdk_label)
         return
 
-    # Categorize requirements
-    categories: dict[str, list] = {
-        'must_pass': [], 'must_fail': [], 'must_skip': [], 'must_not_tested': [],
-        'should_pass': [], 'should_not_tested': [],
-        'may_pass': [], 'may_not_tested': []
-    }
-    for rid, rdata in sorted(reqs.items()):
-        level = rdata['level'].lower()
-        status = rdata['status'].lower().replace(' ', '_')
-        key = f"{level}_{status}"
-        if key in categories:
-            categories[key].append((rid, rdata))
-        elif 'not_tested' in status or 'not tested' in rdata['status'].lower():
-            categories.setdefault(f"{level}_not_tested", []).append((rid, rdata))
+    # Group by test function to deduplicate across transports
+    grouped = _group_tests(tests)
 
-    must_pct = summary['must_compatibility']
-    overall_pct = summary['overall_compatibility']
+    # Categorize
+    categories_map = defaultdict(list)
+    for key, g in sorted(grouped.items()):
+        cat = g['category']
+        outcome = g['worst_outcome']
+        categories_map[f'{cat}_{outcome}'].append(g)
 
-    def pct_val(p):
-        return float(str(p).rstrip('%'))
+    # Compute stats
+    all_grouped = list(grouped.values())
+    passed = [g for g in all_grouped if g['worst_outcome'] == 'passed']
+    failed = [g for g in all_grouped if g['worst_outcome'] == 'failed']
+    errored = [g for g in all_grouped if g['worst_outcome'] == 'error']
+    skipped = [g for g in all_grouped if g['worst_outcome'] == 'skipped']
+
+    total_testable = len(passed) + len(failed) + len(errored)
+    overall_pct = round(100 * len(passed) / total_testable, 1) if total_testable else 0
+
+    # Mandatory stats
+    mandatory = [g for g in all_grouped if g['category'] == 'mandatory']
+    m_passed = [g for g in mandatory if g['worst_outcome'] == 'passed']
+    m_failed = [g for g in mandatory if g['worst_outcome'] in ('failed', 'error')]
+    m_skipped = [g for g in mandatory if g['worst_outcome'] == 'skipped']
+    m_total = len(m_passed) + len(m_failed)
+    mandatory_pct = round(100 * len(m_passed) / m_total, 1) if m_total else 0
+
+    # Capabilities stats
+    caps = [g for g in all_grouped if g['category'] == 'capabilities']
+    c_passed = [g for g in caps if g['worst_outcome'] == 'passed']
+    c_failed = [g for g in caps if g['worst_outcome'] in ('failed', 'error')]
+    c_total = len(c_passed) + len(c_failed)
+    caps_pct = round(100 * len(c_passed) / c_total, 1) if c_total else 0
+
+    overall_class = 'pass' if overall_pct >= 70 else 'warn' if overall_pct >= 40 else 'fail'
+    mandatory_class = 'pass' if mandatory_pct >= 70 else 'warn' if mandatory_pct >= 40 else 'fail'
+    caps_class = 'pass' if caps_pct >= 70 else 'warn' if caps_pct >= 40 else 'fail'
+    bar_color = '#22c55e' if overall_pct >= 70 else '#f59e0b' if overall_pct >= 40 else '#ef4444'
+
+    def transport_badges(transports: dict) -> str:
+        badges = ''
+        for t, outcome in sorted(transports.items()):
+            color = '#22c55e' if outcome == 'passed' else '#ef4444' if outcome in ('failed', 'error') else '#94a3b8'
+            label = t if t != 'multi' else 'cross-transport'
+            badges += (f'<span style="background:{color};color:#fff;padding:1px 6px;'
+                       f'border-radius:3px;font-size:11px;margin-right:3px">{esc(label)}</span>')
+        return badges
+
+    def cat_badge(category: str) -> str:
+        colors = {'mandatory': '#3b82f6', 'capabilities': '#8b5cf6',
+                  'quality': '#f59e0b', 'features': '#22d3ee',
+                  'transport-equivalence': '#ec4899'}
+        c = colors.get(category, '#64748b')
+        return (f'<span style="background:{c};color:#fff;padding:1px 6px;'
+                f'border-radius:3px;font-size:11px;margin-right:3px">{esc(category)}</span>')
 
     def make_rows(items, show_errors=False):
         rows = ''
-        for rid, rdata in items:
-            status = rdata['status']
-            transports = rdata.get('transports', {})
-            transport_badges = ''
-            for t, ts in sorted(transports.items()):
-                color = '#22c55e' if ts == 'PASS' else '#ef4444' if ts == 'FAIL' else '#94a3b8'
-                transport_badges += (
-                    f'<span style="background:{color};color:#fff;padding:1px 6px;'
-                    f'border-radius:3px;font-size:11px;margin-right:3px">{esc(t)}</span>'
-                )
-
-            status_color = (
-                '#22c55e' if status == 'PASS' else
-                '#ef4444' if status == 'FAIL' else
-                '#f59e0b' if status == 'SKIPPED' else '#94a3b8'
-            )
-
+        for g in items:
+            status = g['worst_outcome']
+            status_color = {'passed': '#22c55e', 'failed': '#ef4444',
+                            'error': '#ef4444', 'skipped': '#f59e0b'}.get(status, '#94a3b8')
             error_cell = ''
-            if show_errors and rdata.get('errors'):
-                err = rdata['errors'][0][:120]
-                full = esc(rdata['errors'][0])
-                error_cell = (
-                    f'<td style="font-size:12px;color:#94a3b8;max-width:350px;'
-                    f'overflow:hidden;text-overflow:ellipsis;white-space:nowrap" '
-                    f'title="{full}">{esc(err)}</td>'
-                )
-            elif show_errors:
-                error_cell = '<td></td>'
-
-            rows += (
-                f'<tr>'
-                f'<td><code style="font-size:12px">{esc(rid)}</code></td>'
-                f'<td style="color:{status_color};font-weight:600">{esc(status)}</td>'
-                f'<td>{transport_badges}</td>'
-                f'{error_cell}'
-                f'</tr>\n'
-            )
+            if show_errors:
+                err = esc(g.get('error', '')[:150])
+                full = esc(g.get('error', ''))
+                error_cell = (f'<td style="font-size:12px;color:#94a3b8;max-width:350px;'
+                              f'overflow:hidden;text-overflow:ellipsis;white-space:nowrap" '
+                              f'title="{full}">{err}</td>')
+            rows += (f'<tr>'
+                     f'<td><code style="font-size:12px">{esc(g["name"])}</code></td>'
+                     f'<td>{cat_badge(g["category"])}</td>'
+                     f'<td style="color:{status_color};font-weight:600">{esc(status.upper())}</td>'
+                     f'<td>{transport_badges(g["transports"])}</td>'
+                     f'{error_cell}'
+                     f'</tr>\n')
         return rows
 
-    overall_class = 'pass' if pct_val(overall_pct) >= 80 else 'warn'
-    must_class = 'pass' if pct_val(must_pct) >= 80 else 'warn'
-    overall_bar_color = '#22c55e' if pct_val(overall_pct) >= 80 else '#f59e0b'
-    not_tested_count = len(categories['must_not_tested']) + len(categories.get('should_not_tested', []))
-    all_passing = categories['must_pass'] + categories['should_pass'] + categories['may_pass']
-    all_not_tested = categories['must_not_tested'] + categories.get('should_not_tested', [])
-    timestamp = esc(summary['timestamp'][:19])
-    sut_url = esc(summary['sut_url'])
+    all_failures = failed + errored
 
     html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -111,7 +216,7 @@ def generate_compliance_html(report_path: str, output_path: str, server: str | N
   .subtitle {{ color: #94a3b8; font-size: 13px; margin-bottom: 20px; }}
   .subtitle a {{ color: #38bdf8; }}
   .summary {{ display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }}
-  .card {{ background: #1e293b; border-radius: 10px; padding: 16px 20px; min-width: 160px; flex: 1; }}
+  .card {{ background: #1e293b; border-radius: 10px; padding: 16px 20px; min-width: 140px; flex: 1; }}
   .card .label {{ font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }}
   .card .value {{ font-size: 28px; font-weight: 700; margin-top: 4px; }}
   .card .detail {{ font-size: 12px; color: #64748b; margin-top: 2px; }}
@@ -143,8 +248,7 @@ def generate_compliance_html(report_path: str, output_path: str, server: str | N
 <h1>&#x1F9EA; Server Compliance &mdash; A2A TCK</h1>
 <div class="subtitle">
   A2A Test Compatibility Kit results for AgentBin SpecAgent ({sdk_label}) &bull;
-  Tested: {timestamp} UTC &bull;
-  SUT: <code>{sut_url}</code>
+  Tested: {timestamp} UTC
 </div>
 
 <div class="note">
@@ -153,74 +257,56 @@ def generate_compliance_html(report_path: str, output_path: str, server: str | N
   is a conformance test suite that validates A2A server implementations against the
   <a href="https://github.com/a2aproject/a2a-spec">A2A specification</a>.
   Failures indicate {sdk_label} gaps &mdash; not SpecAgent bugs.
-  Each requirement maps to a specific spec section.
 </div>
 
 <div class="summary">
   <div class="card">
     <div class="label">Overall</div>
     <div class="value {overall_class}">{overall_pct}%</div>
-    <div class="gauge"><div class="gauge-fill" style="width:{overall_pct}%;background:{overall_bar_color}"></div></div>
+    <div class="detail">{len(passed)} pass &bull; {len(all_failures)} fail &bull; {len(skipped)} skip</div>
+    <div class="gauge"><div class="gauge-fill" style="width:{overall_pct}%;background:{bar_color}"></div></div>
   </div>
   <div class="card">
-    <div class="label">MUST</div>
-    <div class="value {must_class}">{must_pct}%</div>
-    <div class="detail">{len(categories['must_pass'])} pass &bull; {len(categories['must_fail'])} fail &bull; {len(categories['must_skip'])} skip</div>
+    <div class="label">Mandatory</div>
+    <div class="value {mandatory_class}">{mandatory_pct}%</div>
+    <div class="detail">{len(m_passed)} pass &bull; {len(m_failed)} fail &bull; {len(m_skipped)} skip</div>
   </div>
   <div class="card">
-    <div class="label">SHOULD</div>
-    <div class="value pass">100%</div>
-    <div class="detail">{len(categories['should_pass'])} pass</div>
+    <div class="label">Capabilities</div>
+    <div class="value {caps_class}">{caps_pct}%</div>
+    <div class="detail">{len(c_passed)} pass &bull; {len(c_failed)} fail</div>
   </div>
   <div class="card">
-    <div class="label">MAY</div>
-    <div class="value pass">100%</div>
-    <div class="detail">{len(categories['may_pass'])} pass</div>
-  </div>
-  <div class="card">
-    <div class="label">Not Tested</div>
-    <div class="value muted">{not_tested_count}</div>
-    <div class="detail">gRPC transport not supported</div>
+    <div class="label">Skipped</div>
+    <div class="value muted">{len(skipped)}</div>
+    <div class="detail">auth, gRPC, etc.</div>
   </div>
 </div>
 
 <div class="section">
-  <h2>&#x274C; Failing Requirements <span class="count">({len(categories['must_fail'])})</span></h2>
+  <h2>&#x274C; Failing Tests <span class="count">({len(all_failures)})</span></h2>
   <table>
-    <tr><th>Requirement</th><th>Status</th><th>Transports</th><th>Error</th></tr>
-    {make_rows(categories['must_fail'], show_errors=True)}
+    <tr><th>Test</th><th>Category</th><th>Status</th><th>Transport</th><th>Error</th></tr>
+    {make_rows(all_failures, show_errors=True)}
   </table>
 </div>
 
 <div class="section">
   <details>
-    <summary><h2 style="display:inline">&#x2705; Passing Requirements <span class="count">({len(all_passing)})</span></h2></summary>
+    <summary><h2 style="display:inline">&#x2705; Passing Tests <span class="count">({len(passed)})</span></h2></summary>
     <table>
-      <tr><th>Requirement</th><th>Status</th><th>Transports</th></tr>
-      {make_rows(all_passing)}
+      <tr><th>Test</th><th>Category</th><th>Status</th><th>Transport</th></tr>
+      {make_rows(passed)}
     </table>
   </details>
 </div>
 
 <div class="section">
   <details>
-    <summary><h2 style="display:inline">&#x23ED;&#xFE0F; Skipped <span class="count">({len(categories['must_skip'])})</span></h2></summary>
+    <summary><h2 style="display:inline">&#x23ED;&#xFE0F; Skipped <span class="count">({len(skipped)})</span></h2></summary>
     <table>
-      <tr><th>Requirement</th><th>Status</th><th>Transports</th><th>Reason</th></tr>
-      {make_rows(categories['must_skip'], show_errors=True)}
-    </table>
-  </details>
-</div>
-
-<div class="section">
-  <details>
-    <summary><h2 style="display:inline">&#x26AA; Not Tested <span class="count">({not_tested_count})</span></h2></summary>
-    <p style="font-size:13px;color:#64748b;margin-bottom:8px">
-      These requirements target gRPC transport which AgentBin does not currently support.
-    </p>
-    <table>
-      <tr><th>Requirement</th><th>Status</th><th>Transports</th></tr>
-      {make_rows(all_not_tested)}
+      <tr><th>Test</th><th>Category</th><th>Status</th><th>Transport</th></tr>
+      {make_rows(skipped)}
     </table>
   </details>
 </div>
@@ -229,12 +315,12 @@ def generate_compliance_html(report_path: str, output_path: str, server: str | N
 </html>'''
 
     Path(output_path).write_text(html, encoding='utf-8')
-    print(f'Generated {output_path} ({len(html):,} bytes)')
+    print(f'Generated {output_path} ({len(html):,} bytes) — {overall_pct}% overall, {mandatory_pct}% mandatory')
 
 
 def _generate_card_failure_html(output_path: str, summary: dict, sdk_label: str):
     """Generate a simple compliance page when TCK couldn't fetch the agent card."""
-    timestamp = esc(summary.get('timestamp', '?')[:19])
+    timestamp = esc(str(summary.get('timestamp', '?'))[:19])
     level = esc(summary.get('compliance_level', 'NON_COMPLIANT'))
     html = f'''<!DOCTYPE html>
 <html lang="en"><head>
@@ -275,29 +361,24 @@ def _generate_card_failure_html(output_path: str, summary: dict, sdk_label: str)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate TCK compliance HTML page')
-    parser.add_argument('report', nargs='?',
-                        default=r'D:\github\a2aproject\a2a-tck\reports\compatibility.json',
-                        help='Path to TCK compatibility.json')
-    parser.add_argument('output', nargs='?',
-                        default=r'D:\github\darrelmiller\agentbin\docs\compliance.html',
-                        help='Output HTML path')
+    parser.add_argument('--results-dir', required=True,
+                        help='Directory containing *_results.json files from TCK')
     parser.add_argument('--server', default=None,
-                        help='Server name (e.g. .NET, Go, Python, Rust). '
-                             'When set, output filename becomes compliance-{server}.html')
+                        help='Server name (e.g. .NET, Go, Python, Rust)')
+    parser.add_argument('--output', default=None,
+                        help='Output HTML path (default: docs/compliance-{server}.html)')
     parser.add_argument('--publish', action='store_true',
                         help='Copy output to docs/ directory')
     args = parser.parse_args()
 
-    output = args.output
-    if args.server:
-        server_slug = args.server.lower().replace('.', '')
-        output = str(Path(args.output).parent / f'compliance-{server_slug}.html')
+    server_slug = args.server.lower().replace('.', '') if args.server else 'unknown'
+    output = args.output or f'docs/compliance-{server_slug}.html'
 
-    generate_compliance_html(args.report, output, server=args.server)
+    generate_compliance_html(args.results_dir, output, server=args.server)
 
     if args.publish:
         docs_dir = Path(r'D:\github\darrelmiller\agentbin\docs')
         dest = docs_dir / Path(output).name
-        import shutil
         shutil.copy2(output, dest)
         print(f'Published to {dest}')
+
