@@ -91,3 +91,32 @@
 - **Deployed:** ACR Run IDs caj + cak, image `sha256:7f8f3c55e66bcf0bb4d25d492f32dadf41f030b14e3e063c5d941f8d6e873187`
 - All 5 production endpoints verified: /health, root .well-known, /spec, /echo, /spec03
 - This should unblock `spec-return-immediately` test failures across all 7 clients
+
+### 2026-04-03: Java Server Implementation Complete
+- Created complete Java A2A server at `src/AgentBin.Java/` using `a2a-java` SDK `1.0.0.Beta1-SNAPSHOT`
+- **Architecture:**
+  - Quarkus-based application with CDI dependency injection
+  - Single-agent-per-application pattern (Java SDK constraint)
+  - Implements SpecAgent only (EchoAgent excluded due to SDK limitation)
+  - Both JSON-RPC and REST transports supported
+- **Key Files:**
+  - `SpecAgentExecutor.java` — Main agent executor with TCK + keyword routing
+  - `AgentExecutorProducer.java` — CDI producer for AgentExecutor bean
+  - `AgentCardProducer.java` — Produces PublicAgentCard and ExtendedAgentCard
+  - `ServerResource.java` — JAX-RS endpoints for health and root info
+  - `pom.xml` — Maven build configuration with Quarkus 3.17.7
+  - `application.properties` — Port config (default 5000, via PORT env var)
+- **TCK Support:** All 15 TCK prefixes implemented (complete-task, artifact-text, artifact-file, artifact-file-url, artifact-data, message-response, input-required, reject-task, stream-001 through stream-artifact-chunked)
+- **Keyword Routes:** complete, artifact, file, reject, input, stream, multi (plus default echo)
+- **Multi-turn:** Full INPUT_REQUIRED state handling with continuation support
+- **Streaming:** Chunked artifact streaming with append + lastChunk flags
+- **File Parts:** Uses `FileWithBytes` and `FileWithUri` from SDK spec package
+- **Build Status:** ✅ Compiles cleanly with `mvn package -DskipTests`
+- **SDK Notes:**
+  - Java SDK uses constructor `new FileWithBytes(mimeType, name, byte[])` for file content
+  - `UnsupportedOperationError()` takes no arguments (defaults message internally)
+  - CDI producers must be unambiguous — single executor and card per app
+  - SDK auto-registers routes for both transports based on classpath
+- **Port:** Default 5000, configurable via `PORT` env var or `quarkus.http.port` property
+- **Endpoints:** GET /health, GET /, POST / (JSONRPC), POST /v1/message/send (REST), GET /v1/message/subscribe (REST SSE)
+- **Team Implication:** Java server ready for TCK testing; matches Go/Python/Rust patterns
