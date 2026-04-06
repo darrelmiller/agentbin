@@ -221,3 +221,33 @@ The domain-root `/.well-known/agent-card.json` endpoint is restored, returning t
 - Updated v0.3 annotation: `spec03-agent-card` now marked as preview2 SDK requirement
 - Dashboard published to docs/dashboard.html for GitHub Pages
 - **Committed:** 54e139a
+
+### Multi-Server Dashboard: SDK Updates + Cross-Server Testing (2026-04-06)
+**Status:** Completed | **Author:** Dashboard
+
+- All A2A SDK dependencies updated across all clients
+- Full test matrix executed: 7 clients × 5 servers = 35 test runs
+- **Server Maturity by Client Coverage:**
+  - .NET: 56/62 (Production)
+  - Go: 54/60 (Production)
+  - Python: 55/60 (Production)
+  - Java: 15/62 (Early)
+  - Rust: 12/60 (Early)
+- **Critical Finding:** Go v2.1.0 client shows anomaly — 4/60 vs .NET server but 53/60 vs Go server
+  - Likely agent card discovery regression in SDK v2.1.0
+  - Needs investigation: cross-server compatibility issue
+- **Base URL Convention:** Must use `http://localhost:PORT` without `/spec` suffix; clients derive agent paths
+- **Test Count:** .NET 58→62, others 58→60 (subscribe-after-stream-disconnect tests added)
+- **Team Impact:** Java/Rust servers have significant feature gaps; Go client cross-server compat needs investigation
+- **Dashboards Published:** 5 per-server dashboards to docs/ for GitHub Pages
+- **Committed:** 214b4a9, 2d9ce14
+
+### MapA2A No Longer Registers .well-known Routes (2026-03-28)
+**Status:** Resolved | **Author:** Spec
+
+Upstream PR#339 removed `.well-known/agent-card.json` route registration from `MapA2A()`. This is a **breaking change** for any agent relying on the framework to serve discovery endpoints.
+
+- **Impact:** `/spec/.well-known/agent-card.json` went 404 on first deploy
+- **Fix:** Added explicit `app.MapGet("/spec/.well-known/agent-card.json", ...)` — same pattern as echo and spec03
+- **Lesson:** All three agents (spec, echo, spec03) now use explicit manual `.well-known` routes — we no longer depend on `MapA2A` for discovery
+- **Team impact:** If any new agents are added, they MUST register their own `.well-known` endpoint manually
