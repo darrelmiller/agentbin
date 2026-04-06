@@ -5,7 +5,7 @@
   "results" : [
     {
       "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 54,
+      "durationMs" : 17,
       "id" : "jsonrpc\/agent-card-echo",
       "name" : "Echo Agent Card",
       "passed" : false
@@ -19,28 +19,28 @@
     },
     {
       "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 3,
+      "durationMs" : 2,
       "id" : "jsonrpc\/spec-extended-card",
       "name" : "Spec Extended Card",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 5,
+      "durationMs" : 3,
       "id" : "jsonrpc\/echo-send-message",
       "name" : "Echo Send Message",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
+      "detail" : "error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
       "durationMs" : 3,
       "id" : "jsonrpc\/spec-message-only",
       "name" : "Message Only",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 4,
+      "detail" : "error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
+      "durationMs" : 3,
       "id" : "jsonrpc\/spec-task-lifecycle",
       "name" : "Task Lifecycle",
       "passed" : false
@@ -53,148 +53,148 @@
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 3,
+      "detail" : "error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
+      "durationMs" : 4,
       "id" : "jsonrpc\/spec-task-failure",
       "name" : "Task Failure",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 3,
+      "detail" : "error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
+      "durationMs" : 4,
       "id" : "jsonrpc\/spec-data-types",
       "name" : "Data Types",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 2,
+      "detail" : "events=0, lastState=nil, hasArtifact=false",
+      "durationMs" : 4,
       "id" : "jsonrpc\/spec-streaming",
       "name" : "Streaming",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 3,
+      "detail" : "error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
+      "durationMs" : 4,
       "id" : "jsonrpc\/spec-multi-turn",
       "name" : "Multi-Turn Conversation",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
+      "detail" : "no task ID from stream",
       "durationMs" : 2,
       "id" : "jsonrpc\/spec-task-cancel",
       "name" : "Task Cancel",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
+      "detail" : "no task ID from stream",
       "durationMs" : 2,
       "id" : "jsonrpc\/spec-cancel-with-metadata",
       "name" : "Cancel With Metadata",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 4,
+      "detail" : "error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.ListTasksRequest\"))",
+      "durationMs" : 3,
       "id" : "jsonrpc\/spec-list-tasks",
       "name" : "List Tasks",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 5,
+      "detail" : "error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
+      "durationMs" : 3,
       "id" : "jsonrpc\/spec-return-immediately",
       "name" : "Return Immediately",
       "passed" : false
     },
     {
-      "detail" : "got expected error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 4,
+      "detail" : "got expected error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.GetTaskRequest\"))",
+      "durationMs" : 3,
       "id" : "jsonrpc\/error-task-not-found",
       "name" : "Task Not Found Error",
       "passed" : true
     },
     {
-      "detail" : "got expected error: internalError(message: Optional(\"HTTP 405\"))",
+      "detail" : "got expected error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.CancelTaskRequest\"))",
       "durationMs" : 3,
       "id" : "jsonrpc\/error-cancel-not-found",
       "name" : "Cancel Not Found Error",
       "passed" : true
     },
     {
-      "detail" : "error creating task: internalError(message: Optional(\"HTTP 405\"))",
+      "detail" : "error creating task: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
       "durationMs" : 3,
       "id" : "jsonrpc\/error-cancel-terminal",
       "name" : "Cancel Terminal Error",
       "passed" : false
     },
     {
-      "detail" : "error creating task: internalError(message: Optional(\"HTTP 405\"))",
+      "detail" : "error creating task: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
       "durationMs" : 3,
       "id" : "jsonrpc\/error-send-terminal",
       "name" : "Send Terminal Error",
       "passed" : false
     },
     {
-      "detail" : "got expected error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 3,
+      "detail" : "got expected error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
+      "durationMs" : 4,
       "id" : "jsonrpc\/error-send-invalid-task",
       "name" : "Send Invalid Task Error",
       "passed" : true
     },
     {
-      "detail" : "got expected error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 3,
+      "detail" : "got expected error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.TaskPushNotificationConfig\")…",
+      "durationMs" : 4,
       "id" : "jsonrpc\/error-push-not-supported",
       "name" : "Push Not Supported Error",
       "passed" : true
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
+      "detail" : "no task ID from stream",
       "durationMs" : 2,
       "id" : "jsonrpc\/subscribe-to-task",
       "name" : "Subscribe To Task",
       "passed" : false
     },
     {
-      "detail" : "got expected error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 2,
+      "detail" : "expected error, got success",
+      "durationMs" : 3,
       "id" : "jsonrpc\/error-subscribe-not-found",
       "name" : "Subscribe Not Found Error",
-      "passed" : true
+      "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 2,
+      "detail" : "events=0, gotMessage=false",
+      "durationMs" : 3,
       "id" : "jsonrpc\/stream-message-only",
       "name" : "Stream Message Only",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 2,
+      "detail" : "gotTaskEvent=false, lastState=nil",
+      "durationMs" : 3,
       "id" : "jsonrpc\/stream-task-lifecycle",
       "name" : "Stream Task Lifecycle",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
+      "detail" : "error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
       "durationMs" : 3,
       "id" : "jsonrpc\/multi-turn-context-preserved",
       "name" : "Multi-Turn Context Preserved",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 4,
+      "detail" : "error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
+      "durationMs" : 3,
       "id" : "jsonrpc\/get-task-with-history",
       "name" : "Get Task With History",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 2,
+      "detail" : "error: internalError(message: Optional(\"Could not initialize class io.a2a.grpc.SendMessageRequest\"))",
+      "durationMs" : 3,
       "id" : "jsonrpc\/get-task-after-failure",
       "name" : "Get Task After Failure",
       "passed" : false
@@ -229,7 +229,7 @@
     },
     {
       "detail" : "error: internalError(message: Optional(\"Server error (HTTP 500)\"))",
-      "durationMs" : 3,
+      "durationMs" : 4,
       "id" : "rest\/spec-message-only",
       "name" : "REST Message Only",
       "passed" : false
@@ -250,21 +250,21 @@
     },
     {
       "detail" : "error: internalError(message: Optional(\"Server error (HTTP 500)\"))",
-      "durationMs" : 3,
+      "durationMs" : 5,
       "id" : "rest\/spec-task-failure",
       "name" : "REST Task Failure",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"Server error (HTTP 500)\"))",
-      "durationMs" : 3,
+      "durationMs" : 4,
       "id" : "rest\/spec-data-types",
       "name" : "REST Data Types",
       "passed" : false
     },
     {
       "detail" : "error: invalidResponse(message: Optional(\"Unknown or malformed event type: none\"))",
-      "durationMs" : 5,
+      "durationMs" : 4,
       "id" : "rest\/spec-streaming",
       "name" : "REST Streaming",
       "passed" : false
@@ -285,7 +285,7 @@
     },
     {
       "detail" : "error: invalidResponse(message: Optional(\"Unknown or malformed event type: none\"))",
-      "durationMs" : 3,
+      "durationMs" : 2,
       "id" : "rest\/spec-cancel-with-metadata",
       "name" : "REST Cancel With Metadata",
       "passed" : false
@@ -299,7 +299,7 @@
     },
     {
       "detail" : "error: internalError(message: Optional(\"Server error (HTTP 500)\"))",
-      "durationMs" : 3,
+      "durationMs" : 4,
       "id" : "rest\/spec-return-immediately",
       "name" : "REST Return Immediately",
       "passed" : false
@@ -348,14 +348,14 @@
     },
     {
       "detail" : "error: invalidResponse(message: Optional(\"Unknown or malformed event type: none\"))",
-      "durationMs" : 3,
+      "durationMs" : 2,
       "id" : "rest\/subscribe-to-task",
       "name" : "REST Subscribe To Task",
       "passed" : false
     },
     {
       "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 3,
+      "durationMs" : 1,
       "id" : "rest\/error-subscribe-not-found",
       "name" : "REST Subscribe Not Found Error",
       "passed" : true
@@ -383,47 +383,47 @@
     },
     {
       "detail" : "error: internalError(message: Optional(\"Server error (HTTP 500)\"))",
-      "durationMs" : 5,
+      "durationMs" : 3,
       "id" : "rest\/get-task-with-history",
       "name" : "REST Get Task With History",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"Server error (HTTP 500)\"))",
-      "durationMs" : 4,
+      "durationMs" : 3,
       "id" : "rest\/get-task-after-failure",
       "name" : "REST Get Task After Failure",
       "passed" : false
     },
     {
       "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 3,
+      "durationMs" : 2,
       "id" : "v03\/spec03-agent-card",
       "name" : "v0.3 Agent Card",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 3,
+      "durationMs" : 2,
       "id" : "v03\/spec03-send-message",
       "name" : "v0.3 Send Message",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 3,
+      "durationMs" : 2,
       "id" : "v03\/spec03-task-lifecycle",
       "name" : "v0.3 Task Lifecycle",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 2,
+      "durationMs" : 1,
       "id" : "v03\/spec03-streaming",
       "name" : "v0.3 Streaming",
       "passed" : false
     }
   ],
   "sdk" : "a2a-client-swift 1.0.12",
-  "timestamp" : "2026-04-04T15:33:06Z"
+  "timestamp" : "2026-04-06T12:54:26Z"
 }

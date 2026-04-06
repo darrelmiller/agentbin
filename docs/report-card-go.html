@@ -44,7 +44,7 @@
 </head>
 <body>
 <h1>AgentBin A2A Report Card (Go Server)</h1>
-<p class="subtitle">Generated 2026-04-04 01:14 UTC &bull; Target: <code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
+<p class="subtitle">Generated 2026-04-06 12:17 UTC &bull; Target: <code>http://localhost:5200</code></p>
 
 <div class="client-section">
   <div class="client-header">
@@ -89,7 +89,7 @@
 <div class="client-section">
   <div class="client-header">
     <span class="client-name">&#9671; Go</span>
-    <span class="client-sdk">a2a-go v2.0.1</span>
+    <span class="client-sdk">a2a-go v2.1.0</span>
     <span class="client-score" style="color:#f85149">53/60</span>
   </div>
   <div class="binding-group">
@@ -106,7 +106,7 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=019d5560-4084-716a-878c-32347b72a3b0, state=canceled but metadata is nil</td><td class="col-known">Known: REST cancel succeeds but metadata is nil in response. Server does not echo cancel metadata back via REST binding.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=019d62b7-ed3b-7e07-ad8b-69622af75725, state=canceled but metadata is nil</td><td class="col-known">Known: REST cancel succeeds but metadata is nil in response. Server does not echo cancel metadata back via REST binding.</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">error: failed to list tasks: unauthenticated</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
@@ -146,7 +146,7 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">EXCEPTION: failed to list tasks: unauthenticated</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=019d5560-6908-7d3c-9e8e-6f66ea72667f, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=019d62b8-0ed1-710e-b27b-bdda37d4feb7, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
       </tbody>
     </table>
   </div>
@@ -155,10 +155,10 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">SDK resolver failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404): Client error '404 N</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names (message/send) to v0.3 agent which only accepts v0.3 method names (tasks/send). SDK does not fall back.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">SDK resolver failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5200/spec03/.well-known/agent-card.json (HTTP 404): Client error '404 N</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5200/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names (message/send) to v0.3 agent which only accepts v0.3 method names (tasks/send). SDK does not fall back.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5200/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5200/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
       </tbody>
     </table>
   </div>
@@ -188,7 +188,7 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=AgentBin Spec Agent â€” A2A v1.0 Test Bed  Send a message starting with one of these skill keywords:    message-only    â†’ Stateless message response (no task)   task-lifecycle  â†’ Full task: submitted â†’ working â†’ completed   task-failure    â†’ Task that fails with error message   task-cancel     â†’ Task that waits to be canceled   multi-turn      â†’ Multi-turn conversation (input-required)   streaming       â†’ Streamed response with multiple chunks   long-running    â†’ Long-running task with periodic updates   data-types      â†’ Mixed content: text, JSON, file, multi-part  Example: 'task-lifecycle hello world'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=019d5561-0cd2-7df7-b6ce-581c649181d8, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: REST cancel succeeds but cancel metadata (reason/requestedBy) not echoed in response. Server-side limitation.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=019d62b8-6958-7715-bc47-f2edec4aa4c3, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: REST cancel succeeds but cancel metadata (reason/requestedBy) not echoed in response. Server-side limitation.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">A2AClientException: failed to list tasks: unauthenticated</td><td class="col-known">Known: Java SDK REST listTasks fails — client-side null 'id' bug during response deserialization.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate terminal-state errors.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate task-not-found errors.</td></tr>
@@ -302,10 +302,10 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5000...</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5000...</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/tasks)</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">HTTP status client error (404 Not Found) for url (http://localhost:5000/spec/tasks/019d5561-5541-762b-9036-529321c7b057/...</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5200...</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5200...</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">HTTP status server error (500 Internal Server Error) for url (http://localhost:5200/spec/tasks)</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">HTTP status client error (404 Not Found) for url (http://localhost:5200/spec/tasks/019d62b8-a79d-7b8a-8f0b-3e96813e2743/...</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -333,8 +333,8 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">error: internalError(message: Optional(&quot;HTTP 405&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;019d5561-b549-7975-95fa-fcaf2c321cb7&quot;, state: A2AClient.TaskState.working, message: Optional(â€¦</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;019d5562-2bd3-718c-befa-f4ab812ba64e&quot;, state: A2AClient.TaskState.working, message: Optional(â€¦</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;019d62b8-e307-77af-9cd7-dd6684799c6d&quot;, state: A2AClient.TaskState.working, message: Optional(â€¦</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;019d62b9-5843-70e0-9cac-d6923d477638&quot;, state: A2AClient.TaskState.working, message: Optional(â€¦</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">error: jsonRPCError(code: -31401, message: &quot;unauthenticated&quot;, data: Optional(A2AClient.AnyCodable(value: [&quot;error&quot;: &quot;failed to lâ€¦</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">error: taskNotFound(taskId: &quot;&quot;, message: Optional(&quot;task not found&quot;))</td><td class="col-known">&mdash;</td></tr>
       </tbody>
