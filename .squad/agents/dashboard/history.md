@@ -151,3 +151,21 @@
 - Added `<link rel="icon" type="image/svg+xml" href="favicon.svg">` to all 5 HTML pages: index, dashboard, compliance, report-card, tests
 - No existing favicon references existed — all additions were clean inserts
 - SVG chosen for scalability: renders clearly at 16×16 and 32×32 tab icon sizes
+
+### 2026-04-06 — Multi-server dashboard refresh after SDK updates (commit 214b4a9)
+- All A2A SDK dependencies updated: Rust 1.0.14→1.0.16, Go v2.0.1→v2.1.0, JS 0.3.10→0.3.13, Swift 1.0.13→1.0.14, .NET & Java rebuilt from latest upstream
+- Ran all 7 client tests against ALL 5 servers (.NET, Go, Python, Rust, Java) — 35 test runs total
+- **Server port configuration:** .NET=5100 (--urls), Go=5200 (PORT env), Python=5300 (PORT env), Rust=5400 (PORT env), Java=5000 (default)
+- **Base URL must NOT include `/spec` suffix** — test clients derive agent paths (echo, spec, spec03) from the base URL. Using `http://localhost:PORT` not `http://localhost:PORT/spec`
+- **.NET Server scores:** .NET 56/62, Go 4/60, Python 55/60, Java 31/60, JS 13/60, Rust 54/60, Swift 33/60
+- **Go Server scores:** .NET 53/62, Go 53/60, Python 52/60, Java 48/60, JS 16/60, Rust 51/60, Swift 30/60
+- **Python Server scores:** .NET 53/62, Go 54/60, Python 53/60, Java 49/60, JS 13/60, Rust 19/60, Swift 44/60
+- **Rust Server scores:** .NET 8/62, Go 7/60, Python 6/60, Java 6/60, JS 12/60, Rust 5/59, Swift 12/60
+- **Java Server scores:** .NET 15/62, Go 11/60, Python 13/60, Java 6/60, JS 10/60, Rust 10/60, Swift 9/60
+- **Test count increased:** .NET client now has 62 tests (was 58), others have 60 (subscribe-after-stream-disconnect added)
+- **Go v2.1.0 client:** Agent card discovery changed — gets 404 against .NET server (4/60) but works well against Go server (53/60). May be a SecurityScheme discriminator fix side-effect
+- **Rust server:** Very low scores across all clients (5-12/60) — server implementation has significant gaps
+- **Java server:** Low scores (6-15/60) — many features unimplemented
+- **.NET client hung against Rust server** on first attempt — had to restart Rust server and retry
+- The `--publish` flag generates per-server dashboards: `dashboard-{server}.html` and `report-card-{server}.html`
+- All dashboards published to docs/ for GitHub Pages
