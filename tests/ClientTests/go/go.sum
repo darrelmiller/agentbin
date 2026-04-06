@@ -1,5 +1,5 @@
-github.com/a2aproject/a2a-go/v2 v2.0.1 h1:sZ6EoJ7wG4+kmwAHpvFpsYPYCu530UyrdgnBMmuwgd0=
-github.com/a2aproject/a2a-go/v2 v2.0.1/go.mod h1:cAjhgtWmkbD/A4XklRE84f3N4WDGH7GLyYievWKawXg=
+github.com/a2aproject/a2a-go/v2 v2.1.0 h1:mtn3UR+B8RnIRYTVNUHmip8FMCK5Pe3Id2aNATOWEPw=
+github.com/a2aproject/a2a-go/v2 v2.1.0/go.mod h1:nm/NLcGWEQsVf7rgcLy74DyswS5BanPS6ubQhGhiQaA=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
