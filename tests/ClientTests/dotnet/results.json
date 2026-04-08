@@ -1,218 +1,218 @@
 {
   "client": "dotnet",
-  "sdk": "A2A 1.0.0-preview2",
+  "sdk": "A2A 1.0.0-preview4",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-06T12:49:59.6489729Z",
+  "timestamp": "2026-04-08T17:17:43.2479415Z",
   "baseUrl": "http://localhost:5000",
   "results": [
     {
       "Id": "jsonrpc/agent-card-echo",
       "name": "Echo Agent Card",
-      "Passed": false,
-      "detail": "HTTP request failed",
-      "DurationMs": 104
+      "Passed": true,
+      "detail": "name=AgentBin Echo Agent, skills=1",
+      "DurationMs": 152
     },
     {
       "Id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "Passed": true,
       "detail": "skills=8",
-      "DurationMs": 62
+      "DurationMs": 3
     },
     {
       "Id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
-      "Passed": false,
-      "detail": "Response status code does not indicate success: 404 (Not Found).",
-      "DurationMs": 70
+      "Passed": true,
+      "detail": "text=Echo: hello from .NET SDK",
+      "DurationMs": 113
     },
     {
       "Id": "jsonrpc/spec-message-only",
       "name": "Message Only",
-      "Passed": false,
-      "detail": "Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 69
+      "Passed": true,
+      "detail": "role=Agent",
+      "DurationMs": 6
     },
     {
       "Id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
-      "Passed": false,
-      "detail": "Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 2
+      "Passed": true,
+      "detail": "state=Completed, artifacts=1",
+      "DurationMs": 29
     },
     {
       "Id": "jsonrpc/spec-get-task",
       "name": "GetTask",
-      "Passed": false,
-      "detail": "skipped",
-      "DurationMs": 0
+      "Passed": true,
+      "detail": "state=Completed",
+      "DurationMs": 3
     },
     {
       "Id": "jsonrpc/spec-task-failure",
       "name": "Task Failure",
-      "Passed": false,
-      "detail": "Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 2
+      "Passed": true,
+      "detail": "state=Failed",
+      "DurationMs": 3
     },
     {
       "Id": "jsonrpc/spec-data-types",
       "name": "Data Types",
-      "Passed": false,
-      "detail": "Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 1
+      "Passed": true,
+      "detail": "text=True, data=True, file=True",
+      "DurationMs": 14
     },
     {
       "Id": "jsonrpc/spec-streaming",
       "name": "Streaming",
-      "Passed": false,
-      "detail": "events=0, artifact=False, completed=False",
-      "DurationMs": 9
+      "Passed": true,
+      "detail": "events=7, artifact=True, completed=True",
+      "DurationMs": 1511
     },
     {
       "Id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found",
       "Passed": true,
-      "detail": "errorCode=InternalError",
-      "DurationMs": 76
+      "detail": "errorCode=TaskNotFound",
+      "DurationMs": 7
     },
     {
       "Id": "jsonrpc/spec-multi-turn",
       "name": "Multi-Turn",
-      "Passed": false,
-      "detail": "Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 4
+      "Passed": true,
+      "detail": "step1=InputRequired, step2=InputRequired, step3=Completed",
+      "DurationMs": 7
     },
     {
       "Id": "jsonrpc/spec-task-cancel",
       "name": "Task Cancel",
-      "Passed": false,
-      "detail": "no taskId from streaming",
-      "DurationMs": 2
+      "Passed": true,
+      "detail": "taskId=019d6e18-d757-7225-bb3b-38dbf40e292c, state=Canceled",
+      "DurationMs": 13
     },
     {
       "Id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
-      "Passed": false,
-      "detail": "no taskId",
-      "DurationMs": 1
+      "Passed": true,
+      "detail": "taskId=019d6e18-d764-7c83-9f22-e9ed63c6963a, state=Canceled, metadataKeys=[reason,requestedBy]",
+      "DurationMs": 18
     },
     {
       "Id": "jsonrpc/spec-list-tasks",
       "name": "List Tasks",
       "Passed": false,
-      "detail": "com/google/protobuf/RuntimeVersion$RuntimeDomain",
-      "DurationMs": 28
+      "detail": "unauthenticated",
+      "DurationMs": 9
     },
     {
       "Id": "jsonrpc/spec-return-immediately",
       "name": "Return Immediately",
-      "Passed": false,
-      "detail": "Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 2
+      "Passed": true,
+      "detail": "state=Submitted, time=2ms",
+      "DurationMs": 3
     },
     {
       "Id": "jsonrpc/error-cancel-not-found",
       "name": "Cancel Not Found",
       "Passed": true,
-      "detail": "errorCode=InternalError: com/google/protobuf/RuntimeVersion$RuntimeDomain",
-      "DurationMs": 18
+      "detail": "errorCode=TaskNotFound: task not found",
+      "DurationMs": 1
     },
     {
       "Id": "jsonrpc/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "Passed": true,
-      "detail": "errorCode=InternalError: Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 1
+      "detail": "errorCode=TaskNotCancelable: task cannot be canceled",
+      "DurationMs": 5
     },
     {
       "Id": "jsonrpc/error-send-terminal",
       "name": "Send To Terminal Task",
       "Passed": true,
-      "detail": "got expected error: InternalError",
-      "DurationMs": 1
+      "detail": "got expected error: InvalidParams",
+      "DurationMs": 4
     },
     {
       "Id": "jsonrpc/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "Passed": true,
-      "detail": "errorCode=InternalError",
-      "DurationMs": 1
+      "detail": "errorCode=TaskNotFound",
+      "DurationMs": 0
     },
     {
       "Id": "jsonrpc/error-push-not-supported",
       "name": "Push Not Supported",
       "Passed": true,
-      "detail": "errorCode=InternalError: com/google/protobuf/RuntimeVersion$RuntimeDomain",
-      "DurationMs": 17
+      "detail": "errorCode=PushNotificationNotSupported: push notification not supported",
+      "DurationMs": 4
     },
     {
       "Id": "jsonrpc/subscribe-to-task",
       "name": "SubscribeToTask",
       "Passed": false,
-      "detail": "Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 1
+      "detail": "The operation was canceled.",
+      "DurationMs": 15285
     },
     {
       "Id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found",
-      "Passed": false,
-      "detail": "expected error, got events",
-      "DurationMs": 7
+      "Passed": true,
+      "detail": "errorCode=TaskNotFound: task not found",
+      "DurationMs": 139
     },
     {
       "Id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
-      "Passed": false,
-      "detail": "events=0, hasMessage=False",
-      "DurationMs": 4
+      "Passed": true,
+      "detail": "events=1, hasMessage=True",
+      "DurationMs": 11
     },
     {
       "Id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
-      "Passed": false,
-      "detail": "firstHasTask=False, lastTerminal=False, events=0",
-      "DurationMs": 1
+      "Passed": true,
+      "detail": "firstHasTask=True, lastTerminal=True, events=4",
+      "DurationMs": 2
     },
     {
       "Id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
-      "Passed": false,
-      "detail": "Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 2
+      "Passed": true,
+      "detail": "ctx1=019d6e19-13e5-7911-89e2-628f174ad478, ctx2=019d6e19-13e5-7911-89e2-628f174ad478",
+      "DurationMs": 22
     },
     {
       "Id": "jsonrpc/get-task-with-history",
       "name": "GetTask With History",
-      "Passed": false,
-      "detail": "Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 2
+      "Passed": true,
+      "detail": "state=Completed, history=1",
+      "DurationMs": 9
     },
     {
       "Id": "jsonrpc/get-task-after-failure",
       "name": "GetTask After Failure",
-      "Passed": false,
-      "detail": "Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 1
+      "Passed": true,
+      "detail": "state=Failed, msg=[task-failure] Simulated failure: this task was designed to fail for testing purposes.",
+      "DurationMs": 8
     },
     {
       "Id": "jsonrpc/subscribe-after-stream-disconnect",
       "name": "Subscribe After Stream Disconnect",
-      "Passed": false,
-      "detail": "no taskId from streaming",
-      "DurationMs": 1
+      "Passed": true,
+      "detail": "taskId=019d6e19-140f-715b-9a51-825d9aa93a90, events=10, finalState=Completed",
+      "DurationMs": 8006
     },
     {
       "Id": "jsonrpc/spec-extended-card",
       "name": "Spec Extended Card",
-      "Passed": false,
-      "detail": "Response status code does not indicate success: 500 (Internal Server Error).",
-      "DurationMs": 63
+      "Passed": true,
+      "detail": "public=8 skills, extended=9 skills, hasAdminStatus=False, name=AgentBin Spec Agent (Extended)",
+      "DurationMs": 10
     },
     {
       "Id": "rest/agent-card-echo",
       "name": "Echo Agent Card",
-      "Passed": false,
-      "detail": "HTTP request failed",
+      "Passed": true,
+      "detail": "name=AgentBin Echo Agent, skills=1, httpJson=True",
       "DurationMs": 0
     },
     {
@@ -220,203 +220,203 @@
       "name": "Spec Agent Card",
       "Passed": true,
       "detail": "skills=8, httpJson=True",
-      "DurationMs": 2
+      "DurationMs": 0
     },
     {
       "Id": "rest/echo-send-message",
       "name": "Echo Send Message",
-      "Passed": false,
-      "detail": "REST echo client not available",
-      "DurationMs": 0
+      "Passed": true,
+      "detail": "text=Echo: hello from .NET SDK",
+      "DurationMs": 9
     },
     {
       "Id": "rest/spec-message-only",
       "name": "Message Only",
-      "Passed": false,
-      "detail": "HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 61
+      "Passed": true,
+      "detail": "role=Agent",
+      "DurationMs": 1
     },
     {
       "Id": "rest/spec-task-lifecycle",
       "name": "Task Lifecycle",
-      "Passed": false,
-      "detail": "HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 5
+      "Passed": true,
+      "detail": "state=Completed, artifacts=1",
+      "DurationMs": 3
     },
     {
       "Id": "rest/spec-get-task",
       "name": "GetTask",
-      "Passed": false,
-      "detail": "skipped",
-      "DurationMs": 0
+      "Passed": true,
+      "detail": "state=Completed",
+      "DurationMs": 6
     },
     {
       "Id": "rest/spec-task-failure",
       "name": "Task Failure",
-      "Passed": false,
-      "detail": "HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "Passed": true,
+      "detail": "state=Failed",
       "DurationMs": 1
     },
     {
       "Id": "rest/spec-data-types",
       "name": "Data Types",
-      "Passed": false,
-      "detail": "HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 4
+      "Passed": true,
+      "detail": "text=True, data=True, file=True",
+      "DurationMs": 6
     },
     {
       "Id": "rest/spec-streaming",
       "name": "Streaming",
-      "Passed": false,
-      "detail": "events=1, artifact=False, completed=False",
-      "DurationMs": 51
+      "Passed": true,
+      "detail": "events=7, artifact=True, completed=True",
+      "DurationMs": 1509
     },
     {
       "Id": "rest/error-task-not-found",
       "name": "Task Not Found",
       "Passed": true,
       "detail": "errorCode=TaskNotFound",
-      "DurationMs": 12
+      "DurationMs": 8
     },
     {
       "Id": "rest/spec-multi-turn",
       "name": "Multi-Turn",
-      "Passed": false,
-      "detail": "HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 2
+      "Passed": true,
+      "detail": "step1=InputRequired, step2=InputRequired, step3=Completed",
+      "DurationMs": 10
     },
     {
       "Id": "rest/spec-task-cancel",
       "name": "Task Cancel",
-      "Passed": false,
-      "detail": "no taskId from streaming",
-      "DurationMs": 6
+      "Passed": true,
+      "detail": "taskId=019d6e19-397f-7510-b051-fb5316d8da5c, state=Canceled",
+      "DurationMs": 13
     },
     {
       "Id": "rest/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
-      "Passed": false,
-      "detail": "no taskId",
-      "DurationMs": 6
+      "Passed": true,
+      "detail": "taskId=019d6e19-398c-7c47-9f42-01d5f335580c, state=Canceled, metadataKeys=[]",
+      "DurationMs": 11
     },
     {
       "Id": "rest/spec-list-tasks",
       "name": "List Tasks",
       "Passed": false,
-      "detail": "HTTP 500: com/google/protobuf/RuntimeVersion$RuntimeDomain",
-      "DurationMs": 107
+      "detail": "HTTP 500: failed to list tasks: unauthenticated",
+      "DurationMs": 3
     },
     {
       "Id": "rest/spec-return-immediately",
       "name": "Return Immediately",
-      "Passed": false,
-      "detail": "HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 2
+      "Passed": true,
+      "detail": "state=Submitted, time=1ms",
+      "DurationMs": 1
     },
     {
       "Id": "rest/error-cancel-not-found",
       "name": "Cancel Not Found",
       "Passed": true,
-      "detail": "errorCode=TaskNotFound: HTTP 404: Task not found",
-      "DurationMs": 5
+      "detail": "errorCode=TaskNotFound: HTTP 404: failed to cancel: cancelation failed: canceler setup failed: failed to load a task: task not found",
+      "DurationMs": 1
     },
     {
       "Id": "rest/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "Passed": true,
-      "detail": "errorCode=InternalError: HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 1
+      "detail": "errorCode=TaskNotCancelable: HTTP 400: failed to cancel: cancelation failed: canceler setup failed: task in non-cancelable state TASK_STATE_COMPLETED: task cannot be canceled",
+      "DurationMs": 2
     },
     {
       "Id": "rest/error-send-terminal",
       "name": "Send To Terminal Task",
       "Passed": true,
       "detail": "got expected error: InternalError",
-      "DurationMs": 1
+      "DurationMs": 6
     },
     {
       "Id": "rest/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "Passed": true,
-      "detail": "errorCode=InternalError",
-      "DurationMs": 2
+      "detail": "errorCode=TaskNotFound",
+      "DurationMs": 0
     },
     {
       "Id": "rest/error-push-not-supported",
       "name": "Push Not Supported",
       "Passed": true,
-      "detail": "errorCode=PushNotificationNotSupported: HTTP 400: Push Notification is not supported",
+      "detail": "errorCode=PushNotificationNotSupported: HTTP 501: push notification not supported",
       "DurationMs": 3
     },
     {
       "Id": "rest/subscribe-to-task",
       "name": "SubscribeToTask",
       "Passed": false,
-      "detail": "HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 1
+      "detail": "The operation was canceled.",
+      "DurationMs": 15003
     },
     {
       "Id": "rest/error-subscribe-not-found",
       "name": "Subscribe Not Found",
       "Passed": false,
       "detail": "expected error, got events",
-      "DurationMs": 8
+      "DurationMs": 1
     },
     {
       "Id": "rest/stream-message-only",
       "name": "Stream Message Only",
-      "Passed": false,
-      "detail": "events=1, hasMessage=False",
-      "DurationMs": 9
+      "Passed": true,
+      "detail": "events=1, hasMessage=True",
+      "DurationMs": 4
     },
     {
       "Id": "rest/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
-      "Passed": false,
-      "detail": "firstHasTask=False, lastTerminal=False, events=1",
-      "DurationMs": 2
+      "Passed": true,
+      "detail": "firstHasTask=True, lastTerminal=True, events=4",
+      "DurationMs": 1
     },
     {
       "Id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
-      "Passed": false,
-      "detail": "HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "Passed": true,
+      "detail": "ctx1=019d6e19-7450-726c-aee4-afbf83d70f57, ctx2=019d6e19-7450-726c-aee4-afbf83d70f57",
       "DurationMs": 2
     },
     {
       "Id": "rest/get-task-with-history",
       "name": "GetTask With History",
-      "Passed": false,
-      "detail": "HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
+      "Passed": true,
+      "detail": "state=Completed, history=1",
       "DurationMs": 2
     },
     {
       "Id": "rest/get-task-after-failure",
       "name": "GetTask After Failure",
-      "Passed": false,
-      "detail": "HTTP 500: Could not initialize class io.a2a.grpc.SendMessageRequest",
-      "DurationMs": 1
+      "Passed": true,
+      "detail": "state=Failed, msg=[task-failure] Simulated failure: this task was designed to fail for testing purposes.",
+      "DurationMs": 2
     },
     {
       "Id": "rest/subscribe-after-stream-disconnect",
       "name": "Subscribe After Stream Disconnect",
-      "Passed": false,
-      "detail": "no taskId from streaming",
-      "DurationMs": 1
+      "Passed": true,
+      "detail": "taskId=019d6e19-7458-7328-9e2b-eab4fe046c34, events=10, finalState=Completed",
+      "DurationMs": 8010
     },
     {
       "Id": "rest/spec-extended-card",
       "name": "Spec Extended Card",
       "Passed": true,
-      "detail": "public=8 skills, extended=9 skills, hasAdminStatus=False, name=AgentBin Spec Agent (Extended - Java)",
-      "DurationMs": 15
+      "detail": "public=8 skills, extended=9 skills, hasAdminStatus=False, name=AgentBin Spec Agent (Extended)",
+      "DurationMs": 6
     },
     {
       "Id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
       "Passed": false,
       "detail": "HTTP request failed",
-      "DurationMs": 5
+      "DurationMs": 32
     },
     {
       "Id": "v03/spec03-send-message",
@@ -437,7 +437,7 @@
       "name": "v0.3 Streaming",
       "Passed": false,
       "detail": "SDK error: Response status code does not indicate success: 404 (Not Found).",
-      "DurationMs": 1
+      "DurationMs": 0
     }
   ]
 }

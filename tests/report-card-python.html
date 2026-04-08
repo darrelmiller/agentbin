@@ -44,12 +44,12 @@
 </head>
 <body>
 <h1>AgentBin A2A Report Card (Python Server)</h1>
-<p class="subtitle">Generated 2026-04-06 12:24 UTC &bull; Target: <code>http://localhost:5300</code></p>
+<p class="subtitle">Generated 2026-04-08 15:57 UTC &bull; Target: <code>http://localhost:5300</code></p>
 
 <div class="client-section">
   <div class="client-header">
     <span class="client-name">&#9726; .NET</span>
-    <span class="client-sdk">A2A 1.0.0-preview2</span>
+    <span class="client-sdk">A2A 1.0.0-preview4</span>
     <span class="client-score" style="color:#f85149">53/62</span>
   </div>
   <div class="binding-group">
@@ -67,7 +67,7 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">A task was canceled.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">The operation was canceled.</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">firstHasTask=False, lastTerminal=True, events=4</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">JSON deserialization for type 'A2A.AgentCard' was missing required properties including: 'supportedInterfaces', 'defaultInputModes', 'defaultOutputModes'.</td><td class="col-known">&mdash;</td></tr>
       </tbody>
@@ -97,7 +97,7 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=c19a64a6-43ab-47b8-961a-527d55e0bb5a, state=canceled but metadata is nil</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=2e9f3d86-6a36-416e-bf71-d0d8b273aaa7, state=canceled but metadata is nil</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -106,7 +106,7 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=008c92f2-8100-4895-9463-c8912dd3d0df, state=canceled but metadata is nil</td><td class="col-known">Known: REST cancel succeeds but metadata is nil in response. Server does not echo cancel metadata back via REST binding.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=ba6a07aa-0ae9-47c0-a96a-375663c78f63, state=canceled but metadata is nil</td><td class="col-known">Known: REST cancel succeeds but metadata is nil in response. Server does not echo cancel metadata back via REST binding.</td></tr>
       </tbody>
     </table>
   </div>
@@ -135,7 +135,7 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">name=AgentBin Echo Agent, skills=1</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=0d465fdd-9d76-405a-96b6-ff1407637070, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=d095fc81-9577-4b29-92ba-bf200a6419c7, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -144,7 +144,7 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=5928de72-2cc4-4fa0-96bf-52a3fc91f9f2, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=e8b28640-17e1-4724-8bbe-0b513aef08d3, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
       </tbody>
     </table>
   </div>
@@ -173,7 +173,7 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=AgentBin Spec Agent - A2A v1.0 Test Bed  Send a message starting with one of these skill keywords:    message-only    - Stateless message response (no task)   task-lifecycle  - Full task: submitted -&gt; working -&gt; completed   task-failure    - Task that fails with error message   task-cancel     - Task that waits to be canceled   multi-turn      - Multi-turn conversation (input-required)   streaming       - Streamed response with multiple chunks   long-running    - Long-running task with periodic updates   data-types      - Mixed content: text, JSON, file, multi-part  Example: 'task-lifecycle hello world' </td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=b4b17603-4158-417c-a5ac-58b9a99ed1b3, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=351e7e90-5e5b-41b2-9f41-c78a0350f739, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.</td></tr>
       <tr class="known-row"><td class="col-id"><code>jsonrpc/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.</td></tr>
       <tr class="known-row"><td class="col-id"><code>jsonrpc/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. Client-side null-ID bug causes SDK to send wrong task ID.</td></tr>
       <tr class="known-row"><td class="col-id"><code>jsonrpc/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. Client-side null-ID bug causes SDK to send wrong task ID.</td></tr>
@@ -186,7 +186,7 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=AgentBin Spec Agent - A2A v1.0 Test Bed  Send a message starting with one of these skill keywords:    message-only    - Stateless message response (no task)   task-lifecycle  - Full task: submitted -&gt; working -&gt; completed   task-failure    - Task that fails with error message   task-cancel     - Task that waits to be canceled   multi-turn      - Multi-turn conversation (input-required)   streaming       - Streamed response with multiple chunks   long-running    - Long-running task with periodic updates   data-types      - Mixed content: text, JSON, file, multi-part  Example: 'task-lifecycle hello world' </td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=ca0b8e3f-cdb9-466f-b930-5451b2723b79, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: REST cancel succeeds but cancel metadata (reason/requestedBy) not echoed in response. Server-side limitation.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=b0f3832a-c9a2-423f-a39d-f10797e6f28c, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: REST cancel succeeds but cancel metadata (reason/requestedBy) not echoed in response. Server-side limitation.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate terminal-state errors.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate task-not-found errors.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate subscription errors.</td></tr>

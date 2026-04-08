@@ -2,50 +2,50 @@
   "client": "js",
   "sdk": "a2a-js (local build, 0.3.13)",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-06T12:54:16Z",
+  "timestamp": "2026-04-08T17:18:22Z",
   "baseUrl": "http://localhost:5000",
   "results": [
     {
       "id": "jsonrpc/agent-card-echo",
       "name": "Echo Agent Card",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 71
+      "detail": "name=AgentBin Spec Agent, skills=8",
+      "durationMs": 82
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
-      "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
+      "passed": true,
+      "detail": "name=AgentBin Spec Agent, skills=[message-only,task-lifecycle,task-failure,task-cancel,multi-turn,streaming,long-running,data-types]",
       "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-extended-card",
       "name": "Spec Extended Card",
-      "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 2
+      "passed": true,
+      "detail": "public=8 skills, extended=9 skills, admin-status=true",
+      "durationMs": 15
     },
     {
       "id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 2
+      "detail": "JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found\"}",
+      "durationMs": 10
     },
     {
       "id": "jsonrpc/spec-message-only",
       "name": "Spec Message Only",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 2
+      "detail": "JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found\"}",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Spec Task Lifecycle",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 2
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/spec-get-task",
@@ -58,43 +58,43 @@
       "id": "jsonrpc/spec-task-failure",
       "name": "Spec Task Failure",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-data-types",
       "name": "Spec Data Types",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-streaming",
       "name": "Spec Streaming",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 3
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-multi-turn",
       "name": "Spec Multi-Turn",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 2
+      "detail": "JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found\"}",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-task-cancel",
       "name": "Spec Task Cancel",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-list-tasks",
@@ -107,141 +107,141 @@
       "id": "jsonrpc/spec-return-immediately",
       "name": "Spec Return Immediately",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found\"}",
+      "durationMs": 6
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": true,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found",
       "durationMs": 2
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": true,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 1
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": false,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 2
+      "detail": "error=Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/error-send-terminal",
       "name": "Send To Terminal Task",
       "passed": true,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 1
+      "detail": "error=Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "passed": true,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 1
+      "detail": "error=JSONRPCTransportError: JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-push-not-supported",
       "name": "Push Not Supported",
-      "passed": false,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
+      "passed": true,
+      "detail": "error=PushNotificationNotSupportedError: Push Notification is not supported",
       "durationMs": 1
     },
     {
       "id": "jsonrpc/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found",
-      "passed": true,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 1
+      "passed": false,
+      "detail": "error=Error: Invalid response Content-Type for SSE stream for tasks/resubscribe. Expected 'te",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found\"}",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/get-task-with-history",
       "name": "GetTask With History",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/get-task-after-failure",
       "name": "GetTask After Failure",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 2
     },
     {
       "id": "rest/agent-card-echo",
       "name": "REST Echo Agent Card",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
+      "detail": "name=AgentBin Spec Agent, skills=8",
       "durationMs": 1
     },
     {
       "id": "rest/agent-card-spec",
       "name": "REST Spec Agent Card",
-      "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
+      "passed": true,
+      "detail": "name=AgentBin Spec Agent, skills=[message-only,task-lifecycle,task-failure,task-cancel,multi-turn,streaming,long-running,data-types]",
       "durationMs": 1
     },
     {
       "id": "rest/spec-extended-card",
       "name": "REST Spec Extended Card",
-      "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "passed": true,
+      "detail": "public=8 skills, extended=9 skills, admin-status=true",
+      "durationMs": 2
     },
     {
       "id": "rest/echo-send-message",
       "name": "REST Echo Send Message",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-message-only",
       "name": "REST Spec Message Only",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-task-lifecycle",
       "name": "REST Spec Task Lifecycle",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-get-task",
@@ -254,43 +254,43 @@
       "id": "rest/spec-task-failure",
       "name": "REST Spec Task Failure",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-data-types",
       "name": "REST Spec Data Types",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-streaming",
       "name": "REST Spec Streaming",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-multi-turn",
       "name": "REST Spec Multi-Turn",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-task-cancel",
       "name": "REST Spec Task Cancel",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-list-tasks",
@@ -303,127 +303,127 @@
       "id": "rest/spec-return-immediately",
       "name": "REST Return Immediately",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/error-task-not-found",
       "name": "REST Task Not Found Error",
       "passed": true,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 1
+      "detail": "error=Error: HTTP error for /v1/tasks/nonexistent-task-id-12345?historyLength=0! Status: 404 ",
+      "durationMs": 2
     },
     {
       "id": "rest/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": true,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 1
+      "detail": "error=Error: HTTP error for /v1/tasks/bogus-cancel-id-99999:cancel! Status: 404 Not Found. Re",
+      "durationMs": 2
     },
     {
       "id": "rest/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": false,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 1
+      "detail": "error=Error: HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not",
+      "durationMs": 3
     },
     {
       "id": "rest/error-send-terminal",
       "name": "Send To Terminal Task",
       "passed": true,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 2
+      "detail": "error=Error: HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not",
+      "durationMs": 4
     },
     {
       "id": "rest/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "passed": true,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 1
+      "detail": "error=Error: HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not f",
+      "durationMs": 2
     },
     {
       "id": "rest/error-push-not-supported",
       "name": "Push Not Supported",
-      "passed": false,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
+      "passed": true,
+      "detail": "error=PushNotificationNotSupportedError: Push Notification is not supported",
       "durationMs": 1
     },
     {
       "id": "rest/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/error-subscribe-not-found",
       "name": "Subscribe Not Found",
       "passed": true,
-      "detail": "error=Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.jso",
-      "durationMs": 1
+      "detail": "error=Error: HTTP error for /v1/tasks/bogus-subscribe-id:subscribe! Status: 404 Not Found. Re",
+      "durationMs": 2
     },
     {
       "id": "rest/stream-message-only",
       "name": "Stream Message Only",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 0
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 3
     },
     {
       "id": "rest/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 0
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 2
     },
     {
       "id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found\n",
+      "durationMs": 3
     },
     {
       "id": "rest/get-task-with-history",
       "name": "GetTask With History",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
       "durationMs": 1
     },
     {
       "id": "rest/get-task-after-failure",
       "name": "GetTask After Failure",
       "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
+      "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
       "durationMs": 1
     },
     {
       "id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
-      "passed": false,
-      "detail": "Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
+      "passed": true,
+      "detail": "name=AgentBin Spec Agent, skills=8",
       "durationMs": 0
     },
     {
       "id": "v03/spec03-send-message",
       "name": "v0.3 Send Message",
       "passed": false,
-      "detail": "SDK v0.3 failed: Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "SDK v0.3 failed: JSONRPCTransportError: JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found\"}",
+      "durationMs": 2
     },
     {
       "id": "v03/spec03-task-lifecycle",
       "name": "v0.3 Task Lifecycle",
       "passed": false,
-      "detail": "SDK v0.3 failed: Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
+      "detail": "SDK v0.3 failed: Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
       "durationMs": 1
     },
     {
       "id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
       "passed": false,
-      "detail": "SDK v0.3 failed: Error: Failed to fetch Agent Card from http://localhost:5000/.well-known/agent-card.json: 404",
-      "durationMs": 1
+      "detail": "SDK v0.3 failed: Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
+      "durationMs": 2
     }
   ]
 }

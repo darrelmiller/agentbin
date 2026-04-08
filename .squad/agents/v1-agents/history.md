@@ -120,3 +120,17 @@
 - **Port:** Default 5000, configurable via `PORT` env var or `quarkus.http.port` property
 - **Endpoints:** GET /health, GET /, POST / (JSONRPC), POST /v1/message/send (REST), GET /v1/message/subscribe (REST SSE)
 - **Team Implication:** Java server ready for TCK testing; matches Go/Python/Rust patterns
+
+### 2026-07-29: Rebuilt nupkgs from a2a-dotnet PR#338 (V0_3Compat server compat layer)
+- Fetched PR#338 (`shanshan/issue-331-v03-client-v1-server-compat`) into local `a2a-dotnet` repo as branch `pr-338`
+- PR adds `A2A.V0_3Compat` project: server-side compat layer for v0.3 clients talking to v1.0 servers
+- Key APIs: `MapA2AWithV03Compat()` (drop-in replacement for `MapA2A` that auto-translates v0.3↔v1.0 JSONRPC), `MapAgentCardGetWithV03Compat()` (agent card negotiation via `A2A-Version` header), `V03CompatClientFactory`
+- **Version jumped from 1.0.0-preview2 to 1.0.0-preview4** (upstream version bump)
+- Packages produced:
+  - `A2A.1.0.0-preview4.nupkg` (339KB)
+  - `A2A.AspNetCore.1.0.0-preview4.nupkg` (111KB)
+  - `A2A.V0_3.1.0.0-preview4.nupkg` (256KB) — new package
+  - `A2A.V0_3Compat.1.0.0-preview4.nupkg` (87KB) — new package from PR#338
+- Updated `AgentBin.csproj` and `A2AClientTests.csproj` references from 1.0.0-preview2 → 1.0.0-preview4
+- Both `dotnet build` for server and test client succeeded cleanly
+- **V0_3Compat opportunity:** `MapA2AWithV03Compat` could replace the hand-rolled `V03Compat/` folder in agentbin (V03EndpointHandler.cs + V03Translator.cs). The SDK compat layer handles method name translation, enum casing, part kind discrimination, and agent card format negotiation — all things currently done manually. Migration would simplify the spec03 agent setup significantly.
