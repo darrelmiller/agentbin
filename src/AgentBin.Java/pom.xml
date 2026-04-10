@@ -18,6 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <quarkus.platform.version>3.17.7</quarkus.platform.version>
         <a2a-sdk.version>1.0.0.Beta1-SNAPSHOT</a2a-sdk.version>
+        <protobuf-java.version>4.33.1</protobuf-java.version>
     </properties>
 
     <dependencyManagement>
@@ -28,6 +29,17 @@
                 <version>${quarkus.platform.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- Override Quarkus BOM protobuf version — SDK requires 4.x for RuntimeVersion support -->
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${protobuf-java.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
