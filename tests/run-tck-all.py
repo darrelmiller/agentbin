@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Run the A2A TCK against all server implementations and generate compliance pages.
+"""Run the A2A TCK against all server implementations and publish compatibility reports.
 
 Usage:
     python tests/run-tck-all.py                     # Run TCK against all servers (must start each first)
     python tests/run-tck-all.py --server .NET       # Run against just .NET server
     python tests/run-tck-all.py --server Go         # Run against just Go server
-    python tests/run-tck-all.py --publish            # Also copy compliance pages to docs/
-    python tests/run-tck-all.py --generate-only --publish  # Regenerate HTML from saved results
+    python tests/run-tck-all.py --publish           # Also copy compatibility pages to docs/
 
 Prerequisites:
     - TCK venv at D:\\github\\a2aproject\\a2a-tck\\.venv
-    - Server running on the specified port (default 5100 for .NET, 5000 for others)
+    - Each server running on its assigned port:
+        .NET=5100, Go=5200, Python=5300, Rust=5400, Java=5000
 """
 
 import argparse
@@ -26,41 +26,36 @@ TCK_PYTHON = TCK_ROOT / '.venv' / 'Scripts' / 'python.exe'
 TCK_RUNNER = TCK_ROOT / 'run_tck.py'
 DOCS_DIR = REPO_ROOT / 'docs'
 TESTS_DIR = REPO_ROOT / 'tests'
-COMPLIANCE_GENERATOR = TESTS_DIR / 'generate_compliance.py'
 
-# Server configs: name → (sut_url, transports)
+# Server configs: name → (sut_host, transports)
+# --sut-host is the base URL the TCK uses to discover /.well-known/agent.json
 SERVERS = {
-    '.NET':   {'url': 'http://localhost:5100/spec', 'transports': 'jsonrpc,rest'},
-    'Go':     {'url': 'http://localhost:5000/spec', 'transports': 'jsonrpc,rest'},
-    'Python': {'url': 'http://localhost:5000/spec', 'transports': 'jsonrpc,rest'},
-    'Rust':   {'url': 'http://localhost:5000/spec', 'transports': 'jsonrpc'},
-    'Java':   {'url': 'http://localhost:5000/spec', 'transports': 'jsonrpc,rest'},
+    '.NET':   {'url': 'http://localhost:5100/spec', 'transports': 'jsonrpc,http_json'},
+    'Go':     {'url': 'http://localhost:5200/spec', 'transports': 'jsonrpc,http_json'},
+    'Python': {'url': 'http://localhost:5300/spec', 'transports': 'jsonrpc,http_json'},
+    'Rust':   {'url': 'http://localhost:5400/spec', 'transports': 'jsonrpc'},
+    'Java':   {'url': 'http://localhost:5000/spec', 'transports': 'jsonrpc,http_json'},
 }
 
 
-def run_tck(server_name: str, sut_url: str, transports: str, results_dir: Path):
-    """Run TCK against a server and copy raw result files to results_dir."""
+def run_tck(server_name: str, sut_url: str, transports: str, results_dir: Path, publish: bool):
+    """Run TCK against a server and copy reports to results_dir."""
     results_dir.mkdir(parents=True, exist_ok=True)
     tck_reports = TCK_ROOT / 'reports'
 
     # Clean the TCK reports dir to avoid stale results from previous runs
-    for old in tck_reports.glob('*_results.json'):
-        old.unlink(missing_ok=True)
+    if tck_reports.exists():
+        for old in tck_reports.iterdir():
+            if old.is_file():
+                old.unlink(missing_ok=True)
 
     env = os.environ.copy()
     env['PYTHONIOENCODING'] = 'utf-8'
 
-    # Pass --compliance-report to a dummy path to prevent the TCK from
-    # deleting the raw JSON result files after the run completes.
-    # (The TCK's cleanup code deletes them when no compliance report is requested.)
-    dummy_compliance = results_dir / '_compliance_dummy.json'
     cmd = [
         str(TCK_PYTHON), str(TCK_RUNNER),
-        '--sut-url', sut_url,
-        '--transports', transports,
-        '--category', 'all',
-        '--report',
-        '--compliance-report', str(dummy_compliance),
+        '--sut-host', sut_url,
+        '--transport', transports,
     ]
 
     print(f'\n{"="*60}')
@@ -71,37 +66,30 @@ def run_tck(server_name: str, sut_url: str, transports: str, results_dir: Path):
 
     result = subprocess.run(cmd, env=env, cwd=str(TCK_ROOT), capture_output=False)
 
-    # Copy all *_results.json files from TCK reports dir
+    # Copy all report files from TCK reports dir
     copied = 0
-    for src in sorted(tck_reports.glob('*_results.json')):
-        shutil.copy2(src, results_dir / src.name)
-        copied += 1
-
-    # Clean up dummy compliance file
-    dummy_compliance = results_dir / '_compliance_dummy.json'
-    dummy_compliance.unlink(missing_ok=True)
+    if tck_reports.exists():
+        for src in sorted(tck_reports.iterdir()):
+            if src.is_file():
+                shutil.copy2(src, results_dir / src.name)
+                copied += 1
 
     if copied:
-        print(f'\n✅ {server_name}: Copied {copied} result files to {results_dir}')
+        print(f'\n✅ {server_name}: Copied {copied} report files to {results_dir}')
     else:
-        print(f'\n❌ {server_name}: No result files produced (exit code {result.returncode})')
+        print(f'\n❌ {server_name}: No report files produced (exit code {result.returncode})')
 
-
-def generate_compliance(results_dir: Path, server_name: str, publish: bool):
-    """Generate compliance HTML from raw pytest JSON report files."""
+    # Publish compatibility report to docs/
     server_slug = server_name.lower().replace('.', '')
-    output = DOCS_DIR / f'compliance-{server_slug}.html'
+    compat_src = results_dir / 'compatibility.html'
+    if compat_src.exists():
+        compat_dst = DOCS_DIR / f'compliance-{server_slug}.html'
+        shutil.copy2(compat_src, compat_dst)
+        print(f'  📄 Published {compat_dst.name}')
 
-    cmd = [
-        sys.executable, str(COMPLIANCE_GENERATOR),
-        '--results-dir', str(results_dir),
-        '--server', server_name,
-        '--output', str(output),
-    ]
-    if publish:
-        cmd.append('--publish')
-
-    subprocess.run(cmd, check=True)
+        if publish:
+            # Also generate a combined compliance index if all servers are done
+            pass
 
 
 def main():
@@ -109,28 +97,61 @@ def main():
     parser.add_argument('--server', choices=list(SERVERS.keys()),
                         help='Run against a specific server only')
     parser.add_argument('--publish', action='store_true',
-                        help='Copy compliance pages to docs/')
-    parser.add_argument('--generate-only', action='store_true',
-                        help='Skip TCK run, just regenerate HTML from existing results')
+                        help='Copy compatibility pages to docs/')
     args = parser.parse_args()
 
     servers = {args.server: SERVERS[args.server]} if args.server else SERVERS
 
     for name, config in servers.items():
-        slug = name.lower().replace('.', '')
-        results_dir = TESTS_DIR / 'TCKResults' / slug
+        run_tck(
+            name,
+            config['url'],
+            config['transports'],
+            TESTS_DIR / 'TCKResults' / name.lower().replace('.', ''),
+            args.publish,
+        )
 
-        if not args.generate_only:
-            run_tck(name, config['url'], config['transports'], results_dir)
-
-        # Check if result files exist
-        result_files = list(results_dir.glob('*_results.json'))
-        if result_files:
-            generate_compliance(results_dir, name, args.publish)
-        else:
-            print(f'⚠️  No results for {name} — skipping compliance generation')
+    # Generate combined compliance index
+    if args.publish:
+        generate_compliance_index(servers)
 
     print('\n✅ Done!')
+
+
+def generate_compliance_index(servers: dict):
+    """Generate a simple index page linking to per-server compatibility reports."""
+    links = []
+    for name in servers:
+        slug = name.lower().replace('.', '')
+        fname = f'compliance-{slug}.html'
+        fpath = DOCS_DIR / fname
+        if fpath.exists():
+            links.append(f'<li><a href="{fname}">{name} Server</a></li>')
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AgentBin TCK Compatibility Reports</title>
+<style>
+body {{ font-family: sans-serif; margin: 2em; background: #1a1a2e; color: #e0e0e0; }}
+h1 {{ color: #00d4aa; }}
+a {{ color: #4fc3f7; }}
+ul {{ font-size: 1.2em; line-height: 2; }}
+</style>
+</head>
+<body>
+<h1>AgentBin TCK Compatibility Reports</h1>
+<p>A2A Protocol Technology Compatibility Kit results per server implementation.</p>
+<ul>
+{''.join(links)}
+</ul>
+</body>
+</html>"""
+
+    index_path = DOCS_DIR / 'compliance.html'
+    index_path.write_text(html, encoding='utf-8')
+    print(f'  📄 Published {index_path.name}')
 
 
 if __name__ == '__main__':
