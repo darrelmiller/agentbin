@@ -86,3 +86,11 @@
 - **Test status:** No test run performed (rebuild only per task requirements)
 - **Upstream bug fixes in this pull:** UnsupportedOperationError now returns 501 (not 400), subscribing to terminal tasks returns proper error, event stream race conditions fixed
 - **Team impact:** This is a coordinated package rename across the entire a2a-java SDK — all Java code in all repos must update imports
+
+### Protobuf version mismatch fix (2026-07-29)
+- **Root cause of Java server regression:** The package rename commit (5ae111fe) regenerated protobuf code using protobuf-java 4.33.1 compiler. The generated code calls `RuntimeVersion.validateProtobufGencodeVersion()` which only exists in protobuf-java 4.x. The Quarkus BOM (3.17.7) was pulling in protobuf-java 3.25.5, causing `NoClassDefFoundError: com/google/protobuf/RuntimeVersion$RuntimeDomain` at class initialization time.
+- **Symptoms:** All JSON-RPC and REST message handling failed. Agent card endpoint (no protobuf involvement) continued to work. This explains the score drops: .NET 53→15, Go 53→11, Rust 51→10, Swift 30→9 — only discovery/metadata tests still passed.
+- **Fix:** Added `protobuf-java` and `protobuf-java-util` version 4.33.1 overrides in `dependencyManagement` section of `pom.xml`, after the Quarkus BOM import. This ensures the SDK's protobuf 4.x generated code runs against the matching runtime.
+- **Verification:** Server starts, both JSON-RPC (`SendMessage`) and REST (`/message:send`) endpoints return successful responses.
+- **Lesson:** When upgrading a2a-java SDK, always verify the transitive protobuf-java version matches what the SDK was compiled with. Quarkus BOM aggressively manages protobuf versions and can downgrade it.
+- **Committed:** 916cd09

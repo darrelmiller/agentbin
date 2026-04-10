@@ -2,7 +2,7 @@
   "client": "rust",
   "sdk": "a2a-rs-client 1.0.11",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-10T14:41:26.600242500+00:00",
+  "timestamp": "2026-04-10T15:42:33.910984600+00:00",
   "baseUrl": "http://localhost:5000",
   "results": [
     {
@@ -10,7 +10,7 @@
       "name": "Echo Agent Card",
       "passed": false,
       "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5000/.well-known/agent-card.json)",
-      "durationMs": 13
+      "durationMs": 14
     },
     {
       "id": "jsonrpc/agent-card-spec",
@@ -29,16 +29,16 @@
     {
       "id": "jsonrpc/spec-message-only",
       "name": "Message Only",
-      "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 7
+      "passed": true,
+      "detail": "isMessage=true, text=Echo: message-only",
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 1
+      "detail": "expected Task, got Message",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-get-task",
@@ -51,70 +51,70 @@
       "id": "jsonrpc/spec-task-failure",
       "name": "Task Failure",
       "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 1
+      "detail": "expected Task, got Message",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-data-types",
       "name": "Data Types",
       "passed": false,
-      "detail": "error decoding response body",
+      "detail": "kinds=[\"text\"], text=true, data=false, file=false",
       "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-streaming",
       "name": "Streaming",
       "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 1
+      "detail": "events=1, lastState=None, hasArtifact=false",
+      "durationMs": 160
     },
     {
       "id": "jsonrpc/spec-multi-turn",
       "name": "Multi-Turn",
       "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 1
+      "detail": "turn1 did not return task, state=None",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-task-cancel",
       "name": "Task Cancel (via streaming)",
       "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 1
+      "detail": "expected Task, got Message",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": false,
       "detail": "could not create cancellable task",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-list-tasks",
       "name": "ListTasks",
       "passed": false,
-      "detail": "error decoding response body",
+      "detail": "returned 0 tasks",
       "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-return-immediately",
       "name": "Return Immediately",
-      "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 1
+      "passed": true,
+      "detail": "got Message, took=0.0s — returned promptly",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": true,
-      "detail": "got expected error: error decoding response body",
-      "durationMs": 2
+      "detail": "got expected error: Server error -32001: Task not found",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": true,
-      "detail": "got expected error: error decoding response body",
+      "detail": "got expected error: Server error -32001: Task not found",
       "durationMs": 1
     },
     {
@@ -134,58 +134,58 @@
     {
       "id": "jsonrpc/error-send-invalid-task",
       "name": "Send Invalid TaskId",
-      "passed": true,
-      "detail": "got expected error: error decoding response body",
+      "passed": false,
+      "detail": "expected error, got success",
       "durationMs": 2
     },
     {
       "id": "jsonrpc/error-push-not-supported",
       "name": "Push Not Supported",
       "passed": true,
-      "detail": "got expected error: error decoding response body",
-      "durationMs": 2
+      "detail": "got expected error: Server error -32602: Invalid request content: configId in message lf.a2a.v1.TaskPushNotificationConf...",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
       "detail": "could not create task for subscribe test",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found",
       "passed": true,
-      "detail": "got expected error: error decoding response body",
+      "detail": "got expected error: Server error -32001: Task not found",
       "durationMs": 1
     },
     {
       "id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
-      "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 1
+      "passed": true,
+      "detail": "events=1, gotMessage=true",
+      "durationMs": 156
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 1
+      "detail": "events=1, states=[]",
+      "durationMs": 152
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 1
+      "detail": "turn1 did not return a task with id",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/get-task-with-history",
       "name": "GetTask With History",
       "passed": false,
-      "detail": "error decoding response body",
-      "durationMs": 0
+      "detail": "could not create multi-turn task for history test",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/get-task-after-failure",
@@ -206,7 +206,7 @@
       "name": "Echo Agent Card",
       "passed": false,
       "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5000/.well-known/agent-card.json)",
-      "durationMs": 3
+      "durationMs": 2
     },
     {
       "id": "rest/agent-card-spec",
@@ -225,16 +225,16 @@
     {
       "id": "rest/spec-message-only",
       "name": "Message Only",
-      "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:send)",
-      "durationMs": 3
+      "passed": true,
+      "detail": "isMessage=true, text=Echo: message-only",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:send)",
-      "durationMs": 1
+      "detail": "expected Task, got Message",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-get-task",
@@ -247,35 +247,35 @@
       "id": "rest/spec-task-failure",
       "name": "Task Failure",
       "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:send)",
-      "durationMs": 1
+      "detail": "expected Task, got Message",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-data-types",
       "name": "Data Types",
       "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:send)",
-      "durationMs": 1
+      "detail": "kinds=[\"text\"], text=true, data=false, file=false",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-streaming",
       "name": "Streaming",
       "passed": false,
-      "detail": "stream error after 0 events: unknown variant `error`, expected one of `statusUpdate`, `artifactUpdate`, `task...",
-      "durationMs": 2
+      "detail": "events=1, lastState=None, hasArtifact=false",
+      "durationMs": 161
     },
     {
       "id": "rest/spec-multi-turn",
       "name": "Multi-Turn",
       "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:send)",
-      "durationMs": 3
+      "detail": "turn1 did not return task, state=None",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-task-cancel",
       "name": "Task Cancel (via streaming)",
       "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:send)",
+      "detail": "expected Task, got Message",
       "durationMs": 1
     },
     {
@@ -289,29 +289,29 @@
       "id": "rest/spec-list-tasks",
       "name": "ListTasks",
       "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/tasks)",
+      "detail": "returned 0 tasks",
       "durationMs": 1
     },
     {
       "id": "rest/spec-return-immediately",
       "name": "Return Immediately",
-      "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:send)",
-      "durationMs": 0
+      "passed": true,
+      "detail": "got Message, took=0.0s — returned promptly",
+      "durationMs": 1
     },
     {
       "id": "rest/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": true,
-      "detail": "got expected error: error decoding response body",
-      "durationMs": 0
+      "detail": "got expected error: Server error -32001: Task not found",
+      "durationMs": 1
     },
     {
       "id": "rest/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": true,
       "detail": "got expected error: HTTP status client error (404 Not Found) for url (http://localhost:5000/spec/tasks/00000000-0000-000...",
-      "durationMs": 95
+      "durationMs": 106
     },
     {
       "id": "rest/error-cancel-terminal",
@@ -330,15 +330,15 @@
     {
       "id": "rest/error-send-invalid-task",
       "name": "Send Invalid TaskId",
-      "passed": true,
-      "detail": "got expected error: HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:sen...",
-      "durationMs": 1
+      "passed": false,
+      "detail": "expected error, got success",
+      "durationMs": 3
     },
     {
       "id": "rest/error-push-not-supported",
       "name": "Push Not Supported",
       "passed": true,
-      "detail": "got expected error: error decoding response body",
+      "detail": "got expected error: Server error -32602: Invalid request content: configId in message lf.a2a.v1.TaskPushNotificationConf...",
       "durationMs": 1
     },
     {
@@ -346,7 +346,7 @@
       "name": "SubscribeToTask",
       "passed": false,
       "detail": "could not create task for subscribe test",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/error-subscribe-not-found",
@@ -358,30 +358,30 @@
     {
       "id": "rest/stream-message-only",
       "name": "Stream Message Only",
-      "passed": false,
-      "detail": "events=0, gotMessage=false",
-      "durationMs": 1
+      "passed": true,
+      "detail": "events=1, gotMessage=true",
+      "durationMs": 163
     },
     {
       "id": "rest/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": false,
-      "detail": "events=0, states=[]",
-      "durationMs": 1
+      "detail": "events=1, states=[]",
+      "durationMs": 153
     },
     {
       "id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:send)",
-      "durationMs": 1
+      "detail": "turn1 did not return a task with id",
+      "durationMs": 3
     },
     {
       "id": "rest/get-task-with-history",
       "name": "GetTask With History",
       "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:send)",
-      "durationMs": 1
+      "detail": "could not create multi-turn task for history test",
+      "durationMs": 2
     },
     {
       "id": "rest/get-task-after-failure",

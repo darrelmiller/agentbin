@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<title>AgentBin A2A Report Card (Rust Server)</title>
+<title>AgentBin A2A Report Card (rust Server)</title>
 <style>
   :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -43,8 +43,8 @@
 </style>
 </head>
 <body>
-<h1>AgentBin A2A Report Card (Rust Server)</h1>
-<p class="subtitle">Generated 2026-04-10 14:35 UTC &bull; Target: <code>http://localhost:5400</code></p>
+<h1>AgentBin A2A Report Card (rust Server)</h1>
+<p class="subtitle">Generated 2026-04-10 15:44 UTC &bull; Target: <code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
 
 <div class="client-section">
   <div class="client-header">
@@ -219,38 +219,35 @@
   <div class="client-header">
     <span class="client-name">&#9673; Python</span>
     <span class="client-sdk">a2a-sdk 1.0.0a1</span>
-    <span class="client-score" style="color:#f85149">4/60</span>
+    <span class="client-score" style="color:#f85149">6/60</span>
   </div>
   <div class="binding-group">
     <div class="binding-label">JSON-RPC</div>
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-message-only</code></td><td class="col-name">Message Only</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">name=AgentBin Echo Agent, skills=1</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">capabilities.extendedAgentCard not true</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-message-only</code></td><td class="col-name">Message Only</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped — no taskId from lifecycle</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-task-not-found</code></td><td class="col-name">Task Not Found Error</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-cancel-not-found</code></td><td class="col-name">Cancel Not Found</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-push-not-supported</code></td><td class="col-name">Push Not Supported</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/stream-message-only</code></td><td class="col-name">Stream Message Only</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">exception: AttributeError: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/stream-message-only</code></td><td class="col-name">Stream Message Only</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">exception: A2AClientError: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'&#10;For more information check: https://</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -259,33 +256,34 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-spec</code></td><td class="col-name">Spec Agent Card</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-message-only</code></td><td class="col-name">Message Only</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-spec</code></td><td class="col-name">Spec Agent Card</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">capabilities.extendedAgentCard not true</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-message-only</code></td><td class="col-name">Message Only</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped — no taskId from lifecycle</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-task-not-found</code></td><td class="col-name">Task Not Found Error</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-cancel-not-found</code></td><td class="col-name">Cancel Not Found</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-push-not-supported</code></td><td class="col-name">Push Not Supported</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">Known: Python SDK REST subscribe returns 0 events. Possible server or SDK issue with REST SSE subscription.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/stream-message-only</code></td><td class="col-name">Stream Message Only</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">EXCEPTION: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">exception: AttributeError: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/error-task-not-found</code></td><td class="col-name">Task Not Found Error</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/error-cancel-not-found</code></td><td class="col-name">Cancel Not Found</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/error-push-not-supported</code></td><td class="col-name">Push Not Supported</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">Known: Python SDK REST subscribe returns 0 events. Possible server or SDK issue with REST SSE subscription.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/stream-message-only</code></td><td class="col-name">Stream Message Only</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">EXCEPTION: no compatible transports found.</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">exception: ValueError: no compatible transports found.</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
       </tbody>
     </table>
   </div>
@@ -294,10 +292,55 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">SDK resolver failed: AttributeError: url</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK v0.3 connect failed: AttributeError: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">Known: Python SDK sends v1.0 method names (message/send) to v0.3 agent which only accepts v0.3 method names (tasks/send). SDK does not fall back.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK v0.3 connect failed: AttributeError: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK v0.3 connect failed: AttributeError: type object 'ClientFactory' has no attribute 'connect'</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">SDK resolver failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404): Client error '404 N</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names (message/send) to v0.3 agent which only accepts v0.3 method names (tasks/send). SDK does not fall back.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="client-section">
+  <div class="client-header">
+    <span class="client-name">&#9672; Java</span>
+    <span class="client-sdk">a2a-java-sdk 1.0.0.Beta1-SNAPSHOT</span>
+    <span class="client-score" style="color:#f85149">46/60</span>
+  </div>
+  <div class="binding-group">
+    <div class="binding-label">JSON-RPC</div>
+    <table>
+      <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
+      <tbody>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=AgentBin Spec Agent - A2A v1.0 Test Bed  Send a message starting with one of these skill keywords:    message-only    - Stateless message response (no task)   task-lifecycle  - Full task: submitted -&gt; working -&gt; completed   task-failure    - Task that fails with error message   task-cancel     - Task that waits to be canceled   multi-turn      - Multi-turn conversation (input-required)   streaming       - Streamed response with multiple chunks   long-running    - Long-running task with periodic updates   data-types      - Mixed content: text, JSON, file, multi-part  Example: 'task-lifecycle hello world' </td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=6bb458f7-6a18-46f8-aec2-2dc4db4d0f03, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 client-side null 'id' bug. Same root cause as spec-task-lifecycle.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. Client-side null-ID bug causes SDK to send wrong task ID.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. Client-side null-ID bug causes SDK to send wrong task ID.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="binding-group">
+    <div class="binding-label">HTTP+JSON (REST)</div>
+    <table>
+      <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
+      <tbody>
+      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=AgentBin Spec Agent - A2A v1.0 Test Bed  Send a message starting with one of these skill keywords:    message-only    - Stateless message response (no task)   task-lifecycle  - Full task: submitted -&gt; working -&gt; completed   task-failure    - Task that fails with error message   task-cancel     - Task that waits to be canceled   multi-turn      - Multi-turn conversation (input-required)   streaming       - Streamed response with multiple chunks   long-running    - Long-running task with periodic updates   data-types      - Mixed content: text, JSON, file, multi-part  Example: 'task-lifecycle hello world' </td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=1c6143d5-d5e2-45e6-b470-24ffb053392c, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: REST cancel succeeds but cancel metadata (reason/requestedBy) not echoed in response. Server-side limitation.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate terminal-state errors.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate task-not-found errors.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate subscription errors.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="binding-group">
+    <div class="binding-label">v0.3 Backward Compatibility</div>
+    <table>
+      <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
+      <tbody>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">protocolVersion=0.3.0=false, hasUrl=true</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK may not support v0.3 fallback: TimeoutException: null</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK may not support v0.3 fallback: TimeoutException: null</td><td class="col-known">Known: Java SDK Beta1 client-side null 'id' bug affects v0.3 tests. Same root cause as JSONRPC null-ID issue.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK may not support v0.3 fallback: TimeoutException: null</td><td class="col-known">Known: Java SDK Beta1 client-side null 'id' bug affects v0.3 tests. Same root cause as JSONRPC null-ID issue.</td></tr>
       </tbody>
     </table>
   </div>
@@ -546,7 +589,7 @@
 <p class="footer">
   Known failures shown in <span style="color:#d29922">orange</span> &bull;
   Unknown failures shown in <span style="color:#f85149">red</span> &bull;
-  Clients: .NET, Go, Python, JavaScript, Rust, Swift
+  Clients: .NET, Go, Python, Java, JavaScript, Rust, Swift
 </p>
 </body>
 </html>

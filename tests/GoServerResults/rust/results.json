@@ -2,15 +2,15 @@
   "client": "rust",
   "sdk": "a2a-rs-client 1.0.11",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-03T22:05:35.448768100+00:00",
-  "baseUrl": "http://localhost:5000",
+  "timestamp": "2026-04-10T15:23:03.922222800+00:00",
+  "baseUrl": "http://localhost:5200",
   "results": [
     {
       "id": "jsonrpc/agent-card-echo",
       "name": "Echo Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 11
+      "durationMs": 13
     },
     {
       "id": "jsonrpc/agent-card-spec",
@@ -37,8 +37,8 @@
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=Completed, taskId=019d5561-48ef-73ff-8...",
-      "durationMs": 1
+      "detail": "state=Completed, taskId=019d77fd-4744-7ba0-8...",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-get-task",
@@ -59,14 +59,14 @@
       "name": "Data Types",
       "passed": true,
       "detail": "kinds=[\"data\", \"file\", \"text\"], text=true, data=true, file=true",
-      "durationMs": 2
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/spec-streaming",
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
-      "durationMs": 1571
+      "durationMs": 1502
     },
     {
       "id": "jsonrpc/spec-multi-turn",
@@ -115,7 +115,7 @@
       "name": "Cancel Not Found",
       "passed": true,
       "detail": "got expected error: Server error -32001: task not found",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-cancel-terminal",
@@ -129,7 +129,7 @@
       "name": "Send To Terminal Task",
       "passed": true,
       "detail": "got expected error: Server error -32602: invalid params",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-send-invalid-task",
@@ -150,7 +150,7 @@
       "name": "SubscribeToTask",
       "passed": false,
       "detail": "Server error -32001: task not found",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
@@ -171,14 +171,14 @@
       "name": "Stream Task Lifecycle",
       "passed": true,
       "detail": "events=4, states=[Submitted, Working, Completed]",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": true,
-      "detail": "contextId1=ee2e049a-7987-49fb-a..., contextId2=ee2e049a-7987-49fb-a..., match=true",
-      "durationMs": 4
+      "detail": "contextId1=f387e17d-8785-4c59-a..., contextId2=f387e17d-8785-4c59-a..., match=true",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/get-task-with-history",
@@ -206,14 +206,14 @@
       "name": "Echo Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "rest/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "rest/echo-send-message",
@@ -233,7 +233,7 @@
       "id": "rest/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=Completed, taskId=019d5561-4f4b-7b52-8...",
+      "detail": "state=Completed, taskId=019d77fd-4d58-765f-b...",
       "durationMs": 1
     },
     {
@@ -262,7 +262,7 @@
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
-      "durationMs": 1503
+      "durationMs": 1502
     },
     {
       "id": "rest/spec-multi-turn",
@@ -275,21 +275,21 @@
       "id": "rest/spec-task-cancel",
       "name": "Task Cancel (via streaming)",
       "passed": false,
-      "detail": "cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5000...",
+      "detail": "cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5200...",
       "durationMs": 1
     },
     {
       "id": "rest/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": false,
-      "detail": "cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5000...",
+      "detail": "cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5200...",
       "durationMs": 1
     },
     {
       "id": "rest/spec-list-tasks",
       "name": "ListTasks",
       "passed": false,
-      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/tasks)",
+      "detail": "HTTP status server error (500 Internal Server Error) for url (http://localhost:5200/spec/tasks)",
       "durationMs": 0
     },
     {
@@ -310,28 +310,28 @@
       "id": "rest/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": true,
-      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5000/spec/tasks/00000000...",
+      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5200/spec/tasks/00000000...",
       "durationMs": 0
     },
     {
       "id": "rest/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": true,
-      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5000/spec/tasks/019d5561...",
+      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5200/spec/tasks/019d77fd...",
       "durationMs": 0
     },
     {
       "id": "rest/error-send-terminal",
       "name": "Send To Terminal Task",
       "passed": true,
-      "detail": "got expected error: HTTP status server error (500 Internal Server Error) for url (http://localhost:5000/spec/message:sen...",
-      "durationMs": 0
+      "detail": "got expected error: HTTP status server error (500 Internal Server Error) for url (http://localhost:5200/spec/message:sen...",
+      "durationMs": 1
     },
     {
       "id": "rest/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "passed": true,
-      "detail": "got expected error: HTTP status client error (404 Not Found) for url (http://localhost:5000/spec/message:send)",
+      "detail": "got expected error: HTTP status client error (404 Not Found) for url (http://localhost:5200/spec/message:send)",
       "durationMs": 0
     },
     {
@@ -345,14 +345,14 @@
       "id": "rest/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
-      "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5000/spec/tasks/019d5561-5541-762b-9036-529321c7b057/...",
-      "durationMs": 1
+      "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5200/spec/tasks/019d77fd-5351-75b4-b2e0-a18e9e59d003/...",
+      "durationMs": 2
     },
     {
       "id": "rest/error-subscribe-not-found",
       "name": "Subscribe Not Found",
       "passed": true,
-      "detail": "got expected error: HTTP status client error (404 Not Found) for url (http://localhost:5000/spec/tasks/00000000-0000-000...",
+      "detail": "got expected error: HTTP status client error (404 Not Found) for url (http://localhost:5200/spec/tasks/00000000-0000-000...",
       "durationMs": 0
     },
     {
@@ -373,15 +373,15 @@
       "id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": true,
-      "detail": "contextId1=c20a2c53-cef8-4532-b..., contextId2=c20a2c53-cef8-4532-b..., match=true",
-      "durationMs": 2
+      "detail": "contextId1=96f87f06-3ebc-49d0-b..., contextId2=96f87f06-3ebc-49d0-b..., match=true",
+      "durationMs": 4
     },
     {
       "id": "rest/get-task-with-history",
       "name": "GetTask With History",
       "passed": true,
       "detail": "historyLength=3",
-      "durationMs": 3
+      "durationMs": 4
     },
     {
       "id": "rest/get-task-after-failure",
@@ -395,14 +395,14 @@
       "name": "Extended Agent Card",
       "passed": true,
       "detail": "public=8 extended=9 has_admin=false",
-      "durationMs": 3
+      "durationMs": 4
     },
     {
       "id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "v03/spec03-send-message",

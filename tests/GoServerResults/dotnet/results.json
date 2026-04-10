@@ -2,29 +2,29 @@
   "client": "dotnet",
   "sdk": "A2A 1.0.0-preview2",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-03T22:04:10.2279045Z",
-  "baseUrl": "http://localhost:5000",
+  "timestamp": "2026-04-10T15:22:28.8569868Z",
+  "baseUrl": "http://localhost:5200",
   "results": [
     {
       "Id": "jsonrpc/agent-card-echo",
       "name": "Echo Agent Card",
       "Passed": true,
       "detail": "name=AgentBin Echo Agent, skills=1",
-      "DurationMs": 137
+      "DurationMs": 151
     },
     {
       "Id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "Passed": true,
       "detail": "skills=8",
-      "DurationMs": 3
+      "DurationMs": 2
     },
     {
       "Id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
       "Passed": true,
       "detail": "text=Echo: hello from .NET SDK",
-      "DurationMs": 86
+      "DurationMs": 66
     },
     {
       "Id": "jsonrpc/spec-message-only",
@@ -38,7 +38,7 @@
       "name": "Task Lifecycle",
       "Passed": true,
       "detail": "state=Completed, artifacts=1",
-      "DurationMs": 6
+      "DurationMs": 7
     },
     {
       "Id": "jsonrpc/spec-get-task",
@@ -59,7 +59,7 @@
       "name": "Data Types",
       "Passed": true,
       "detail": "text=True, data=True, file=True",
-      "DurationMs": 7
+      "DurationMs": 6
     },
     {
       "Id": "jsonrpc/spec-streaming",
@@ -73,42 +73,42 @@
       "name": "Task Not Found",
       "Passed": true,
       "detail": "errorCode=TaskNotFound",
-      "DurationMs": 3
+      "DurationMs": 2
     },
     {
       "Id": "jsonrpc/spec-multi-turn",
       "name": "Multi-Turn",
       "Passed": true,
       "detail": "step1=InputRequired, step2=InputRequired, step3=Completed",
-      "DurationMs": 8
+      "DurationMs": 7
     },
     {
       "Id": "jsonrpc/spec-task-cancel",
       "name": "Task Cancel",
       "Passed": true,
-      "detail": "taskId=019d555f-4b74-7537-a09a-ac95f1a5afbd, state=Canceled",
+      "detail": "taskId=019d77fc-0fe2-77aa-b4dd-201b0f1dc077, state=Canceled",
       "DurationMs": 13
     },
     {
       "Id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "Passed": true,
-      "detail": "taskId=019d555f-4b81-7d50-9edc-9d69aca37996, state=Canceled, metadataKeys=[reason,requestedBy]",
-      "DurationMs": 24
+      "detail": "taskId=019d77fc-0ff0-795a-8aa0-9e2d6f1a4b72, state=Canceled, metadataKeys=[reason,requestedBy]",
+      "DurationMs": 17
     },
     {
       "Id": "jsonrpc/spec-list-tasks",
       "name": "List Tasks",
       "Passed": false,
       "detail": "unauthenticated",
-      "DurationMs": 11
+      "DurationMs": 9
     },
     {
       "Id": "jsonrpc/spec-return-immediately",
       "name": "Return Immediately",
       "Passed": true,
       "detail": "state=Submitted, time=1ms",
-      "DurationMs": 2
+      "DurationMs": 1
     },
     {
       "Id": "jsonrpc/error-cancel-not-found",
@@ -122,21 +122,21 @@
       "name": "Cancel Terminal Task",
       "Passed": true,
       "detail": "errorCode=TaskNotCancelable: task cannot be canceled",
-      "DurationMs": 3
+      "DurationMs": 4
     },
     {
       "Id": "jsonrpc/error-send-terminal",
       "name": "Send To Terminal Task",
       "Passed": true,
       "detail": "got expected error: InvalidParams",
-      "DurationMs": 3
+      "DurationMs": 2
     },
     {
       "Id": "jsonrpc/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "Passed": true,
       "detail": "errorCode=TaskNotFound",
-      "DurationMs": 1
+      "DurationMs": 0
     },
     {
       "Id": "jsonrpc/error-push-not-supported",
@@ -150,7 +150,7 @@
       "name": "SubscribeToTask",
       "Passed": false,
       "detail": "The operation was canceled.",
-      "DurationMs": 15028
+      "DurationMs": 15017
     },
     {
       "Id": "jsonrpc/error-subscribe-not-found",
@@ -164,56 +164,56 @@
       "name": "Stream Message Only",
       "Passed": true,
       "detail": "events=1, hasMessage=True",
-      "DurationMs": 0
+      "DurationMs": 1
     },
     {
       "Id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "Passed": true,
       "detail": "firstHasTask=True, lastTerminal=True, events=4",
-      "DurationMs": 1
+      "DurationMs": 3
     },
     {
       "Id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "Passed": true,
-      "detail": "ctx1=019d555f-866f-753e-8a92-01dda96812c8, ctx2=019d555f-866f-753e-8a92-01dda96812c8",
-      "DurationMs": 4
+      "detail": "ctx1=019d77fc-4acd-77a7-8751-22d056de8857, ctx2=019d77fc-4acd-77a7-8751-22d056de8857",
+      "DurationMs": 3
     },
     {
       "Id": "jsonrpc/get-task-with-history",
       "name": "GetTask With History",
       "Passed": true,
       "detail": "state=Completed, history=1",
-      "DurationMs": 3
+      "DurationMs": 2
     },
     {
       "Id": "jsonrpc/get-task-after-failure",
       "name": "GetTask After Failure",
       "Passed": true,
       "detail": "state=Failed, msg=[task-failure] Simulated failure: this task was designed to fail for testing purposes.",
-      "DurationMs": 3
+      "DurationMs": 2
     },
     {
       "Id": "jsonrpc/subscribe-after-stream-disconnect",
       "name": "Subscribe After Stream Disconnect",
       "Passed": true,
-      "detail": "taskId=019d555f-867b-7365-8696-d3d0c54f97f4, events=10, finalState=Completed",
-      "DurationMs": 8004
+      "detail": "taskId=019d77fc-4ad6-7adb-a6a1-5a3ff6268a3e, events=10, finalState=Completed",
+      "DurationMs": 8003
     },
     {
       "Id": "jsonrpc/spec-extended-card",
       "name": "Spec Extended Card",
       "Passed": true,
       "detail": "public=8 skills, extended=9 skills, hasAdminStatus=False, name=AgentBin Spec Agent (Extended)",
-      "DurationMs": 9
+      "DurationMs": 10
     },
     {
       "Id": "rest/agent-card-echo",
       "name": "Echo Agent Card",
       "Passed": true,
       "detail": "name=AgentBin Echo Agent, skills=1, httpJson=True",
-      "DurationMs": 6
+      "DurationMs": 0
     },
     {
       "Id": "rest/agent-card-spec",
@@ -227,14 +227,14 @@
       "name": "Echo Send Message",
       "Passed": true,
       "detail": "text=Echo: hello from .NET SDK",
-      "DurationMs": 329
+      "DurationMs": 5
     },
     {
       "Id": "rest/spec-message-only",
       "name": "Message Only",
       "Passed": true,
       "detail": "role=Agent",
-      "DurationMs": 0
+      "DurationMs": 1
     },
     {
       "Id": "rest/spec-task-lifecycle",
@@ -248,7 +248,7 @@
       "name": "GetTask",
       "Passed": true,
       "detail": "state=Completed",
-      "DurationMs": 133
+      "DurationMs": 4
     },
     {
       "Id": "rest/spec-task-failure",
@@ -276,28 +276,28 @@
       "name": "Task Not Found",
       "Passed": true,
       "detail": "errorCode=TaskNotFound",
-      "DurationMs": 7
+      "DurationMs": 6
     },
     {
       "Id": "rest/spec-multi-turn",
       "name": "Multi-Turn",
       "Passed": true,
       "detail": "step1=InputRequired, step2=InputRequired, step3=Completed",
-      "DurationMs": 6
+      "DurationMs": 4
     },
     {
       "Id": "rest/spec-task-cancel",
       "name": "Task Cancel",
       "Passed": true,
-      "detail": "taskId=019d555f-adc4-7c4a-b5c9-5c0b7ff63ed9, state=Canceled",
-      "DurationMs": 9
+      "detail": "taskId=019d77fc-702e-7229-82f5-e00c1132daef, state=Canceled",
+      "DurationMs": 11
     },
     {
       "Id": "rest/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "Passed": true,
-      "detail": "taskId=019d555f-adce-718b-88cc-485505a42ee9, state=Canceled, metadataKeys=[]",
-      "DurationMs": 150
+      "detail": "taskId=019d77fc-703a-70b4-ad3d-ddb7bf5329e3, state=Canceled, metadataKeys=[]",
+      "DurationMs": 13
     },
     {
       "Id": "rest/spec-list-tasks",
@@ -339,7 +339,7 @@
       "name": "Send Invalid TaskId",
       "Passed": true,
       "detail": "errorCode=TaskNotFound",
-      "DurationMs": 1
+      "DurationMs": 0
     },
     {
       "Id": "rest/error-push-not-supported",
@@ -353,7 +353,7 @@
       "name": "SubscribeToTask",
       "Passed": false,
       "detail": "The operation was canceled.",
-      "DurationMs": 15004
+      "DurationMs": 15007
     },
     {
       "Id": "rest/error-subscribe-not-found",
@@ -374,13 +374,13 @@
       "name": "Stream Task Lifecycle",
       "Passed": true,
       "detail": "firstHasTask=True, lastTerminal=True, events=4",
-      "DurationMs": 2
+      "DurationMs": 1
     },
     {
       "Id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
       "Passed": true,
-      "detail": "ctx1=019d555f-e915-7184-afc2-261578cd3530, ctx2=019d555f-e915-7184-afc2-261578cd3530",
+      "detail": "ctx1=019d77fc-aaf9-720b-9d14-5560ba2e97b3, ctx2=019d77fc-aaf9-720b-9d14-5560ba2e97b3",
       "DurationMs": 3
     },
     {
@@ -388,42 +388,42 @@
       "name": "GetTask With History",
       "Passed": true,
       "detail": "state=Completed, history=1",
-      "DurationMs": 4
+      "DurationMs": 2
     },
     {
       "Id": "rest/get-task-after-failure",
       "name": "GetTask After Failure",
       "Passed": true,
       "detail": "state=Failed, msg=[task-failure] Simulated failure: this task was designed to fail for testing purposes.",
-      "DurationMs": 1
+      "DurationMs": 5
     },
     {
       "Id": "rest/subscribe-after-stream-disconnect",
       "name": "Subscribe After Stream Disconnect",
       "Passed": true,
-      "detail": "taskId=019d555f-e91f-721e-8dc7-8b0eeb7e620b, events=10, finalState=Completed",
-      "DurationMs": 8003
+      "detail": "taskId=019d77fc-ab06-72ff-b046-4e18435b0094, events=10, finalState=Completed",
+      "DurationMs": 8010
     },
     {
       "Id": "rest/spec-extended-card",
       "name": "Spec Extended Card",
       "Passed": true,
       "detail": "public=8 skills, extended=9 skills, hasAdminStatus=False, name=AgentBin Spec Agent (Extended)",
-      "DurationMs": 5
+      "DurationMs": 15
     },
     {
       "Id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
       "Passed": false,
       "detail": "HTTP request failed",
-      "DurationMs": 4
+      "DurationMs": 12
     },
     {
       "Id": "v03/spec03-send-message",
       "name": "v0.3 Send Message",
       "Passed": false,
       "detail": "SDK error: Response status code does not indicate success: 404 (Not Found).",
-      "DurationMs": 0
+      "DurationMs": 1
     },
     {
       "Id": "v03/spec03-task-lifecycle",

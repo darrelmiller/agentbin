@@ -2,7 +2,7 @@
   "client": "js",
   "sdk": "a2a-js (local build, 0.3.13)",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-03T22:05:21Z",
+  "timestamp": "2026-04-08T17:18:22Z",
   "baseUrl": "http://localhost:5000",
   "results": [
     {
@@ -10,7 +10,7 @@
       "name": "Echo Agent Card",
       "passed": false,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 192
+      "durationMs": 82
     },
     {
       "id": "jsonrpc/agent-card-spec",
@@ -24,28 +24,28 @@
       "name": "Spec Extended Card",
       "passed": true,
       "detail": "public=8 skills, extended=9 skills, admin-status=true",
-      "durationMs": 11
+      "durationMs": 15
     },
     {
       "id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
       "passed": false,
       "detail": "JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found\"}",
-      "durationMs": 5
+      "durationMs": 10
     },
     {
       "id": "jsonrpc/spec-message-only",
       "name": "Spec Message Only",
       "passed": false,
       "detail": "JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found\"}",
-      "durationMs": 5
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Spec Task Lifecycle",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 7
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/spec-get-task",
@@ -66,7 +66,7 @@
       "name": "Spec Data Types",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 2
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-streaming",
@@ -80,14 +80,14 @@
       "name": "Spec Multi-Turn",
       "passed": false,
       "detail": "JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found\"}",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-task-cancel",
       "name": "Spec Task Cancel",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
@@ -108,14 +108,14 @@
       "name": "Spec Return Immediately",
       "passed": false,
       "detail": "JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found\"}",
-      "durationMs": 4
+      "durationMs": 6
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": true,
       "detail": "error=JSONRPCTransportError: JSON-RPC error: method not found (Code: -32601) Data: {\"error\":\"method not found",
-      "durationMs": 3
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
@@ -157,28 +157,28 @@
       "name": "SubscribeToTask",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found",
       "passed": false,
       "detail": "error=Error: Invalid response Content-Type for SSE stream for tasks/resubscribe. Expected 'te",
-      "durationMs": 2
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 3
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
@@ -192,7 +192,7 @@
       "name": "GetTask With History",
       "passed": false,
       "detail": "Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/get-task-after-failure",
@@ -227,7 +227,7 @@
       "name": "REST Echo Send Message",
       "passed": false,
       "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found\n",
-      "durationMs": 3
+      "durationMs": 4
     },
     {
       "id": "rest/spec-message-only",
@@ -241,7 +241,7 @@
       "name": "REST Spec Task Lifecycle",
       "passed": false,
       "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
-      "durationMs": 3
+      "durationMs": 2
     },
     {
       "id": "rest/spec-get-task",
@@ -269,7 +269,7 @@
       "name": "REST Spec Streaming",
       "passed": false,
       "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
-      "durationMs": 3
+      "durationMs": 2
     },
     {
       "id": "rest/spec-multi-turn",
@@ -318,21 +318,21 @@
       "name": "Cancel Not Found",
       "passed": true,
       "detail": "error=Error: HTTP error for /v1/tasks/bogus-cancel-id-99999:cancel! Status: 404 Not Found. Re",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": false,
       "detail": "error=Error: HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "rest/error-send-terminal",
       "name": "Send To Terminal Task",
       "passed": true,
       "detail": "error=Error: HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not",
-      "durationMs": 3
+      "durationMs": 4
     },
     {
       "id": "rest/error-send-invalid-task",
@@ -381,28 +381,28 @@
       "name": "Context Preserved",
       "passed": false,
       "detail": "HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found\n",
-      "durationMs": 2
+      "durationMs": 3
     },
     {
       "id": "rest/get-task-with-history",
       "name": "GetTask With History",
       "passed": false,
       "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "rest/get-task-after-failure",
       "name": "GetTask After Failure",
       "passed": false,
       "detail": "HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found\n",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "v03/spec03-send-message",
@@ -416,7 +416,7 @@
       "name": "v0.3 Task Lifecycle",
       "passed": false,
       "detail": "SDK v0.3 failed: Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "v03/spec03-streaming",

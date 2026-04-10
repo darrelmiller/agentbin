@@ -1,0 +1,101 @@
+__  ____  __  _____   ___  __ ____  ______ 
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/ 
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \   
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/   
+10:35:53 INFO  [or.a2.sd.se.ev.MainEventBusProcessor] MainEventBusProcessor started
+10:35:53 INFO  [or.a2.sd.se.ev.MainEventBusProcessorInitializer] MainEventBusProcessor initialized and started
+10:35:53 INFO  [or.a2.sd.se.ev.MainEventBusProcessor] MainEventBusProcessor processing loop started
+10:35:55 INFO  [io.quarkus] agentbin-java 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.17.7) started in 3.448s. Listening on: http://0.0.0.0:5000
+10:35:55 INFO  [io.quarkus] Profile prod activated. 
+10:35:55 INFO  [io.quarkus] Installed features: [cdi, reactive-routes, resteasy, smallrye-context-propagation, vertx]
+10:36:10 INFO  [or.a2.sd.se.co.DefaultValuesConfigProvider] Loaded 6 A2A default configuration values from 1 resource(s)
+10:36:10 INFO  [or.a2.sd.se.ut.as.AsyncExecutorProducer] Initializing async executor: corePoolSize=5, maxPoolSize=50, keepAliveSeconds=60, queueCapacity=100
+10:36:39 ERROR [io.qu.ve.ht.ru.QuarkusErrorHandler] HTTP Request to /spec/ failed, error id: 3c45ef83-8e86-4f94-891c-3275b3cfe9af-1: java.lang.NoClassDefFoundError: com/google/protobuf/RuntimeVersion$RuntimeDomain
+	at org.a2aproject.sdk.grpc.AgentCard.<clinit>(AgentCard.java:25)
+	at org.a2aproject.sdk.grpc.mapper.AgentCardMapperImpl.toProto(AgentCardMapperImpl.java:37)
+	at org.a2aproject.sdk.grpc.utils.ProtoUtils$ToProto.agentCard(ProtoUtils.java:56)
+	at org.a2aproject.sdk.grpc.utils.ProtoUtils$ToProto.getExtendedCardResponse(ProtoUtils.java:190)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes.convertToProto(A2AServerRoutes.java:672)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes.serializeResponse(A2AServerRoutes.java:623)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes.invokeJSONRPCHandler(A2AServerRoutes.java:316)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes_RouteHandler_invokeJSONRPCHandler_cb994272bb227a16b2ac05c542ad196c653ed9b5.invoke(Unknown Source)
+	at io.quarkus.vertx.web.runtime.RouteHandler.handle(RouteHandler.java:61)
+	at io.quarkus.vertx.web.runtime.RouteHandler.handle(RouteHandler.java:22)
+	at io.vertx.ext.web.impl.BlockingHandlerDecorator.lambda$handle$0(BlockingHandlerDecorator.java:48)
+	at io.vertx.core.impl.ContextImpl.lambda$executeBlocking$5(ContextImpl.java:205)
+	at io.vertx.core.impl.ContextInternal.dispatch(ContextInternal.java:270)
+	at io.vertx.core.impl.ContextImpl$1.execute(ContextImpl.java:221)
+	at io.vertx.core.impl.WorkerTask.run(WorkerTask.java:56)
+	at io.quarkus.vertx.core.runtime.VertxCoreRecorder$15.runWith(VertxCoreRecorder.java:637)
+	at org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2675)
+	at org.jboss.threads.EnhancedQueueExecutor$Task.run(EnhancedQueueExecutor.java:2654)
+	at org.jboss.threads.EnhancedQueueExecutor.runThreadBody(EnhancedQueueExecutor.java:1627)
+	at org.jboss.threads.EnhancedQueueExecutor$ThreadBody.run(EnhancedQueueExecutor.java:1594)
+	at org.jboss.threads.DelegatingRunnable.run(DelegatingRunnable.java:11)
+	at org.jboss.threads.ThreadLocalResettingRunnable.run(ThreadLocalResettingRunnable.java:11)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.ClassNotFoundException: com.google.protobuf.RuntimeVersion$RuntimeDomain
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
+	at io.quarkus.bootstrap.runner.RunnerClassLoader.loadClass(RunnerClassLoader.java:114)
+	at io.quarkus.bootstrap.runner.RunnerClassLoader.loadClass(RunnerClassLoader.java:72)
+	... 24 more
+
+10:37:06 ERROR [io.qu.ve.ht.ru.QuarkusErrorHandler] HTTP Request to /spec/ failed, error id: 3c45ef83-8e86-4f94-891c-3275b3cfe9af-2: java.lang.NoClassDefFoundError: Could not initialize class org.a2aproject.sdk.grpc.AgentCard
+	at org.a2aproject.sdk.grpc.mapper.AgentCardMapperImpl.toProto(AgentCardMapperImpl.java:37)
+	at org.a2aproject.sdk.grpc.utils.ProtoUtils$ToProto.agentCard(ProtoUtils.java:56)
+	at org.a2aproject.sdk.grpc.utils.ProtoUtils$ToProto.getExtendedCardResponse(ProtoUtils.java:190)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes.convertToProto(A2AServerRoutes.java:672)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes.serializeResponse(A2AServerRoutes.java:623)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes.invokeJSONRPCHandler(A2AServerRoutes.java:316)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes_RouteHandler_invokeJSONRPCHandler_cb994272bb227a16b2ac05c542ad196c653ed9b5.invoke(Unknown Source)
+	at io.quarkus.vertx.web.runtime.RouteHandler.handle(RouteHandler.java:61)
+	at io.quarkus.vertx.web.runtime.RouteHandler.handle(RouteHandler.java:22)
+	at io.vertx.ext.web.impl.BlockingHandlerDecorator.lambda$handle$0(BlockingHandlerDecorator.java:48)
+	at io.vertx.core.impl.ContextImpl.lambda$executeBlocking$5(ContextImpl.java:205)
+	at io.vertx.core.impl.ContextInternal.dispatch(ContextInternal.java:270)
+	at io.vertx.core.impl.ContextImpl$1.execute(ContextImpl.java:221)
+	at io.vertx.core.impl.WorkerTask.run(WorkerTask.java:56)
+	at io.quarkus.vertx.core.runtime.VertxCoreRecorder$15.runWith(VertxCoreRecorder.java:637)
+	at org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2675)
+	at org.jboss.threads.EnhancedQueueExecutor$Task.run(EnhancedQueueExecutor.java:2654)
+	at org.jboss.threads.EnhancedQueueExecutor.runThreadBody(EnhancedQueueExecutor.java:1627)
+	at org.jboss.threads.EnhancedQueueExecutor$ThreadBody.run(EnhancedQueueExecutor.java:1594)
+	at org.jboss.threads.DelegatingRunnable.run(DelegatingRunnable.java:11)
+	at org.jboss.threads.ThreadLocalResettingRunnable.run(ThreadLocalResettingRunnable.java:11)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.ExceptionInInitializerError: Exception java.lang.NoClassDefFoundError: com/google/protobuf/RuntimeVersion$RuntimeDomain [in thread "executor-thread-1"]
+	at org.a2aproject.sdk.grpc.AgentCard.<clinit>(AgentCard.java:25)
+	... 23 more
+
+10:37:06 ERROR [io.qu.ve.ht.ru.QuarkusErrorHandler] HTTP Request to /spec/ failed, error id: 3c45ef83-8e86-4f94-891c-3275b3cfe9af-3: java.lang.NoClassDefFoundError: Could not initialize class org.a2aproject.sdk.grpc.AgentCard
+	at org.a2aproject.sdk.grpc.mapper.AgentCardMapperImpl.toProto(AgentCardMapperImpl.java:37)
+	at org.a2aproject.sdk.grpc.utils.ProtoUtils$ToProto.agentCard(ProtoUtils.java:56)
+	at org.a2aproject.sdk.grpc.utils.ProtoUtils$ToProto.getExtendedCardResponse(ProtoUtils.java:190)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes.convertToProto(A2AServerRoutes.java:672)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes.serializeResponse(A2AServerRoutes.java:623)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes.invokeJSONRPCHandler(A2AServerRoutes.java:316)
+	at org.a2aproject.sdk.server.apps.quarkus.A2AServerRoutes_RouteHandler_invokeJSONRPCHandler_cb994272bb227a16b2ac05c542ad196c653ed9b5.invoke(Unknown Source)
+	at io.quarkus.vertx.web.runtime.RouteHandler.handle(RouteHandler.java:61)
+	at io.quarkus.vertx.web.runtime.RouteHandler.handle(RouteHandler.java:22)
+	at io.vertx.ext.web.impl.BlockingHandlerDecorator.lambda$handle$0(BlockingHandlerDecorator.java:48)
+	at io.vertx.core.impl.ContextImpl.lambda$executeBlocking$5(ContextImpl.java:205)
+	at io.vertx.core.impl.ContextInternal.dispatch(ContextInternal.java:270)
+	at io.vertx.core.impl.ContextImpl$1.execute(ContextImpl.java:221)
+	at io.vertx.core.impl.WorkerTask.run(WorkerTask.java:56)
+	at io.quarkus.vertx.core.runtime.VertxCoreRecorder$15.runWith(VertxCoreRecorder.java:637)
+	at org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2675)
+	at org.jboss.threads.EnhancedQueueExecutor$Task.run(EnhancedQueueExecutor.java:2654)
+	at org.jboss.threads.EnhancedQueueExecutor.runThreadBody(EnhancedQueueExecutor.java:1627)
+	at org.jboss.threads.EnhancedQueueExecutor$ThreadBody.run(EnhancedQueueExecutor.java:1594)
+	at org.jboss.threads.DelegatingRunnable.run(DelegatingRunnable.java:11)
+	at org.jboss.threads.ThreadLocalResettingRunnable.run(ThreadLocalResettingRunnable.java:11)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.ExceptionInInitializerError: Exception java.lang.NoClassDefFoundError: com/google/protobuf/RuntimeVersion$RuntimeDomain [in thread "executor-thread-1"]
+	at org.a2aproject.sdk.grpc.AgentCard.<clinit>(AgentCard.java:25)
+	... 23 more
+

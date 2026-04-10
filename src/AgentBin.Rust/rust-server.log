@@ -1,0 +1,5 @@
+[2m2026-04-10T14:29:15.207684Z[0m [32m INFO[0m [2magentbin_rust[0m[2m:[0m Starting AgentBin Rust Server on port 5400
+[2m2026-04-10T14:29:15.208752Z[0m [32m INFO[0m [2magentbin_rust[0m[2m:[0m Server listening on http://0.0.0.0:5400
+[2m2026-04-10T14:29:15.208983Z[0m [32m INFO[0m [2magentbin_rust[0m[2m:[0m Spec agent: http://localhost:5400/spec
+[2m2026-04-10T14:29:15.209449Z[0m [32m INFO[0m [2magentbin_rust[0m[2m:[0m Echo agent: http://localhost:5400/echo
+[2m2026-04-10T14:29:15.209707Z[0m [32m INFO[0m [2magentbin_rust[0m[2m:[0m Health: http://localhost:5400/health

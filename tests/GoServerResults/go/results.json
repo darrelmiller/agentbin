@@ -1,23 +1,23 @@
 {
   "client": "go",
-  "sdk": "a2a-go v2.0.1",
+  "sdk": "a2a-go v2.1.0",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-03T22:04:24Z",
-  "baseUrl": "http://localhost:5000",
+  "timestamp": "2026-04-10T15:22:34Z",
+  "baseUrl": "http://localhost:5200",
   "results": [
     {
       "id": "jsonrpc/agent-card-echo",
       "name": "Echo Agent Card",
       "passed": true,
       "detail": "name=AgentBin Echo Agent, skills=1",
-      "durationMs": 71
+      "durationMs": 40
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/echo-send-message",
@@ -37,14 +37,14 @@
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=TASK_STATE_COMPLETED, artifacts=1, id=019d5560-3487-7369-a5c3-2575dbb4b060",
-      "durationMs": 2
+      "detail": "state=TASK_STATE_COMPLETED, artifacts=1, id=019d77fc-d46e-7886-b7be-13d4cb75674e",
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-get-task",
       "name": "Get Task",
       "passed": true,
-      "detail": "id=019d5560-3487-7369-a5c3-2575dbb4b060, state=TASK_STATE_COMPLETED",
+      "detail": "id=019d77fc-d46e-7886-b7be-13d4cb75674e, state=TASK_STATE_COMPLETED",
       "durationMs": 0
     },
     {
@@ -52,7 +52,7 @@
       "name": "Task Failure",
       "passed": true,
       "detail": "state=TASK_STATE_FAILED",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-data-types",
@@ -66,34 +66,34 @@
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=TASK_STATE_COMPLETED, hasArtifact=true",
-      "durationMs": 1503
+      "durationMs": 1502
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": true,
       "detail": "got expected error: task not found",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/spec-multi-turn",
       "name": "Multi-Turn Conversation",
       "passed": true,
-      "detail": "taskId=019d5560-3a71-7cfe-9135-032a23ed6e4b, 3 steps completed",
-      "durationMs": 6
+      "detail": "taskId=019d77fc-da57-7849-b752-3be4a12a2fad, 3 steps completed",
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/spec-task-cancel",
       "name": "Task Cancel",
       "passed": true,
-      "detail": "taskId=019d5560-3a79-747c-b625-b9f20822f9f1, state=CANCELED",
+      "detail": "taskId=019d77fc-da5d-72d4-b9c8-27653439fdde, state=CANCELED",
       "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": true,
-      "detail": "taskId=019d5560-3a7c-7e46-bea7-9dc78e8ce02d, state=canceled, metadata={reason:test-cancel-reason, requestedBy:go-sdk}",
+      "detail": "taskId=019d77fc-da60-7882-a39c-e7f67b035024, state=canceled, metadata={reason:test-cancel-reason, requestedBy:go-sdk}",
       "durationMs": 2
     },
     {
@@ -108,7 +108,7 @@
       "name": "Return Immediately",
       "passed": true,
       "detail": "took 0.0s, state=TASK_STATE_SUBMITTED — returned promptly",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
@@ -122,7 +122,7 @@
       "name": "Cancel Terminal Error",
       "passed": true,
       "detail": "got error (isTaskNotCancelable=true): task cannot be canceled",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-send-terminal",
@@ -149,8 +149,8 @@
       "id": "jsonrpc/subscribe-to-task",
       "name": "Subscribe To Task",
       "passed": true,
-      "detail": "taskId=019d5560-3a86-7ec0-acfd-fd82df6620fa, subscriptionEvents=1",
-      "durationMs": 4
+      "detail": "taskId=019d77fc-da69-7d24-8392-72ad2bed8a60, subscriptionEvents=1",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
@@ -164,7 +164,7 @@
       "name": "Stream Message Only",
       "passed": true,
       "detail": "events=1, gotMessage=true",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
@@ -177,22 +177,22 @@
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Multi-Turn Context Preserved",
       "passed": true,
-      "detail": "taskId=019d5560-3a8e-7d93-b29d-d377a587d684, contextID=019d5560-3a8e-7d94-a09d-447648e9f682 preserved",
-      "durationMs": 2
+      "detail": "taskId=019d77fc-da73-7ed4-8a02-7ebbf21bfdcb, contextID=019d77fc-da73-7ed5-94e8-d119854c50ac preserved",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/get-task-with-history",
       "name": "Get Task With History",
       "passed": true,
-      "detail": "taskId=019d5560-3a91-7080-a5f2-f0de1219f461, state=TASK_STATE_COMPLETED, historyLen=1",
-      "durationMs": 1
+      "detail": "taskId=019d77fc-da78-762d-9e53-33c4ac5f7c2d, state=TASK_STATE_COMPLETED, historyLen=1",
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/get-task-after-failure",
       "name": "Get Task After Failure",
       "passed": true,
       "detail": "state=TASK_STATE_FAILED, hasMessage=true",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-extended-card",
@@ -233,14 +233,14 @@
       "id": "rest/spec-task-lifecycle",
       "name": "REST Task Lifecycle",
       "passed": true,
-      "detail": "state=TASK_STATE_COMPLETED, artifacts=1, id=019d5560-3a96-7647-a105-1652283d99c2",
-      "durationMs": 2
+      "detail": "state=TASK_STATE_COMPLETED, artifacts=1, id=019d77fc-da80-765f-9224-d53805de034c",
+      "durationMs": 1
     },
     {
       "id": "rest/spec-get-task",
       "name": "REST Get Task",
       "passed": true,
-      "detail": "id=019d5560-3a96-7647-a105-1652283d99c2, state=TASK_STATE_COMPLETED",
+      "detail": "id=019d77fc-da80-765f-9224-d53805de034c, state=TASK_STATE_COMPLETED",
       "durationMs": 0
     },
     {
@@ -255,42 +255,42 @@
       "name": "REST Data Types",
       "passed": true,
       "detail": "text=true, data=true, file=true",
-      "durationMs": 1
+      "durationMs": 3
     },
     {
       "id": "rest/spec-streaming",
       "name": "REST Streaming",
       "passed": true,
       "detail": "events=7, lastState=TASK_STATE_COMPLETED, hasArtifact=true",
-      "durationMs": 1502
+      "durationMs": 1503
     },
     {
       "id": "rest/error-task-not-found",
       "name": "REST Task Not Found",
       "passed": true,
       "detail": "got expected error: failed to get task: task not found",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/spec-multi-turn",
       "name": "REST Multi-Turn Conversation",
       "passed": true,
-      "detail": "taskId=019d5560-407b-7466-bd95-645d264a3a95, 3 steps completed",
+      "detail": "taskId=019d77fc-e067-7791-96d4-05142dd0a39e, 3 steps completed",
       "durationMs": 4
     },
     {
       "id": "rest/spec-task-cancel",
       "name": "REST Task Cancel",
       "passed": true,
-      "detail": "taskId=019d5560-4080-7a7a-94d9-2a0357748a12, state=CANCELED",
+      "detail": "taskId=019d77fc-e06d-70cf-b895-aa11969f39f7, state=CANCELED",
       "durationMs": 3
     },
     {
       "id": "rest/spec-cancel-with-metadata",
       "name": "REST Cancel With Metadata",
       "passed": false,
-      "detail": "taskId=019d5560-4084-716a-878c-32347b72a3b0, state=canceled but metadata is nil",
-      "durationMs": 1
+      "detail": "taskId=019d77fc-e070-7b99-89f8-035a1ff05475, state=canceled but metadata is nil",
+      "durationMs": 2
     },
     {
       "id": "rest/spec-list-tasks",
@@ -304,7 +304,7 @@
       "name": "REST Return Immediately",
       "passed": true,
       "detail": "took 0.0s, state=TASK_STATE_SUBMITTED — returned promptly",
-      "durationMs": 0
+      "durationMs": 1
     },
     {
       "id": "rest/error-cancel-not-found",
@@ -318,7 +318,7 @@
       "name": "REST Cancel Terminal Error",
       "passed": true,
       "detail": "got error (isTaskNotCancelable=true): failed to cancel: cancelation failed: canceler setup failed: task in non-cancela...",
-      "durationMs": 1
+      "durationMs": 2
     },
     {
       "id": "rest/error-send-terminal",
@@ -345,8 +345,8 @@
       "id": "rest/subscribe-to-task",
       "name": "REST Subscribe To Task",
       "passed": true,
-      "detail": "taskId=019d5560-408c-7d72-a09b-1b6fa41de576, subscriptionEvents=1",
-      "durationMs": 4
+      "detail": "taskId=019d77fc-e07b-7577-ad7d-cacb5a4e33c1, subscriptionEvents=1",
+      "durationMs": 3
     },
     {
       "id": "rest/error-subscribe-not-found",
@@ -360,28 +360,28 @@
       "name": "REST Stream Message Only",
       "passed": true,
       "detail": "events=1, gotMessage=true",
-      "durationMs": 3
+      "durationMs": 1
     },
     {
       "id": "rest/stream-task-lifecycle",
       "name": "REST Stream Task Lifecycle",
       "passed": true,
       "detail": "gotTaskEvent=true, lastState=TASK_STATE_COMPLETED",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "rest/multi-turn-context-preserved",
       "name": "REST Multi-Turn Context Preserved",
       "passed": true,
-      "detail": "taskId=019d5560-4097-7a1e-919d-daed9344ec1d, contextID=019d5560-4097-7a1f-a3c3-364b76ad8406 preserved",
-      "durationMs": 5
+      "detail": "taskId=019d77fc-e083-7b6a-8b5d-32c3c7af02d2, contextID=019d77fc-e083-7b6b-9377-f317e00a790c preserved",
+      "durationMs": 3
     },
     {
       "id": "rest/get-task-with-history",
       "name": "REST Get Task With History",
       "passed": true,
-      "detail": "taskId=019d5560-409d-7ca8-9254-5c712ab821c9, state=TASK_STATE_COMPLETED, historyLen=1",
-      "durationMs": 2
+      "detail": "taskId=019d77fc-e086-7eea-8d13-6e36c2d6eead, state=TASK_STATE_COMPLETED, historyLen=1",
+      "durationMs": 1
     },
     {
       "id": "rest/get-task-after-failure",
@@ -409,21 +409,21 @@
       "name": "v0.3 Send Message",
       "passed": false,
       "detail": "card resolve error (SDK may not support v0.3): card request failed, status: 404 Not Found",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "v03/spec03-task-lifecycle",
       "name": "v0.3 Task Lifecycle",
       "passed": false,
       "detail": "card resolve error (SDK may not support v0.3): card request failed, status: 404 Not Found",
-      "durationMs": 2
+      "durationMs": 1
     },
     {
       "id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
       "passed": false,
       "detail": "card resolve error (SDK may not support v0.3): card request failed, status: 404 Not Found",
-      "durationMs": 2
+      "durationMs": 1
     }
   ]
 }

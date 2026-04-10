@@ -1,11 +1,11 @@
 {
-  "baseUrl" : "http:\/\/localhost:5000",
+  "baseUrl" : "http:\/\/localhost:5400",
   "client" : "swift",
   "protocolVersion" : "1.0",
   "results" : [
     {
       "detail" : "name=AgentBin Echo Agent, skills=1",
-      "durationMs" : 1246,
+      "durationMs" : 232,
       "id" : "jsonrpc\/agent-card-echo",
       "name" : "Echo Agent Card",
       "passed" : true
@@ -26,14 +26,14 @@
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 373,
+      "durationMs" : 216,
       "id" : "jsonrpc\/echo-send-message",
       "name" : "Echo Send Message",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 209,
+      "durationMs" : 215,
       "id" : "jsonrpc\/spec-message-only",
       "name" : "Message Only",
       "passed" : false
@@ -54,28 +54,28 @@
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 204,
+      "durationMs" : 213,
       "id" : "jsonrpc\/spec-task-failure",
       "name" : "Task Failure",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 204,
+      "durationMs" : 218,
       "id" : "jsonrpc\/spec-data-types",
       "name" : "Data Types",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 2,
+      "durationMs" : 4,
       "id" : "jsonrpc\/spec-streaming",
       "name" : "Streaming",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 220,
+      "durationMs" : 210,
       "id" : "jsonrpc\/spec-multi-turn",
       "name" : "Multi-Turn Conversation",
       "passed" : false
@@ -103,63 +103,63 @@
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 213,
+      "durationMs" : 216,
       "id" : "jsonrpc\/spec-return-immediately",
       "name" : "Return Immediately",
       "passed" : false
     },
     {
       "detail" : "got expected error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 204,
+      "durationMs" : 218,
       "id" : "jsonrpc\/error-task-not-found",
       "name" : "Task Not Found Error",
       "passed" : true
     },
     {
       "detail" : "got expected error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 220,
+      "durationMs" : 216,
       "id" : "jsonrpc\/error-cancel-not-found",
       "name" : "Cancel Not Found Error",
       "passed" : true
     },
     {
       "detail" : "error creating task: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 205,
+      "durationMs" : 214,
       "id" : "jsonrpc\/error-cancel-terminal",
       "name" : "Cancel Terminal Error",
       "passed" : false
     },
     {
       "detail" : "error creating task: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 205,
+      "durationMs" : 217,
       "id" : "jsonrpc\/error-send-terminal",
       "name" : "Send Terminal Error",
       "passed" : false
     },
     {
       "detail" : "got expected error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 206,
+      "durationMs" : 217,
       "id" : "jsonrpc\/error-send-invalid-task",
       "name" : "Send Invalid Task Error",
       "passed" : true
     },
     {
       "detail" : "got expected error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 219,
+      "durationMs" : 217,
       "id" : "jsonrpc\/error-push-not-supported",
       "name" : "Push Not Supported Error",
       "passed" : true
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 1,
+      "durationMs" : 2,
       "id" : "jsonrpc\/subscribe-to-task",
       "name" : "Subscribe To Task",
       "passed" : false
     },
     {
       "detail" : "got expected error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 3,
+      "durationMs" : 2,
       "id" : "jsonrpc\/error-subscribe-not-found",
       "name" : "Subscribe Not Found Error",
       "passed" : true
@@ -180,35 +180,35 @@
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 209,
+      "durationMs" : 211,
       "id" : "jsonrpc\/multi-turn-context-preserved",
       "name" : "Multi-Turn Context Preserved",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 208,
+      "durationMs" : 216,
       "id" : "jsonrpc\/get-task-with-history",
       "name" : "Get Task With History",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 405\"))",
-      "durationMs" : 214,
+      "durationMs" : 216,
       "id" : "jsonrpc\/get-task-after-failure",
       "name" : "Get Task After Failure",
       "passed" : false
     },
     {
       "detail" : "name=AgentBin Echo Agent, skills=1",
-      "durationMs" : 3,
+      "durationMs" : 1,
       "id" : "rest\/agent-card-echo",
       "name" : "REST Echo Agent Card",
       "passed" : true
     },
     {
       "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 3,
+      "durationMs" : 2,
       "id" : "rest\/agent-card-spec",
       "name" : "REST Spec Agent Card",
       "passed" : false
@@ -221,22 +221,22 @@
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "detail" : "error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: [CodingKeys…",
       "durationMs" : 209,
       "id" : "rest\/echo-send-message",
       "name" : "REST Echo Send Message",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 206,
+      "detail" : "error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: [CodingKeys…",
+      "durationMs" : 212,
       "id" : "rest\/spec-message-only",
       "name" : "REST Message Only",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 204,
+      "detail" : "error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: [CodingKeys…",
+      "durationMs" : 215,
       "id" : "rest\/spec-task-lifecycle",
       "name" : "REST Task Lifecycle",
       "passed" : false
@@ -249,148 +249,148 @@
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 209,
+      "detail" : "error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: [CodingKeys…",
+      "durationMs" : 217,
       "id" : "rest\/spec-task-failure",
       "name" : "REST Task Failure",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 203,
+      "detail" : "error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: [CodingKeys…",
+      "durationMs" : 218,
       "id" : "rest\/spec-data-types",
       "name" : "REST Data Types",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 2,
+      "detail" : "events=0, lastState=nil, hasArtifact=false",
+      "durationMs" : 6,
       "id" : "rest\/spec-streaming",
       "name" : "REST Streaming",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 219,
+      "detail" : "error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: [CodingKeys…",
+      "durationMs" : 210,
       "id" : "rest\/spec-multi-turn",
       "name" : "REST Multi-Turn Conversation",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 1,
+      "detail" : "no task ID from stream",
+      "durationMs" : 3,
       "id" : "rest\/spec-task-cancel",
       "name" : "REST Task Cancel",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 1,
+      "detail" : "no task ID from stream",
+      "durationMs" : 2,
       "id" : "rest\/spec-cancel-with-metadata",
       "name" : "REST Cancel With Metadata",
       "passed" : false
     },
     {
       "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 216,
+      "durationMs" : 208,
       "id" : "rest\/spec-list-tasks",
       "name" : "REST List Tasks",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 206,
+      "detail" : "error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: [CodingKeys…",
+      "durationMs" : 204,
       "id" : "rest\/spec-return-immediately",
       "name" : "REST Return Immediately",
       "passed" : false
     },
     {
       "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 207,
+      "durationMs" : 214,
       "id" : "rest\/error-task-not-found",
       "name" : "REST Task Not Found Error",
       "passed" : true
     },
     {
-      "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 206,
+      "detail" : "got expected error: encodingError(underlying: Optional(Swift.DecodingError.keyNotFound(CodingKeys(stringValue: \"contextI…",
+      "durationMs" : 218,
       "id" : "rest\/error-cancel-not-found",
       "name" : "REST Cancel Not Found Error",
       "passed" : true
     },
     {
-      "detail" : "error creating task: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 206,
+      "detail" : "error creating task: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(cod…",
+      "durationMs" : 214,
       "id" : "rest\/error-cancel-terminal",
       "name" : "REST Cancel Terminal Error",
       "passed" : false
     },
     {
-      "detail" : "error creating task: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 206,
+      "detail" : "error creating task: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(cod…",
+      "durationMs" : 214,
       "id" : "rest\/error-send-terminal",
       "name" : "REST Send Terminal Error",
       "passed" : false
     },
     {
-      "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 204,
+      "detail" : "got expected error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(cod…",
+      "durationMs" : 203,
       "id" : "rest\/error-send-invalid-task",
       "name" : "REST Send Invalid Task Error",
       "passed" : true
     },
     {
-      "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 218,
+      "detail" : "got expected error: encodingError(underlying: Optional(Swift.DecodingError.valueNotFound(Swift.String, Swift.DecodingErr…",
+      "durationMs" : 216,
       "id" : "rest\/error-push-not-supported",
       "name" : "REST Push Not Supported Error",
       "passed" : true
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 1,
+      "detail" : "no task ID from stream",
+      "durationMs" : 2,
       "id" : "rest\/subscribe-to-task",
       "name" : "REST Subscribe To Task",
       "passed" : false
     },
     {
       "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 1,
+      "durationMs" : 2,
       "id" : "rest\/error-subscribe-not-found",
       "name" : "REST Subscribe Not Found Error",
       "passed" : true
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 1,
+      "detail" : "events=0, gotMessage=false",
+      "durationMs" : 2,
       "id" : "rest\/stream-message-only",
       "name" : "REST Stream Message Only",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "detail" : "gotTaskEvent=false, lastState=nil",
       "durationMs" : 2,
       "id" : "rest\/stream-task-lifecycle",
       "name" : "REST Stream Task Lifecycle",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 211,
+      "detail" : "error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: [CodingKeys…",
+      "durationMs" : 207,
       "id" : "rest\/multi-turn-context-preserved",
       "name" : "REST Multi-Turn Context Preserved",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 206,
+      "detail" : "error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: [CodingKeys…",
+      "durationMs" : 217,
       "id" : "rest\/get-task-with-history",
       "name" : "REST Get Task With History",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 205,
+      "detail" : "error: encodingError(underlying: Optional(Swift.DecodingError.dataCorrupted(Swift.DecodingError.Context(codingPath: [CodingKeys…",
+      "durationMs" : 216,
       "id" : "rest\/get-task-after-failure",
       "name" : "REST Get Task After Failure",
       "passed" : false
@@ -404,26 +404,26 @@
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 218,
+      "durationMs" : 212,
       "id" : "v03\/spec03-send-message",
       "name" : "v0.3 Send Message",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 210,
+      "durationMs" : 215,
       "id" : "v03\/spec03-task-lifecycle",
       "name" : "v0.3 Task Lifecycle",
       "passed" : false
     },
     {
       "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 1,
+      "durationMs" : 2,
       "id" : "v03\/spec03-streaming",
       "name" : "v0.3 Streaming",
       "passed" : false
     }
   ],
   "sdk" : "a2a-client-swift 1.0.12",
-  "timestamp" : "2026-04-04T01:13:58Z"
+  "timestamp" : "2026-04-10T15:36:37Z"
 }

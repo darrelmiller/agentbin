@@ -2,141 +2,141 @@
   "client": "python",
   "sdk": "a2a-sdk 1.0.0a1",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-10T14:58:45Z",
-  "baseUrl": "http://localhost:5100",
+  "timestamp": "2026-04-10T15:37:30Z",
+  "baseUrl": "http://localhost:5000",
   "results": [
     {
       "id": "jsonrpc/agent-card-echo",
-      "name": "Echo Agent Card",
-      "passed": true,
-      "detail": "name=Echo Agent, skills=1",
-      "durationMs": 135
+      "name": "jsonrpc/agent-card-echo",
+      "passed": false,
+      "detail": "EXCEPTION: Failed to fetch agent card from http://localhost:5000/echo/.well-known/agent-card.json (HTTP 404): Client error '404 Not Found' for url 'http://localhost:5000/echo/.well-known/agent-card.json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": true,
-      "detail": "name=AgentBin Spec Agent, skills=['message-only', 'task-lifecycle', 'task-failure', 'task-cancel', 'multi-turn', 'streaming', 'long-running', 'data-types']",
-      "durationMs": 18
+      "detail": "name=AgentBin Spec Agent (Java), skills=['message-only', 'task-lifecycle', 'task-failure', 'task-cancel', 'multi-turn', 'streaming', 'long-running', 'data-types']",
+      "durationMs": 23
     },
     {
       "id": "jsonrpc/spec-extended-card",
       "name": "Spec Extended Agent Card",
-      "passed": "AgentBin Spec Agent (Extended)",
-      "detail": "public=8 skills, extended=9 skills, hasAdminStatus=True, name='AgentBin Spec Agent (Extended)'",
-      "durationMs": 20
+      "passed": "AgentBin Spec Agent (Extended - Java)",
+      "detail": "public=8 skills, extended=9 skills, hasAdminStatus=True, name='AgentBin Spec Agent (Extended - Java)'",
+      "durationMs": 28
     },
     {
       "id": "jsonrpc/echo-send-message",
-      "name": "Echo Send Message",
-      "passed": true,
-      "detail": "reply='Echo: Hello from Python SDK!'",
-      "durationMs": 17
+      "name": "jsonrpc/echo-send-message",
+      "passed": false,
+      "detail": "EXCEPTION: Failed to fetch agent card from http://localhost:5000/echo/.well-known/agent-card.json (HTTP 404): Client error '404 Not Found' for url 'http://localhost:5000/echo/.well-known/agent-card.json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/spec-message-only",
       "name": "Spec Message Only",
       "passed": true,
-      "detail": "gotMessage=True, text='[message-only] You said: message-only hello world'",
-      "durationMs": 18
+      "detail": "gotMessage=True, text='Echo: message-only hello world'",
+      "durationMs": 29
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Spec Task Lifecycle",
-      "passed": true,
-      "detail": "state=TASK_STATE_COMPLETED, artifacts=True, taskId=b6f7983c45694085a6205f39cff359de",
-      "durationMs": 24
+      "passed": false,
+      "detail": "state=NO_TASK, artifacts=False, taskId=None",
+      "durationMs": 32
     },
     {
       "id": "jsonrpc/spec-get-task",
       "name": "Spec GetTask",
-      "passed": true,
-      "detail": "taskId=b6f7983c45694085a6205f39cff359de, state=TASK_STATE_COMPLETED",
-      "durationMs": 18
+      "passed": false,
+      "detail": "skipped \u2014 no taskId from lifecycle",
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/spec-task-failure",
       "name": "Spec Task Failure",
-      "passed": true,
-      "detail": "state=TASK_STATE_FAILED",
-      "durationMs": 20
+      "passed": false,
+      "detail": "state=NO_TASK",
+      "durationMs": 26
     },
     {
       "id": "jsonrpc/spec-data-types",
       "name": "Spec Data Types",
-      "passed": true,
-      "detail": "kinds=['data', 'file', 'text']",
-      "durationMs": 19
+      "passed": false,
+      "detail": "kinds=['text']",
+      "durationMs": 22
     },
     {
       "id": "jsonrpc/spec-streaming",
       "name": "Spec Streaming",
-      "passed": true,
-      "detail": "events=7, text=''",
-      "durationMs": 2072
+      "passed": false,
+      "detail": "events=1, text='Echo: streaming generate output'",
+      "durationMs": 26
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Error Task Not Found",
       "passed": true,
-      "detail": "got expected error: TaskNotFoundError: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 15
+      "detail": "got expected error: TaskNotFoundError: Task not found",
+      "durationMs": 24
     },
     {
       "id": "jsonrpc/spec-multi-turn",
       "name": "Spec Multi-Turn",
-      "passed": true,
-      "detail": "states=[TASK_STATE_INPUT_REQUIRED,TASK_STATE_INPUT_REQUIRED,TASK_STATE_COMPLETED], taskId=c64396503a6b48e1a6dbd5a4e93d63a6",
-      "durationMs": 23
+      "passed": false,
+      "detail": "step1: expected INPUT_REQUIRED got NO_TASK",
+      "durationMs": 22
     },
     {
       "id": "jsonrpc/spec-task-cancel",
       "name": "Spec Task Cancel",
-      "passed": true,
-      "detail": "taskId=d380739a151242e890d0bcefae70c998, canceled=True",
-      "durationMs": 24
+      "passed": false,
+      "detail": "taskId=None, canceled=False",
+      "durationMs": 21
     },
     {
       "id": "jsonrpc/spec-list-tasks",
       "name": "Spec ListTasks",
-      "passed": true,
-      "detail": "taskCount=38",
-      "durationMs": 21
+      "passed": false,
+      "detail": "taskCount=0",
+      "durationMs": 17
     },
     {
       "id": "jsonrpc/spec-return-immediately",
       "name": "Spec Return Immediately",
       "passed": true,
-      "detail": "returned in 0.0s with state=TASK_STATE_SUBMITTED",
-      "durationMs": 15
+      "detail": "returned in 0.0s with state=NO_TASK",
+      "durationMs": 19
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
       "name": "Error Cancel Not Found",
       "passed": true,
-      "detail": "got expected error: TaskNotFoundError: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 17
+      "detail": "got expected error: TaskNotFoundError: Task not found",
+      "durationMs": 20
     },
     {
       "id": "jsonrpc/error-cancel-terminal",
       "name": "Error Cancel Terminal",
-      "passed": true,
-      "detail": "got expected error: TaskNotCancelableError: Task is already in a terminal state.",
-      "durationMs": 18
+      "passed": false,
+      "detail": "could not create completed task",
+      "durationMs": 26
     },
     {
       "id": "jsonrpc/error-send-terminal",
       "name": "Error Send Terminal",
-      "passed": true,
-      "detail": "got expected error: UnsupportedOperationError: Task is in a terminal state and cannot accept messages.",
-      "durationMs": 22
+      "passed": false,
+      "detail": "could not create completed task",
+      "durationMs": 19
     },
     {
       "id": "jsonrpc/error-send-invalid-task",
       "name": "Error Send Invalid Task",
-      "passed": true,
-      "detail": "got expected error: TaskNotFoundError: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 18
+      "passed": false,
+      "detail": "expected error, got success",
+      "durationMs": 22
     },
     {
       "id": "jsonrpc/error-push-not-supported",
@@ -148,65 +148,65 @@
     {
       "id": "jsonrpc/subscribe-to-task",
       "name": "Subscribe To Task",
-      "passed": true,
-      "detail": "subscription events=2",
-      "durationMs": 1018
+      "passed": false,
+      "detail": "could not start working task",
+      "durationMs": 21
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Error Subscribe Not Found",
       "passed": true,
       "detail": "got expected error: NotImplementedError: client and/or server do not support resubscription.",
-      "durationMs": 16
+      "durationMs": 14
     },
     {
       "id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
       "passed": true,
       "detail": "events=1, hasMessage=True",
-      "durationMs": 28
+      "durationMs": 23
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
-      "passed": true,
-      "detail": "hasTaskEvent=True, finalState=TASK_STATE_COMPLETED, events=4",
-      "durationMs": 21
+      "passed": false,
+      "detail": "hasTaskEvent=False, finalState=NO_TASK, events=1",
+      "durationMs": 19
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Multi-Turn Context Preserved",
-      "passed": true,
-      "detail": "contextId1=c32cea031f2b45c68e60bf99c8cf85a6, contextId2=c32cea031f2b45c68e60bf99c8cf85a6, match=True",
-      "durationMs": 19
+      "passed": false,
+      "detail": "step1 returned no task",
+      "durationMs": 20
     },
     {
       "id": "jsonrpc/get-task-with-history",
       "name": "GetTask With History",
-      "passed": true,
-      "detail": "taskId=dc6790e70a984c4fab5351ae13264f69, historyCount=0",
-      "durationMs": 19
+      "passed": false,
+      "detail": "could not create task",
+      "durationMs": 16
     },
     {
       "id": "jsonrpc/get-task-after-failure",
       "name": "GetTask After Failure",
-      "passed": true,
-      "detail": "state=TASK_STATE_FAILED, hasStatusMsg=True",
-      "durationMs": 24
+      "passed": false,
+      "detail": "could not create failed task",
+      "durationMs": 18
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Spec Cancel With Metadata",
-      "passed": true,
-      "detail": "taskId=cbe38adb241448c59714c8bbc8b01246, canceled=True, metadataOk=True, keys=['requestedBy', 'reason']",
-      "durationMs": 26
+      "passed": false,
+      "detail": "no task id received from streaming",
+      "durationMs": 19
     },
     {
       "id": "rest/agent-card-echo",
-      "name": "REST Echo Agent Card",
-      "passed": true,
-      "detail": "card resolved with HTTP+JSON transport",
-      "durationMs": 17
+      "name": "rest/agent-card-echo",
+      "passed": false,
+      "detail": "EXCEPTION: Failed to fetch agent card from http://localhost:5000/echo/.well-known/agent-card.json (HTTP 404): Client error '404 Not Found' for url 'http://localhost:5000/echo/.well-known/agent-card.json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
+      "durationMs": 0
     },
     {
       "id": "rest/agent-card-spec",
@@ -218,212 +218,212 @@
     {
       "id": "rest/spec-extended-card",
       "name": "REST Spec Extended Agent Card",
-      "passed": "AgentBin Spec Agent (Extended)",
-      "detail": "public=8 skills, extended=9 skills, hasAdminStatus=True, name='AgentBin Spec Agent (Extended)'",
-      "durationMs": 20
+      "passed": "AgentBin Spec Agent (Extended - Java)",
+      "detail": "public=8 skills, extended=9 skills, hasAdminStatus=True, name='AgentBin Spec Agent (Extended - Java)'",
+      "durationMs": 15
     },
     {
       "id": "rest/echo-send-message",
-      "name": "REST Echo Send Message",
-      "passed": true,
-      "detail": "reply='Echo: Hello from Python SDK REST!'",
-      "durationMs": 15
+      "name": "rest/echo-send-message",
+      "passed": false,
+      "detail": "EXCEPTION: Failed to fetch agent card from http://localhost:5000/echo/.well-known/agent-card.json (HTTP 404): Client error '404 Not Found' for url 'http://localhost:5000/echo/.well-known/agent-card.json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
+      "durationMs": 0
     },
     {
       "id": "rest/spec-message-only",
       "name": "REST Spec Message Only",
       "passed": true,
-      "detail": "gotMessage=True, text='[message-only] You said: message-only hello world'",
-      "durationMs": 17
+      "detail": "gotMessage=True, text='Echo: message-only hello world'",
+      "durationMs": 23
     },
     {
       "id": "rest/spec-task-lifecycle",
       "name": "REST Spec Task Lifecycle",
-      "passed": true,
-      "detail": "state=TASK_STATE_COMPLETED, artifacts=True, taskId=6138b205e6464f8395ac0c43ad2817c3",
-      "durationMs": 15
+      "passed": false,
+      "detail": "state=NO_TASK, artifacts=False, taskId=None",
+      "durationMs": 22
     },
     {
       "id": "rest/spec-get-task",
       "name": "REST Spec GetTask",
-      "passed": true,
-      "detail": "taskId=6138b205e6464f8395ac0c43ad2817c3, state=TASK_STATE_COMPLETED",
-      "durationMs": 22
+      "passed": false,
+      "detail": "skipped \u2014 no taskId from lifecycle",
+      "durationMs": 0
     },
     {
       "id": "rest/spec-task-failure",
       "name": "REST Spec Task Failure",
-      "passed": true,
-      "detail": "state=TASK_STATE_FAILED",
-      "durationMs": 13
+      "passed": false,
+      "detail": "state=NO_TASK",
+      "durationMs": 18
     },
     {
       "id": "rest/spec-data-types",
       "name": "REST Spec Data Types",
-      "passed": true,
-      "detail": "kinds=['data', 'file', 'text']",
-      "durationMs": 16
+      "passed": false,
+      "detail": "kinds=['text']",
+      "durationMs": 17
     },
     {
       "id": "rest/spec-streaming",
       "name": "REST Spec Streaming",
-      "passed": true,
-      "detail": "events=7",
-      "durationMs": 2072
+      "passed": false,
+      "detail": "events=1",
+      "durationMs": 28
     },
     {
       "id": "rest/error-task-not-found",
       "name": "REST Error Task Not Found",
       "passed": true,
-      "detail": "got expected error: AttributeError: 'str' object has no attribute 'get'",
-      "durationMs": 34
+      "detail": "got expected error: TaskNotFoundError: Task not found",
+      "durationMs": 17
     },
     {
       "id": "rest/spec-multi-turn",
       "name": "REST Spec Multi-Turn",
-      "passed": true,
-      "detail": "states=[TASK_STATE_INPUT_REQUIRED,TASK_STATE_INPUT_REQUIRED,TASK_STATE_COMPLETED], taskId=27251ea4a9ac4d1f9be48d3f8c9c0d6a",
-      "durationMs": 21
+      "passed": false,
+      "detail": "step1: expected INPUT_REQUIRED got NO_TASK",
+      "durationMs": 16
     },
     {
       "id": "rest/spec-task-cancel",
       "name": "REST Spec Task Cancel",
-      "passed": true,
-      "detail": "taskId=9295081928ec4bd880118da7578039fb, canceled=True",
-      "durationMs": 23
+      "passed": false,
+      "detail": "taskId=None, canceled=False",
+      "durationMs": 27
     },
     {
       "id": "rest/spec-list-tasks",
       "name": "REST Spec ListTasks",
-      "passed": true,
-      "detail": "taskCount=50",
-      "durationMs": 21
+      "passed": false,
+      "detail": "taskCount=0",
+      "durationMs": 20
     },
     {
       "id": "rest/spec-return-immediately",
       "name": "REST Spec Return Immediately",
       "passed": true,
-      "detail": "returned in 0.0s with state=TASK_STATE_SUBMITTED",
-      "durationMs": 16
+      "detail": "returned in 0.0s with state=NO_TASK",
+      "durationMs": 19
     },
     {
       "id": "rest/error-cancel-not-found",
       "name": "REST Error Cancel Not Found",
       "passed": true,
-      "detail": "got expected error: AttributeError: 'str' object has no attribute 'get'",
-      "durationMs": 18
+      "detail": "got expected error: TaskNotFoundError: Task not found",
+      "durationMs": 16
     },
     {
       "id": "rest/error-cancel-terminal",
       "name": "REST Error Cancel Terminal",
-      "passed": true,
-      "detail": "got expected error: A2AClientError: HTTP Error 400: Client error '400 Bad Request' for url 'http://localhost:5100/sp",
-      "durationMs": 19
+      "passed": false,
+      "detail": "could not create completed task",
+      "durationMs": 31
     },
     {
       "id": "rest/error-send-terminal",
       "name": "REST Error Send Terminal",
-      "passed": true,
-      "detail": "got expected error: A2AClientError: HTTP Error 400: Client error '400 Bad Request' for url 'http://localhost:5100/sp",
-      "durationMs": 21
+      "passed": false,
+      "detail": "could not create completed task",
+      "durationMs": 18
     },
     {
       "id": "rest/error-send-invalid-task",
       "name": "REST Error Send Invalid Task",
-      "passed": true,
-      "detail": "got expected error: AttributeError: 'str' object has no attribute 'get'",
-      "durationMs": 19
+      "passed": false,
+      "detail": "expected error, got success",
+      "durationMs": 18
     },
     {
       "id": "rest/error-push-not-supported",
       "name": "REST Error Push Not Supported",
       "passed": true,
       "detail": "SDK does not support push notification config",
-      "durationMs": 12
+      "durationMs": 15
     },
     {
       "id": "rest/subscribe-to-task",
       "name": "REST Subscribe To Task",
-      "passed": true,
-      "detail": "subscription events=2",
-      "durationMs": 1019
+      "passed": false,
+      "detail": "could not start working task",
+      "durationMs": 16
     },
     {
       "id": "rest/error-subscribe-not-found",
       "name": "REST Error Subscribe Not Found",
       "passed": true,
       "detail": "got expected error: NotImplementedError: client and/or server do not support resubscription.",
-      "durationMs": 17
+      "durationMs": 14
     },
     {
       "id": "rest/stream-message-only",
       "name": "REST Stream Message Only",
       "passed": true,
       "detail": "events=1, hasMessage=True",
-      "durationMs": 16
+      "durationMs": 19
     },
     {
       "id": "rest/stream-task-lifecycle",
       "name": "REST Stream Task Lifecycle",
-      "passed": true,
-      "detail": "hasTaskEvent=True, finalState=TASK_STATE_COMPLETED, events=4",
-      "durationMs": 16
+      "passed": false,
+      "detail": "hasTaskEvent=False, finalState=NO_TASK, events=1",
+      "durationMs": 23
     },
     {
       "id": "rest/multi-turn-context-preserved",
       "name": "REST Multi-Turn Context Preserved",
-      "passed": true,
-      "detail": "contextId1=9ca9bd216fa449ceb109bce5f04910ae, contextId2=9ca9bd216fa449ceb109bce5f04910ae, match=True",
+      "passed": false,
+      "detail": "step1 returned no task",
       "durationMs": 19
     },
     {
       "id": "rest/get-task-with-history",
       "name": "REST GetTask With History",
-      "passed": true,
-      "detail": "taskId=598722e7a560433f920cb4c3ec3d797f, historyCount=0",
-      "durationMs": 19
+      "passed": false,
+      "detail": "could not create task",
+      "durationMs": 22
     },
     {
       "id": "rest/get-task-after-failure",
       "name": "REST GetTask After Failure",
-      "passed": true,
-      "detail": "state=TASK_STATE_FAILED, hasStatusMsg=True",
-      "durationMs": 17
+      "passed": false,
+      "detail": "could not create failed task",
+      "durationMs": 25
     },
     {
       "id": "rest/spec-cancel-with-metadata",
       "name": "REST Spec Cancel With Metadata",
       "passed": false,
-      "detail": "taskId=04150c6be771427c8a5fe01c8317446f, canceled=True, metadataOk=False, keys=[]",
-      "durationMs": 25
+      "detail": "no task id received from streaming",
+      "durationMs": 17
     },
     {
       "id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
-      "passed": true,
-      "detail": "protocolVersion='0.3.0', hasUrl=True",
-      "durationMs": 14
+      "passed": false,
+      "detail": "SDK resolver failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404): Client error '404 N",
+      "durationMs": 13
     },
     {
       "id": "v03/spec03-send-message",
       "name": "v0.3 Send Message",
       "passed": false,
-      "detail": "SDK v0.3 send failed: MethodNotFoundError: Invalid JSON-RPC request: 'method' field is not a valid A2A method.",
-      "durationMs": 119
+      "detail": "SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404):",
+      "durationMs": 13
     },
     {
       "id": "v03/spec03-task-lifecycle",
       "name": "v0.3 Task Lifecycle",
       "passed": false,
-      "detail": "SDK v0.3 send failed: MethodNotFoundError: Invalid JSON-RPC request: 'method' field is not a valid A2A method.",
-      "durationMs": 16
+      "detail": "SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404):",
+      "durationMs": 13
     },
     {
       "id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
       "passed": false,
-      "detail": "SDK v0.3 stream failed: MethodNotFoundError: Invalid JSON-RPC request: 'method' field is not a valid A2A method.",
-      "durationMs": 15
+      "detail": "SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404):",
+      "durationMs": 17
     }
   ]
 }
