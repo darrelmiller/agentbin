@@ -78,7 +78,8 @@ async def make_client(url: str, *, streaming: bool = False, binding: str = "JSON
         httpx_client=hc,
         supported_protocol_bindings=bindings,
     )
-    client = await ClientFactory.connect(url, client_config=config)
+    factory = ClientFactory(config)
+    client = await factory.create_from_url(url)
     return client, hc
 
 
@@ -90,10 +91,17 @@ async def sdk_send(url: str, text: str, *, streaming: bool = False, binding: str
         final_task = None
         msg = create_text_message_object(role="ROLE_USER", content=text)
         req = pb2.SendMessageRequest(message=msg)
-        async for stream_response, task in client.send_message(req):
-            events.append((stream_response, task))
-            if task:
+        async for stream_response in client.send_message(req):
+            task = None
+            if stream_response.HasField("task"):
+                task = stream_response.task
                 final_task = task
+            elif stream_response.HasField("status_update") and final_task:
+                # In alpha.1, streaming yields status_update events separately;
+                # merge the latest status into the accumulated task.
+                final_task.status.CopyFrom(stream_response.status_update.status)
+                task = final_task
+            events.append((stream_response, task))
         return events, final_task
     finally:
         await hc.aclose()
@@ -338,13 +346,15 @@ async def test_spec_multi_turn():
     t0 = time.time()
     hc = httpx.AsyncClient(timeout=httpx.Timeout(30.0), headers=A2A_HEADERS)
     try:
-        config = ClientConfig(httpx_client=hc)
-        client = await ClientFactory.connect(f"{BASE_URL}/spec", client_config=config)
+        config = ClientConfig(httpx_client=hc, streaming=False)
+        factory = ClientFactory(config)
+        client = await factory.create_from_url(f"{BASE_URL}/spec")
 
         # Step 1: start conversation
         msg1 = create_text_message_object(role="ROLE_USER", content="multi-turn start conversation")
         task1 = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg1)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg1)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 task1 = task
 
@@ -360,7 +370,8 @@ async def test_spec_multi_turn():
         msg2 = create_text_message_object(role="ROLE_USER", content="more data")
         msg2.task_id = task_id
         task2 = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg2)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 task2 = task
 
@@ -375,7 +386,8 @@ async def test_spec_multi_turn():
         msg3 = create_text_message_object(role="ROLE_USER", content="done")
         msg3.task_id = task_id
         task3 = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg3)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg3)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 task3 = task
 
@@ -399,7 +411,8 @@ async def test_spec_task_cancel():
         client, hc = await make_client(f"{BASE_URL}/spec", streaming=True)
         try:
             msg = create_text_message_object(role="ROLE_USER", content="task-cancel")
-            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+                task = _sr.task if _sr.HasField("task") else None
                 if task:
                     task_id = task.id
                     break
@@ -446,7 +459,8 @@ async def test_spec_return_immediately():
             config = pb2.SendMessageConfiguration(return_immediately=True)
             req = pb2.SendMessageRequest(message=msg, configuration=config)
             final_task = None
-            async for _, task in client.send_message(req):
+            async for _sr in client.send_message(req):
+                task = _sr.task if _sr.HasField("task") else None
                 if task:
                     final_task = task
             return final_task
@@ -495,7 +509,8 @@ async def test_error_cancel_terminal():
         # Create a completed task
         msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
         final_task = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 final_task = task
         if not final_task:
@@ -525,7 +540,8 @@ async def test_error_send_terminal():
         # Create a completed task
         msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
         final_task = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 final_task = task
         if not final_task:
@@ -537,7 +553,8 @@ async def test_error_send_terminal():
         try:
             msg2 = create_text_message_object(role="ROLE_USER", content="follow-up to completed task")
             msg2.task_id = task_id
-            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+            async for _sr in client.send_message(pb2.SendMessageRequest(message=msg2)):
+                task = _sr.task if _sr.HasField("task") else None
                 pass
             ms = int((time.time() - t0) * 1000)
             record("jsonrpc/error-send-terminal", "Error Send Terminal", False,
@@ -558,7 +575,8 @@ async def test_error_send_invalid_task():
         try:
             msg = create_text_message_object(role="ROLE_USER", content="hello")
             msg.task_id = "00000000-0000-0000-0000-000000000000"
-            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+                task = _sr.task if _sr.HasField("task") else None
                 pass
             ms = int((time.time() - t0) * 1000)
             record("jsonrpc/error-send-invalid-task", "Error Send Invalid Task", False,
@@ -615,7 +633,8 @@ async def test_subscribe_to_task():
             # Start a task that stays in WORKING state
             msg = create_text_message_object(role="ROLE_USER", content="task-cancel")
             task_id = None
-            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+                task = _sr.task if _sr.HasField("task") else None
                 if task:
                     task_id = task.id
                     break
@@ -712,7 +731,8 @@ async def test_multi_turn_context_preserved():
         # Step 1: start multi-turn conversation
         msg1 = create_text_message_object(role="ROLE_USER", content="multi-turn start")
         task1 = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg1)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg1)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 task1 = task
         if not task1:
@@ -728,7 +748,8 @@ async def test_multi_turn_context_preserved():
         msg2 = create_text_message_object(role="ROLE_USER", content="more data")
         msg2.task_id = task_id
         task2 = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg2)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 task2 = task
         if not task2:
@@ -754,7 +775,8 @@ async def test_get_task_with_history():
         # Create a task first
         msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
         final_task = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 final_task = task
         if not final_task:
@@ -781,7 +803,8 @@ async def test_get_task_after_failure():
         # Create a failed task
         msg = create_text_message_object(role="ROLE_USER", content="task-failure trigger error")
         final_task = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 final_task = task
         if not final_task:
@@ -810,7 +833,8 @@ async def test_rest_agent_card_echo():
             httpx_client=hc,
             supported_protocol_bindings=[TransportProtocol.HTTP_JSON],
         )
-        client = await ClientFactory.connect(f"{BASE_URL}/echo", client_config=config)
+        factory = ClientFactory(config)
+        client = await factory.create_from_url(f"{BASE_URL}/echo")
     ms = int((time.time() - t0) * 1000)
     # If we got here, the card was resolved and REST transport was selected
     record("rest/agent-card-echo", "REST Echo Agent Card", True,
@@ -824,7 +848,8 @@ async def test_rest_agent_card_spec():
             httpx_client=hc,
             supported_protocol_bindings=[TransportProtocol.HTTP_JSON],
         )
-        client = await ClientFactory.connect(f"{BASE_URL}/spec", client_config=config)
+        factory = ClientFactory(config)
+        client = await factory.create_from_url(f"{BASE_URL}/spec")
     ms = int((time.time() - t0) * 1000)
     record("rest/agent-card-spec", "REST Spec Agent Card", True,
            "card resolved with HTTP+JSON transport", ms)
@@ -1014,7 +1039,8 @@ async def test_rest_spec_multi_turn():
         # Step 1: start conversation
         msg1 = create_text_message_object(role="ROLE_USER", content="multi-turn start conversation")
         task1 = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg1)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg1)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 task1 = task
 
@@ -1030,7 +1056,8 @@ async def test_rest_spec_multi_turn():
         msg2 = create_text_message_object(role="ROLE_USER", content="more data")
         msg2.task_id = task_id
         task2 = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg2)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 task2 = task
 
@@ -1045,7 +1072,8 @@ async def test_rest_spec_multi_turn():
         msg3 = create_text_message_object(role="ROLE_USER", content="done")
         msg3.task_id = task_id
         task3 = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg3)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg3)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 task3 = task
 
@@ -1069,7 +1097,8 @@ async def test_rest_spec_task_cancel():
         client, hc = await make_client(f"{BASE_URL}/spec", streaming=True, binding="REST")
         try:
             msg = create_text_message_object(role="ROLE_USER", content="task-cancel")
-            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+                task = _sr.task if _sr.HasField("task") else None
                 if task:
                     task_id = task.id
                     break
@@ -1116,7 +1145,8 @@ async def test_rest_spec_return_immediately():
             config = pb2.SendMessageConfiguration(return_immediately=True)
             req = pb2.SendMessageRequest(message=msg, configuration=config)
             final_task = None
-            async for _, task in client.send_message(req):
+            async for _sr in client.send_message(req):
+                task = _sr.task if _sr.HasField("task") else None
                 if task:
                     final_task = task
             return final_task
@@ -1164,7 +1194,8 @@ async def test_rest_error_cancel_terminal():
     try:
         msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
         final_task = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 final_task = task
         if not final_task:
@@ -1193,7 +1224,8 @@ async def test_rest_error_send_terminal():
     try:
         msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
         final_task = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 final_task = task
         if not final_task:
@@ -1205,7 +1237,8 @@ async def test_rest_error_send_terminal():
         try:
             msg2 = create_text_message_object(role="ROLE_USER", content="follow-up to completed task")
             msg2.task_id = task_id
-            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+            async for _sr in client.send_message(pb2.SendMessageRequest(message=msg2)):
+                task = _sr.task if _sr.HasField("task") else None
                 pass
             ms = int((time.time() - t0) * 1000)
             record("rest/error-send-terminal", "REST Error Send Terminal", False,
@@ -1226,7 +1259,8 @@ async def test_rest_error_send_invalid_task():
         try:
             msg = create_text_message_object(role="ROLE_USER", content="hello")
             msg.task_id = "00000000-0000-0000-0000-000000000000"
-            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+                task = _sr.task if _sr.HasField("task") else None
                 pass
             ms = int((time.time() - t0) * 1000)
             record("rest/error-send-invalid-task", "REST Error Send Invalid Task", False,
@@ -1282,7 +1316,8 @@ async def test_rest_subscribe_to_task():
 
             msg = create_text_message_object(role="ROLE_USER", content="task-cancel")
             task_id = None
-            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+                task = _sr.task if _sr.HasField("task") else None
                 if task:
                     task_id = task.id
                     break
@@ -1376,7 +1411,8 @@ async def test_rest_multi_turn_context_preserved():
     try:
         msg1 = create_text_message_object(role="ROLE_USER", content="multi-turn start")
         task1 = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg1)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg1)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 task1 = task
         if not task1:
@@ -1391,7 +1427,8 @@ async def test_rest_multi_turn_context_preserved():
         msg2 = create_text_message_object(role="ROLE_USER", content="more data")
         msg2.task_id = task_id
         task2 = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg2)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg2)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 task2 = task
         if not task2:
@@ -1416,7 +1453,8 @@ async def test_rest_get_task_with_history():
     try:
         msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process this")
         final_task = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 final_task = task
         if not final_task:
@@ -1442,7 +1480,8 @@ async def test_rest_get_task_after_failure():
     try:
         msg = create_text_message_object(role="ROLE_USER", content="task-failure trigger error")
         final_task = None
-        async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+        async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 final_task = task
         if not final_task:
@@ -1471,7 +1510,8 @@ async def make_v03_client(url: str, *, streaming: bool = False):
         streaming=streaming,
         httpx_client=hc,
     )
-    client = await ClientFactory.connect(url, client_config=config)
+    factory = ClientFactory(config)
+    client = await factory.create_from_url(url)
     return client, hc
 
 
@@ -1483,10 +1523,12 @@ async def test_v03_agent_card():
             resolver = A2ACardResolver(httpx_client=hc, base_url=f"{BASE_URL}/spec03")
             card = await resolver.get_agent_card()
         ms = int((time.time() - t0) * 1000)
-        has_url = bool(card.url)
-        ok = card.protocol_version == "0.3.0" and has_url
+        has_iface = len(card.supported_interfaces) > 0
+        iface_url = card.supported_interfaces[0].url if has_iface else ""
+        proto_ver = card.supported_interfaces[0].protocol_version if has_iface else ""
+        ok = has_iface and bool(iface_url)
         record("v03/spec03-agent-card", "v0.3 Agent Card", ok,
-               f"protocolVersion={card.protocol_version!r}, hasUrl={has_url}", ms)
+               f"protocolVersion={proto_ver!r}, hasUrl={bool(iface_url)}", ms)
     except Exception as exc:
         ms = int((time.time() - t0) * 1000)
         record("v03/spec03-agent-card", "v0.3 Agent Card", False,
@@ -1508,7 +1550,8 @@ async def test_v03_send_message():
         req = pb2.SendMessageRequest(message=msg)
         reply = ""
         got_message = False
-        async for sr, task in client.send_message(req):
+        async for sr in client.send_message(req):
+            task = sr.task if sr.HasField("task") else None
             if sr.HasField("message"):
                 got_message = True
                 for p in sr.message.parts:
@@ -1540,7 +1583,8 @@ async def test_v03_task_lifecycle():
         msg = create_text_message_object(role="ROLE_USER", content="task-lifecycle process")
         req = pb2.SendMessageRequest(message=msg)
         final_task = None
-        async for _, task in client.send_message(req):
+        async for _sr in client.send_message(req):
+            task = _sr.task if _sr.HasField("task") else None
             if task:
                 final_task = task
         ms = int((time.time() - t0) * 1000)
@@ -1571,7 +1615,8 @@ async def test_v03_streaming():
         req = pb2.SendMessageRequest(message=msg)
         events = []
         final_text = ""
-        async for sr, task in client.send_message(req):
+        async for sr in client.send_message(req):
+            task = sr.task if sr.HasField("task") else None
             events.append((sr, task))
             if task:
                 for art in task.artifacts:
@@ -1610,7 +1655,8 @@ async def _test_spec_cancel_with_metadata(binding: str):
         client, hc = await make_client(f"{BASE_URL}/spec", streaming=True, binding=binding)
         try:
             msg = create_text_message_object(role="ROLE_USER", content="task-cancel start")
-            async for _, task in client.send_message(pb2.SendMessageRequest(message=msg)):
+            async for _sr in client.send_message(pb2.SendMessageRequest(message=msg)):
+                task = _sr.task if _sr.HasField("task") else None
                 if task:
                     task_id = task.id
                     break

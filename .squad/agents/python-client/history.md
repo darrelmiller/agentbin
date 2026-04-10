@@ -66,3 +66,28 @@ previous partial run — producing the phantom "2 results" observation.
 - Added tests to ALL_TESTS list: total tests now 60 (28 JSON-RPC, 28 REST, 4 v0.3)
 
 **Verification:** Syntax check passed with `python -c "import ast; ast.parse(...)"`
+
+### 2026-07-16 — Fixed a2a-sdk 1.0.0a0 → 1.0.0a1 API migration
+
+**Root cause:** The a2a-python local repo was updated to v1.0.0-alpha.1 (or HEAD of main at 0.3.26), breaking the test client and Python server which were written against the alpha.0 API.
+
+**Three breaking changes in alpha.1:**
+1. `ClientFactory.connect(url, client_config=config)` (classmethod) removed → replaced by `ClientFactory(config).create_from_url(url)` (instance method)
+2. `client.send_message()` now yields raw `StreamResponse` instead of `(StreamResponse, Task)` tuples — caller must extract task from `sr.task` or `sr.status_update`
+3. `ClientConfig.streaming` default changed from `False` to `True`
+4. Server: `a2a.server.apps.A2AStarletteApplication` removed → use `create_jsonrpc_routes()`, `create_rest_routes()`, `create_agent_card_routes()`; `DefaultRequestHandler` → `DefaultRequestHandlerV2` (takes `agent_card` param)
+
+**Client fixes (test_python_client.py):**
+- Updated `make_client()` and `make_v03_client()` to use `ClientFactory(config).create_from_url()`
+- Updated all 4 direct `ClientFactory.connect()` calls
+- Updated `sdk_send()` to accumulate task state from both `task` and `status_update` streaming events
+- Updated all 32 `async for _, task in client.send_message()` unpacking patterns
+- Added explicit `streaming=False` to multi-turn test's `ClientConfig`
+- Fixed v0.3 `card.url` → `card.supported_interfaces[0].url`
+
+**Server fixes (AgentBin.Python/main.py):**
+- Replaced `A2AStarletteApplication` / `A2ARESTFastAPIApplication` with `create_jsonrpc_routes()` / `create_rest_routes()` / `create_agent_card_routes()`
+- Replaced `DefaultRequestHandler` with `DefaultRequestHandlerV2`
+- Updated `requirements.txt` to pin `a2a-sdk>=1.0.0a0`
+
+**Result:** 56/60 tests pass (up from 4/60). The 4 remaining failures are pre-existing (3 v0.3 compat + 1 REST cancel-metadata) — not caused by this migration.
