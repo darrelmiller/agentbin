@@ -134,3 +134,22 @@
 - Updated `AgentBin.csproj` and `A2AClientTests.csproj` references from 1.0.0-preview2 → 1.0.0-preview4
 - Both `dotnet build` for server and test client succeeded cleanly
 - **V0_3Compat opportunity:** `MapA2AWithV03Compat` could replace the hand-rolled `V03Compat/` folder in agentbin (V03EndpointHandler.cs + V03Translator.cs). The SDK compat layer handles method name translation, enum casing, part kind discrimination, and agent card format negotiation — all things currently done manually. Migration would simplify the spec03 agent setup significantly.
+
+### 2026-08-07: Rebuilt nupkgs from a2a-dotnet main (preview3 release)
+- Upstream `a2a-dotnet` main updated from `71aeb58` to `72d4a5f` (10 new commits)
+- **Version bumped from 1.0.0-preview2 to 1.0.0-preview3** (#362)
+- Major changes:
+  - **V0_3Compat project merged** (#338): Server-side v0.3↔v1.0 compat layer with `MapA2AWithV03Compat()` and `MapAgentCardGetWithV03Compat()`
+  - **SubscribeToTaskAsync hang fix** (#344): Resolves stream reconnection deadlock (issue #340) — await handler task drain before CTS disposal on cancel
+  - **CORS support** (#343): Configurable CORS policies, plus artifact append merge enrichment and streaming samples
+  - **Dependency bumps**: OpenTelemetry group (#357), JsonSchema.Net 9.1.4 (#352), Microsoft.NET.Test.Sdk 18.4.0 (#354)
+  - **Bug fix**: Streaming artifact sample agent card path corrected (#358)
+- Packages produced:
+  - `A2A.1.0.0-preview3.nupkg` (331KB)
+  - `A2A.AspNetCore.1.0.0-preview3.nupkg` (108KB)
+  - `A2A.V0_3.1.0.0-preview3.nupkg` (250KB)
+  - `A2A.V0_3Compat.1.0.0-preview3.nupkg` (85KB)
+- Updated `AgentBin.csproj` and `A2AClientTests.csproj` references from 1.0.0-preview4 → 1.0.0-preview3
+- Cleared NuGet global cache to ensure fresh package resolution
+- Both `dotnet build` for server and test client succeeded cleanly — no breaking API changes
+- **Impact:** Subscribe-after-stream-disconnect tests should now pass; V0_3Compat is now available for production use

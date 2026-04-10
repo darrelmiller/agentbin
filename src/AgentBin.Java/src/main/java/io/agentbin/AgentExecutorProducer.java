@@ -1,6 +1,6 @@
 package io.agentbin;
 
-import io.a2a.server.agentexecution.AgentExecutor;
+import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 

@@ -1,8 +1,8 @@
 package io.agentbin;
 
-import io.a2a.server.ExtendedAgentCard;
-import io.a2a.server.PublicAgentCard;
-import io.a2a.spec.*;
+import org.a2aproject.sdk.server.ExtendedAgentCard;
+import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.spec.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

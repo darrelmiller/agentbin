@@ -64,3 +64,25 @@
 - **Root cause identified:** Error string lives in `io.a2a.util.Assert.checkNotNullParam` and fires in the `Task` constructor during response deserialization when protobuf yields null task ID
 - **Evidence:** .NET server never produces this message and explicitly allows null JSON-RPC envelope `id` per spec
 - **Action item for Java team:** When filing upstream issues against `a2a-java` SDK, reference the client-side `Task` constructor as the failure point, not the server
+
+### SDK upgrade: Package rename to org.a2aproject.sdk (2026-07-29)
+- **Pulled 4 new commits** from upstream `a2a-java` origin/main:
+  - `5ae111fe` — feat!: Rename root package to org.a2aproject.sdk (#786) — BREAKING CHANGE
+  - `6c76a931` — fix: HTTP+JSON transport returns 501 instead of 400 for UnsupportedOperationError (#787)
+  - `8f31f874` — fix: return UnsupportedOperationError when subscribing to terminal tasks (#784)
+  - `d3f88cb1` — fix: resolve event stream race conditions in EventConsumer and SSE transport (#782)
+- **Rebuilt SDK** with `mvn clean install -DskipTests -Dinvoker.skip=true` (~15 min, exit 0)
+- **SDK version unchanged:** Still `1.0.0.Beta1-SNAPSHOT` (no version bump in this package rename)
+- **Breaking change:** All imports changed from `io.a2a.*` → `org.a2aproject.sdk.*`
+- **Fixed all imports in AgentBin:**
+  - Java server (4 files): `AgentCardProducer`, `AgentExecutorProducer`, `EchoAgentExecutor`, `SpecAgentExecutor`
+  - Java client (1 file): `TestJavaClient.java`
+  - All `io.a2a.spec.*`, `io.a2a.client.*`, `io.a2a.server.*` → `org.a2aproject.sdk.spec.*`, etc.
+- **pom.xml already correct:** Both server and client were already using groupId `org.a2aproject.sdk` (no pom changes needed)
+- **All builds passed:**
+  - Java SDK: `mvn clean install` exit 0
+  - Java server (`src/AgentBin.Java`): `mvn package -DskipTests` exit 0
+  - Java client (`tests/ClientTests/java`): `mvn package -DskipTests` exit 0
+- **Test status:** No test run performed (rebuild only per task requirements)
+- **Upstream bug fixes in this pull:** UnsupportedOperationError now returns 501 (not 400), subscribing to terminal tasks returns proper error, event stream race conditions fixed
+- **Team impact:** This is a coordinated package rename across the entire a2a-java SDK — all Java code in all repos must update imports

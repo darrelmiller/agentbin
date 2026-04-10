@@ -48,3 +48,4 @@
   - REST: 0/27 (genuine SDK gap — no REST transport).
   - v0.3: 4/4.
   - Added `http2` and `rustls-tls` features to reqwest for better TLS/HTTP support.
+- **(2026-07-28) Updated SDK from v1.0.16 → v1.0.17** for both server and client. Updated `src/AgentBin.Rust/Cargo.toml` (a2a-rs-server, a2a-rs-core) and `tests/ClientTests/rust/Cargo.toml` (a2a-rs-client, a2a-rs-core). Server build: `cargo build --release` succeeded in 3m 48s. Client build: `cargo build` succeeded in 2m 35s. No compilation errors or warnings. No API changes detected in 1.0.17 — builds were drop-in replacements.

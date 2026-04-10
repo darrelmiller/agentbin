@@ -1,20 +1,20 @@
 package agentbin;
 
-import io.a2a.A2A;
-import io.a2a.client.Client;
-import io.a2a.client.ClientBuilder;
-import io.a2a.client.ClientEvent;
-import io.a2a.client.MessageEvent;
-import io.a2a.client.TaskEvent;
-import io.a2a.client.TaskUpdateEvent;
-import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
-import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
-import io.a2a.client.transport.rest.RestTransport;
-import io.a2a.client.transport.rest.RestTransportConfigBuilder;
-import io.a2a.client.transport.spi.interceptors.ClientCallInterceptor;
-import io.a2a.client.transport.spi.interceptors.ClientCallContext;
-import io.a2a.client.transport.spi.interceptors.PayloadAndHeaders;
-import io.a2a.spec.*;
+import org.a2aproject.sdk.A2A;
+import org.a2aproject.sdk.client.Client;
+import org.a2aproject.sdk.client.ClientBuilder;
+import org.a2aproject.sdk.client.ClientEvent;
+import org.a2aproject.sdk.client.MessageEvent;
+import org.a2aproject.sdk.client.TaskEvent;
+import org.a2aproject.sdk.client.TaskUpdateEvent;
+import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransport;
+import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
+import org.a2aproject.sdk.client.transport.rest.RestTransport;
+import org.a2aproject.sdk.client.transport.rest.RestTransportConfigBuilder;
+import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallInterceptor;
+import org.a2aproject.sdk.client.transport.spi.interceptors.ClientCallContext;
+import org.a2aproject.sdk.client.transport.spi.interceptors.PayloadAndHeaders;
+import org.a2aproject.sdk.spec.*;
 
 import java.io.*;
 import java.net.URI;
