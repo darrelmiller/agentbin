@@ -44,7 +44,7 @@
 </head>
 <body>
 <h1>AgentBin A2A Report Card (java Server)</h1>
-<p class="subtitle">Generated 2026-04-10 15:45 UTC &bull; Target: <code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
+<p class="subtitle">Generated 2026-04-10 16:22 UTC &bull; Target: <code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
 
 <div class="client-section">
   <div class="client-header">
@@ -68,7 +68,7 @@
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">no taskId from streaming</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">no taskId</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">tasks=0, totalSize=0</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">state=, time=11ms (expected quick response within 2s)</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">state=, time=9ms (expected quick response within 2s)</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">no taskId</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">no taskId from lifecycle</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>
@@ -97,7 +97,7 @@
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">no taskId from streaming</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">no taskId</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">tasks=0, totalSize=0</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">state=, time=4ms (expected quick response within 2s)</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">state=, time=3ms (expected quick response within 2s)</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">no taskId</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">no taskId from lifecycle</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>

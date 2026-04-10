@@ -1,164 +1,164 @@
 {
-  "baseUrl" : "http:\/\/localhost:5000",
+  "baseUrl" : "http:\/\/localhost:5100",
   "client" : "swift",
   "protocolVersion" : "1.0",
   "results" : [
     {
-      "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
+      "detail" : "name=Echo Agent, skills=1",
       "durationMs" : 16,
       "id" : "jsonrpc\/agent-card-echo",
       "name" : "Echo Agent Card",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 2,
+      "detail" : "error: keyNotFound(CodingKeys(stringValue: \"type\", intValue: nil), Swift.DecodingError.Context(codingPath: [CodingKeys(stringVa…",
+      "durationMs" : 6,
       "id" : "jsonrpc\/agent-card-spec",
       "name" : "Spec Agent Card",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 2,
+      "detail" : "error: keyNotFound(CodingKeys(stringValue: \"type\", intValue: nil), Swift.DecodingError.Context(codingPath: [CodingKeys(stringVa…",
+      "durationMs" : 4,
       "id" : "jsonrpc\/spec-extended-card",
       "name" : "Spec Extended Card",
       "passed" : false
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
+      "detail" : "response=Echo: hello from Swift",
       "durationMs" : 4,
       "id" : "jsonrpc\/echo-send-message",
       "name" : "Echo Send Message",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "got Message, text=Echo: message-only",
-      "durationMs" : 5,
+      "detail" : "got Message, text=[message-only] You said: message-only",
+      "durationMs" : 3,
       "id" : "jsonrpc\/spec-message-only",
       "name" : "Message Only",
       "passed" : true
     },
     {
-      "detail" : "expected Task, got Message",
-      "durationMs" : 5,
+      "detail" : "state=TASK_STATE_COMPLETED, artifacts=1, id=9752cb8672ce4fbb9e235899bcd66436",
+      "durationMs" : 3,
       "id" : "jsonrpc\/spec-task-lifecycle",
       "name" : "Task Lifecycle",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "skipped — no task ID from lifecycle test",
-      "durationMs" : 0,
+      "detail" : "id=9752cb8672ce4fbb9e235899bcd66436, state=TASK_STATE_COMPLETED",
+      "durationMs" : 4,
       "id" : "jsonrpc\/spec-get-task",
       "name" : "Get Task",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "expected failed Task, got Message",
-      "durationMs" : 5,
+      "detail" : "state=TASK_STATE_FAILED",
+      "durationMs" : 3,
       "id" : "jsonrpc\/spec-task-failure",
       "name" : "Task Failure",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "text=true, data=false, file=false",
-      "durationMs" : 4,
+      "detail" : "text=true, data=true, file=true",
+      "durationMs" : 2,
       "id" : "jsonrpc\/spec-data-types",
       "name" : "Data Types",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "events=1, lastState=nil, hasArtifact=false",
-      "durationMs" : 164,
+      "detail" : "events=7, lastState=TASK_STATE_COMPLETED, hasArtifact=true",
+      "durationMs" : 2050,
       "id" : "jsonrpc\/spec-streaming",
       "name" : "Streaming",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "step1: expected Task, got Message",
-      "durationMs" : 4,
+      "detail" : "taskId=29cb039f644544a686b640f1ea71a863, 3 steps, finalState=TASK_STATE_COMPLETED",
+      "durationMs" : 9,
       "id" : "jsonrpc\/spec-multi-turn",
       "name" : "Multi-Turn Conversation",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "error: taskNotFound(taskId: \"\", message: Optional(\"Task not found\"))",
-      "durationMs" : 169,
+      "detail" : "error: taskNotCancelable(taskId: \"aa568dc7d25f4563af9ca46b1f677d2d\", state: A2AClient.TaskState.working, message: Optional(\"Tas…",
+      "durationMs" : 30025,
       "id" : "jsonrpc\/spec-task-cancel",
       "name" : "Task Cancel",
       "passed" : false
     },
     {
-      "detail" : "error: taskNotFound(taskId: \"\", message: Optional(\"Task not found\"))",
-      "durationMs" : 170,
+      "detail" : "error: taskNotCancelable(taskId: \"845e93593dc141028e156f19919ec1c7\", state: A2AClient.TaskState.working, message: Optional(\"Tas…",
+      "durationMs" : 30008,
       "id" : "jsonrpc\/spec-cancel-with-metadata",
       "name" : "Cancel With Metadata",
       "passed" : false
     },
     {
-      "detail" : "tasks=0 (need>=1)",
-      "durationMs" : 4,
+      "detail" : "tasks=50 (need>=1)",
+      "durationMs" : 6,
       "id" : "jsonrpc\/spec-list-tasks",
       "name" : "List Tasks",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "took 0.0s, state=nil — returned promptly",
-      "durationMs" : 6,
+      "detail" : "took 0.0s, state=TASK_STATE_SUBMITTED — returned promptly",
+      "durationMs" : 4,
       "id" : "jsonrpc\/spec-return-immediately",
       "name" : "Return Immediately",
       "passed" : true
     },
     {
-      "detail" : "got expected error: taskNotFound(taskId: \"\", message: Optional(\"Task not found\"))",
-      "durationMs" : 4,
+      "detail" : "got expected error: taskNotFound(taskId: \"\", message: Optional(\"Task \\'00000000-0000-0000-0000-000000000000\\' not found.…",
+      "durationMs" : 3,
       "id" : "jsonrpc\/error-task-not-found",
       "name" : "Task Not Found Error",
       "passed" : true
     },
     {
-      "detail" : "got expected error: taskNotFound(taskId: \"\", message: Optional(\"Task not found\"))",
+      "detail" : "got expected error: taskNotFound(taskId: \"\", message: Optional(\"Task \\'00000000-0000-0000-0000-000000000000\\' not found.…",
       "durationMs" : 3,
       "id" : "jsonrpc\/error-cancel-not-found",
       "name" : "Cancel Not Found Error",
       "passed" : true
     },
     {
-      "detail" : "could not create completed task",
-      "durationMs" : 4,
+      "detail" : "got expected error: taskNotCancelable(taskId: \"8e42cae393764e65b447bdf0f5379af0\", state: A2AClient.TaskState.working, me…",
+      "durationMs" : 5,
       "id" : "jsonrpc\/error-cancel-terminal",
       "name" : "Cancel Terminal Error",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "could not create completed task",
-      "durationMs" : 5,
+      "detail" : "got expected error: unsupportedOperation(operation: \"\", message: Optional(\"Task is in a terminal state and cannot accept…",
+      "durationMs" : 6,
       "id" : "jsonrpc\/error-send-terminal",
       "name" : "Send Terminal Error",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "expected error, got success",
-      "durationMs" : 4,
+      "detail" : "got expected error: taskNotFound(taskId: \"\", message: Optional(\"Task \\'00000000-0000-0000-0000-000000000000\\' not found.…",
+      "durationMs" : 3,
       "id" : "jsonrpc\/error-send-invalid-task",
       "name" : "Send Invalid Task Error",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "got expected error: invalidRequest(message: Optional(\"Invalid request content: config in message lf.a2a.v1.TaskPushNotif…",
-      "durationMs" : 4,
+      "detail" : "got expected error: pushNotificationNotSupported(message: Optional(\"Push notifications not supported.\"))",
+      "durationMs" : 3,
       "id" : "jsonrpc\/error-push-not-supported",
       "name" : "Push Not Supported Error",
       "passed" : true
     },
     {
-      "detail" : "error: taskNotFound(taskId: \"\", message: Optional(\"Task not found\"))",
-      "durationMs" : 161,
+      "detail" : "error: unsupportedOperation(operation: \"\", message: Optional(\"Task is in a terminal state and cannot be subscribed to.\"))",
+      "durationMs" : 30024,
       "id" : "jsonrpc\/subscribe-to-task",
       "name" : "Subscribe To Task",
       "passed" : false
     },
     {
-      "detail" : "got expected error: taskNotFound(taskId: \"\", message: Optional(\"Task not found\"))",
+      "detail" : "got expected error: taskNotFound(taskId: \"\", message: Optional(\"Task \\'00000000-0000-0000-0000-000000000000\\' not found.…",
       "durationMs" : 3,
       "id" : "jsonrpc\/error-subscribe-not-found",
       "name" : "Subscribe Not Found Error",
@@ -166,56 +166,56 @@
     },
     {
       "detail" : "events=1, gotMessage=true",
-      "durationMs" : 163,
+      "durationMs" : 3,
       "id" : "jsonrpc\/stream-message-only",
       "name" : "Stream Message Only",
       "passed" : true
     },
     {
-      "detail" : "gotTaskEvent=false, lastState=nil",
-      "durationMs" : 155,
+      "detail" : "gotTaskEvent=true, lastState=TASK_STATE_COMPLETED",
+      "durationMs" : 3,
       "id" : "jsonrpc\/stream-task-lifecycle",
       "name" : "Stream Task Lifecycle",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "step1 returned Message, expected Task",
-      "durationMs" : 5,
+      "detail" : "contextId1=abf737fba15e4b539811058025c2c686, contextId2=abf737fba15e4b539811058025c2c686, match=true",
+      "durationMs" : 6,
       "id" : "jsonrpc\/multi-turn-context-preserved",
       "name" : "Multi-Turn Context Preserved",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "could not create task",
-      "durationMs" : 4,
+      "detail" : "taskId=5b551cf2394c450a8f5641a5a920fe44, state=TASK_STATE_COMPLETED, historyLen=0",
+      "durationMs" : 7,
       "id" : "jsonrpc\/get-task-with-history",
       "name" : "Get Task With History",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "could not create failed task",
-      "durationMs" : 4,
+      "detail" : "state=TASK_STATE_FAILED, hasMessage=true",
+      "durationMs" : 7,
       "id" : "jsonrpc\/get-task-after-failure",
       "name" : "Get Task After Failure",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
+      "detail" : "name=Echo Agent, skills=1",
       "durationMs" : 2,
       "id" : "rest\/agent-card-echo",
       "name" : "REST Echo Agent Card",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 2,
+      "detail" : "error: keyNotFound(CodingKeys(stringValue: \"type\", intValue: nil), Swift.DecodingError.Context(codingPath: [CodingKeys(stringVa…",
+      "durationMs" : 5,
       "id" : "rest\/agent-card-spec",
       "name" : "REST Spec Agent Card",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 2,
+      "detail" : "error: keyNotFound(CodingKeys(stringValue: \"type\", intValue: nil), Swift.DecodingError.Context(codingPath: [CodingKeys(stringVa…",
+      "durationMs" : 4,
       "id" : "rest\/spec-extended-card",
       "name" : "REST Spec Extended Card",
       "passed" : false
@@ -228,15 +228,15 @@
       "passed" : false
     },
     {
-      "detail" : "got Message, text=Echo: message-only",
-      "durationMs" : 4,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/spec-message-only",
       "name" : "REST Message Only",
-      "passed" : true
+      "passed" : false
     },
     {
-      "detail" : "expected Task, got Message",
-      "durationMs" : 5,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/spec-task-lifecycle",
       "name" : "REST Task Lifecycle",
       "passed" : false
@@ -249,60 +249,60 @@
       "passed" : false
     },
     {
-      "detail" : "expected failed Task, got Message",
-      "durationMs" : 4,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/spec-task-failure",
       "name" : "REST Task Failure",
       "passed" : false
     },
     {
-      "detail" : "text=true, data=false, file=false",
-      "durationMs" : 4,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/spec-data-types",
       "name" : "REST Data Types",
       "passed" : false
     },
     {
-      "detail" : "events=1, lastState=nil, hasArtifact=false",
-      "durationMs" : 155,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 1,
       "id" : "rest\/spec-streaming",
       "name" : "REST Streaming",
       "passed" : false
     },
     {
-      "detail" : "step1: expected Task, got Message",
-      "durationMs" : 4,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/spec-multi-turn",
       "name" : "REST Multi-Turn Conversation",
       "passed" : false
     },
     {
       "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 171,
+      "durationMs" : 2,
       "id" : "rest\/spec-task-cancel",
       "name" : "REST Task Cancel",
       "passed" : false
     },
     {
       "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 170,
+      "durationMs" : 1,
       "id" : "rest\/spec-cancel-with-metadata",
       "name" : "REST Cancel With Metadata",
       "passed" : false
     },
     {
-      "detail" : "tasks=0 (need>=1)",
-      "durationMs" : 3,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/spec-list-tasks",
       "name" : "REST List Tasks",
       "passed" : false
     },
     {
-      "detail" : "took 0.0s, state=nil — returned promptly",
-      "durationMs" : 5,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/spec-return-immediately",
       "name" : "REST Return Immediately",
-      "passed" : true
+      "passed" : false
     },
     {
       "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
@@ -313,117 +313,117 @@
     },
     {
       "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 4,
+      "durationMs" : 2,
       "id" : "rest\/error-cancel-not-found",
       "name" : "REST Cancel Not Found Error",
       "passed" : true
     },
     {
-      "detail" : "could not create completed task",
-      "durationMs" : 6,
+      "detail" : "error creating task: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/error-cancel-terminal",
       "name" : "REST Cancel Terminal Error",
       "passed" : false
     },
     {
-      "detail" : "could not create completed task",
-      "durationMs" : 5,
+      "detail" : "error creating task: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/error-send-terminal",
       "name" : "REST Send Terminal Error",
       "passed" : false
     },
     {
-      "detail" : "expected error, got success",
-      "durationMs" : 5,
+      "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 3,
       "id" : "rest\/error-send-invalid-task",
       "name" : "REST Send Invalid Task Error",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "got expected error: invalidRequest(message: Optional(\"Bad request (HTTP 400)\"))",
-      "durationMs" : 4,
+      "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 3,
       "id" : "rest\/error-push-not-supported",
       "name" : "REST Push Not Supported Error",
       "passed" : true
     },
     {
       "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 158,
+      "durationMs" : 2,
       "id" : "rest\/subscribe-to-task",
       "name" : "REST Subscribe To Task",
       "passed" : false
     },
     {
       "detail" : "got expected error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
-      "durationMs" : 3,
+      "durationMs" : 2,
       "id" : "rest\/error-subscribe-not-found",
       "name" : "REST Subscribe Not Found Error",
       "passed" : true
     },
     {
-      "detail" : "events=1, gotMessage=true",
-      "durationMs" : 164,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/stream-message-only",
       "name" : "REST Stream Message Only",
-      "passed" : true
+      "passed" : false
     },
     {
-      "detail" : "gotTaskEvent=false, lastState=nil",
-      "durationMs" : 156,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/stream-task-lifecycle",
       "name" : "REST Stream Task Lifecycle",
       "passed" : false
     },
     {
-      "detail" : "step1 returned Message, expected Task",
-      "durationMs" : 5,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 3,
       "id" : "rest\/multi-turn-context-preserved",
       "name" : "REST Multi-Turn Context Preserved",
       "passed" : false
     },
     {
-      "detail" : "could not create task",
-      "durationMs" : 6,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/get-task-with-history",
       "name" : "REST Get Task With History",
       "passed" : false
     },
     {
-      "detail" : "could not create failed task",
-      "durationMs" : 5,
+      "detail" : "error: invalidResponse(message: Optional(\"Resource not found (HTTP 404)\"))",
+      "durationMs" : 2,
       "id" : "rest\/get-task-after-failure",
       "name" : "REST Get Task After Failure",
       "passed" : false
     },
     {
-      "detail" : "error: invalidResponse(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 4,
+      "detail" : "name=AgentBin Spec Agent (v0.3), skills=4",
+      "durationMs" : 3,
       "id" : "v03\/spec03-agent-card",
       "name" : "v0.3 Agent Card",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
+      "detail" : "text=[message-only] You said: message-only hello",
       "durationMs" : 3,
       "id" : "v03\/spec03-send-message",
       "name" : "v0.3 Send Message",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
+      "detail" : "state=TASK_STATE_COMPLETED, taskId=7bdd199b97074e3eab6ca842710b6dca",
       "durationMs" : 3,
       "id" : "v03\/spec03-task-lifecycle",
       "name" : "v0.3 Task Lifecycle",
-      "passed" : false
+      "passed" : true
     },
     {
-      "detail" : "error: internalError(message: Optional(\"HTTP 404\"))",
-      "durationMs" : 2,
+      "detail" : "events=7, text=[streaming] Chunk 4: Finalizing output...",
+      "durationMs" : 2045,
       "id" : "v03\/spec03-streaming",
       "name" : "v0.3 Streaming",
-      "passed" : false
+      "passed" : true
     }
   ],
   "sdk" : "a2a-client-swift 1.0.12",
-  "timestamp" : "2026-04-10T16:20:33Z"
+  "timestamp" : "2026-04-10T16:14:06Z"
 }

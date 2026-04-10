@@ -67,6 +67,7 @@ app.Use(async (context, next) =>
 {
     if (context.Request.Method == "GET" &&
         (context.Request.Path.Value?.EndsWith("/.well-known/agent-card.json") == true ||
+         context.Request.Path.Value?.EndsWith("/.well-known/agent.json") == true ||
          agentCardPaths.Contains(context.Request.Path.Value ?? "")))
     {
         context.Response.OnStarting(() =>
@@ -109,6 +110,7 @@ app.MapHttpA2A(echoServer, echoCard, "/echo");
 
 // Base-URL GET returns the agent card (future A2A proposal: GET on agent URL serves its card)
 app.MapGet("/echo/.well-known/agent-card.json", () => Results.Ok(echoCard));
+app.MapGet("/echo/.well-known/agent.json", () => Results.Ok(echoCard));
 app.MapGet("/echo", () => Results.Ok(echoCard));
 
 // Map Spec v0.3 agent — same handler, but serves a v0.3-format agent card.
@@ -121,16 +123,19 @@ var spec03Server = new A2AServer(
     app.Services.GetRequiredService<ILogger<A2AServer>>());
 app.MapA2A(spec03Server, "/spec03");
 app.MapGet("/spec03/.well-known/agent-card.json", () => Results.Ok(spec03Card));
+app.MapGet("/spec03/.well-known/agent.json", () => Results.Ok(spec03Card));
 app.MapGet("/spec03", () => Results.Ok(spec03Card));
 
 // Base-URL GET and .well-known for spec agent
 // (MapA2A no longer registers .well-known as of PR#339)
 app.MapGet("/spec/.well-known/agent-card.json", () => Results.Ok(specCard));
+app.MapGet("/spec/.well-known/agent.json", () => Results.Ok(specCard));
 app.MapGet("/spec", () => Results.Ok(specCard));
 
-// Root-level agent card — many SDKs discover agents at /.well-known/agent-card.json on the domain root.
+// Root-level agent card — many SDKs discover agents at /.well-known/ on the domain root.
 // Returns the Spec agent's card (primary agent); URLs still point to /spec/ endpoints.
 app.MapGet("/.well-known/agent-card.json", () => Results.Ok(specCard));
+app.MapGet("/.well-known/agent.json", () => Results.Ok(specCard));
 
 app.Run();
 
