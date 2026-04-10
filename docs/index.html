@@ -167,14 +167,39 @@ curl -X POST -H "A2A-Version: 1.0" -H "Content-Type: application/json" \
 
   <!-- Server Compliance (TCK) Tab -->
   <div id="compliance" class="tab-content">
-    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-      <button class="server-tab active" data-target="compliance-frame" data-src="compliance-net.html">&#9726; .NET</button>
-      <button class="server-tab" data-target="compliance-frame" data-src="compliance-go.html">&#128640; Go</button>
-      <button class="server-tab" data-target="compliance-frame" data-src="compliance-python.html">&#128013; Python</button>
-      <button class="server-tab" data-target="compliance-frame" data-src="compliance-rust.html">&#9883; Rust</button>
-      <button class="server-tab" data-target="compliance-frame" data-src="compliance-java.html">&#9749; Java</button>
+    <div class="section">
+      <h2>A2A TCK — Server Compliance</h2>
+      <p>Technology Compatibility Kit results for all AgentBin server implementations.
+         Each server runs the same SpecAgent behavior; failures indicate SDK-level gaps.
+         Tested against <a href="https://github.com/a2aproject/a2a-tck" style="color:var(--accent)">a2a-tck</a> @ 1.0-dev.</p>
     </div>
-    <iframe id="compliance-frame" src="compliance-net.html" title="Server Compliance"></iframe>
+    <div class="endpoints" style="margin-bottom:1.5rem">
+      <a href="compliance-java.html" target="_blank" class="endpoint" style="text-decoration:none">
+        <h3>☕ Java — <span style="color:#3fb950">96%</span></h3>
+        <div style="height:6px;background:var(--border);border-radius:3px;margin:8px 0"><div style="width:96%;height:100%;background:#3fb950;border-radius:3px"></div></div>
+        <div class="desc">140 pass · 6 fail · 91 skip — a2a-java 1.0.0.Beta1-SNAPSHOT</div>
+      </a>
+      <a href="compliance-net.html" target="_blank" class="endpoint" style="text-decoration:none">
+        <h3>◼ .NET — <span style="color:#3fb950">91%</span></h3>
+        <div style="height:6px;background:var(--border);border-radius:3px;margin:8px 0"><div style="width:91%;height:100%;background:#3fb950;border-radius:3px"></div></div>
+        <div class="desc">125 pass · 13 fail · 99 skip — A2A 1.0.0-preview2</div>
+      </a>
+      <a href="compliance-go.html" target="_blank" class="endpoint" style="text-decoration:none">
+        <h3>🚀 Go — <span style="color:#d29922">47%</span></h3>
+        <div style="height:6px;background:var(--border);border-radius:3px;margin:8px 0"><div style="width:47%;height:100%;background:#d29922;border-radius:3px"></div></div>
+        <div class="desc">66 pass · 74 fail · 91 skip — a2a-go v2.1.0</div>
+      </a>
+      <a href="compliance-python.html" target="_blank" class="endpoint" style="text-decoration:none">
+        <h3>🐍 Python — <span style="color:#f85149">28%</span></h3>
+        <div style="height:6px;background:var(--border);border-radius:3px;margin:8px 0"><div style="width:28%;height:100%;background:#f85149;border-radius:3px"></div></div>
+        <div class="desc">34 pass · 88 fail · 107 skip — a2a-sdk 1.0.0a1</div>
+      </a>
+      <a href="compliance-rust.html" target="_blank" class="endpoint" style="text-decoration:none">
+        <h3>⚙ Rust — <span style="color:#f85149">20%</span></h3>
+        <div style="height:6px;background:var(--border);border-radius:3px;margin:8px 0"><div style="width:20%;height:100%;background:#f85149;border-radius:3px"></div></div>
+        <div class="desc">15 pass · 59 fail · 157 skip — a2a-rs 1.0.17 (jsonrpc only)</div>
+      </a>
+    </div>
   </div>
 
   <!-- Endpoints Tab -->
