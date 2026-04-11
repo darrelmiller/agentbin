@@ -2,6 +2,7 @@ mod echo_agent;
 mod spec_agent;
 
 use std::env;
+use std::sync::{Arc, OnceLock};
 use axum::{
     Router,
     routing::get,
@@ -25,7 +26,8 @@ async fn main() -> anyhow::Result<()> {
 
     tracing::info!("Starting AgentBin Rust Server on port {}", port);
 
-    let spec_handler = spec_agent::SpecAgent::new("/spec");
+    let spec_event_tx = Arc::new(OnceLock::new());
+    let spec_handler = spec_agent::SpecAgent::new("/spec", spec_event_tx.clone());
     let echo_handler = echo_agent::EchoAgent::new("/echo");
 
     let _spec_card = spec_handler.agent_card(&format!("{}/spec", base_url));
@@ -33,6 +35,8 @@ async fn main() -> anyhow::Result<()> {
 
     let spec_server = A2aServer::new(spec_handler)
         .bind_unchecked(&format!("127.0.0.1:{}", port));
+    // Fill the event_tx slot before build_router() consumes the server
+    let _ = spec_event_tx.set(spec_server.get_event_sender());
     
     let echo_server = A2aServer::new(echo_handler)
         .bind_unchecked(&format!("127.0.0.1:{}", port));

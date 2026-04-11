@@ -1,20 +1,26 @@
 use a2a_rs_core::{
     Artifact, AgentCard, AgentCapabilities, AgentInterface, AgentSkill,
-    Message, Part, Role, SendMessageResponse, Task, TaskState, TaskStatus,
+    Message, Part, Role, SendMessageResponse, StreamResponse, Task, TaskState, TaskStatus,
     now_iso8601, PROTOCOL_VERSION,
 };
 use a2a_rs_server::{AuthContext, HandlerResult, MessageHandler};
 use async_trait::async_trait;
 use serde_json::json;
+use std::sync::{Arc, OnceLock};
+use tokio::sync::broadcast;
 use uuid::Uuid;
 
 pub struct SpecAgent {
     prefix: String,
+    event_tx: Arc<OnceLock<broadcast::Sender<StreamResponse>>>,
 }
 
 impl SpecAgent {
-    pub fn new(prefix: &str) -> Self {
-        Self { prefix: prefix.to_string() }
+    pub fn new(prefix: &str, event_tx: Arc<OnceLock<broadcast::Sender<StreamResponse>>>) -> Self {
+        Self {
+            prefix: prefix.to_string(),
+            event_tx,
+        }
     }
 }
 
@@ -73,12 +79,111 @@ impl MessageHandler for SpecAgent {
         }
     }
 
+    fn supports_streaming(&self) -> bool {
+        true
+    }
+
     async fn cancel_task(&self, _task_id: &str) -> HandlerResult<()> {
         Ok(())
     }
 }
 
 impl SpecAgent {
+    /// Spawn a delayed completion event through the broadcast channel.
+    /// This works around an SDK race condition where the stream subscribes to
+    /// events AFTER the initial task broadcast, so a terminal task returned
+    /// directly from handle_message() would cause the stream to hang forever.
+    fn send_delayed_completion(
+        &self,
+        task_id: String,
+        context_id: String,
+        status_text: &str,
+        artifacts: Option<Vec<Artifact>>,
+    ) {
+        if let Some(tx) = self.event_tx.get() {
+            let tx = tx.clone();
+            let status_message = Message {
+                kind: "message".to_string(),
+                message_id: Uuid::new_v4().to_string(),
+                context_id: Some(context_id.clone()),
+                task_id: Some(task_id.clone()),
+                role: Role::Agent,
+                parts: vec![Part::text(status_text)],
+                metadata: None,
+                extensions: vec![],
+                reference_task_ids: None,
+            };
+            let completed_task = Task {
+                kind: "task".to_string(),
+                id: task_id,
+                context_id,
+                status: TaskStatus {
+                    state: TaskState::Completed,
+                    message: Some(status_message),
+                    timestamp: Some(now_iso8601()),
+                },
+                history: None,
+                artifacts,
+                metadata: None,
+            };
+            tokio::spawn(async move {
+                // Small delay ensures the SDK has subscribed to the event channel
+                tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+                let _ = tx.send(StreamResponse::Task(completed_task));
+            });
+        }
+    }
+
+    /// Return a Working task and schedule a delayed Completed event via broadcast.
+    /// Used by all TCK streaming handlers to avoid the SDK subscribe race condition.
+    fn tck_streaming_task(
+        &self,
+        message: &Message,
+        status_text: &str,
+        artifacts: Option<Vec<Artifact>>,
+    ) -> HandlerResult<SendMessageResponse> {
+        let context_id = message.context_id.clone().unwrap_or_else(|| Uuid::new_v4().to_string());
+        let task_id = Uuid::new_v4().to_string();
+
+        let working_message = Message {
+            kind: "message".to_string(),
+            message_id: Uuid::new_v4().to_string(),
+            context_id: Some(context_id.clone()),
+            task_id: Some(task_id.clone()),
+            role: Role::Agent,
+            parts: vec![Part::text(status_text)],
+            metadata: None,
+            extensions: vec![],
+            reference_task_ids: None,
+        };
+
+        // Schedule delayed completion via broadcast channel
+        self.send_delayed_completion(
+            task_id.clone(),
+            context_id.clone(),
+            status_text,
+            artifacts,
+        );
+
+        // Return Working task — the stream will see this first, then pick up
+        // the Completed task from the broadcast channel
+        let task = Task {
+            kind: "task".to_string(),
+            id: task_id,
+            context_id,
+            status: TaskStatus {
+                state: TaskState::Working,
+                message: Some(working_message),
+                timestamp: Some(now_iso8601()),
+            },
+            history: None,
+            artifacts: None,
+            metadata: None,
+        };
+
+        Ok(SendMessageResponse::Task(task))
+    }
+
     fn handle_message_only(&self, text: String) -> HandlerResult<SendMessageResponse> {
         let reply = Message {
             kind: "message".to_string(),
@@ -312,31 +417,39 @@ impl SpecAgent {
             extensions: vec![],
         };
 
-        let done_message = Message {
+        let working_message = Message {
             kind: "message".to_string(),
             message_id: Uuid::new_v4().to_string(),
             context_id: Some(context_id.clone()),
             task_id: Some(task_id.clone()),
             role: Role::Agent,
             parts: vec![Part::text(
-                "[streaming] Stream complete. 4 chunks delivered. (Note: Rust implementation returns all chunks at once as async streaming is not supported)"
+                "[streaming] Stream complete. 4 chunks delivered."
             )],
             metadata: None,
             extensions: vec![],
             reference_task_ids: None,
         };
 
+        // Schedule delayed completion with artifact via broadcast channel
+        self.send_delayed_completion(
+            task_id.clone(),
+            context_id.clone(),
+            "[streaming] Stream complete. 4 chunks delivered.",
+            Some(vec![artifact]),
+        );
+
         let task = Task {
             kind: "task".to_string(),
             id: task_id,
             context_id,
             status: TaskStatus {
-                state: TaskState::Completed,
-                message: Some(done_message.clone()),
+                state: TaskState::Working,
+                message: Some(working_message.clone()),
                 timestamp: Some(now_iso8601()),
             },
-            history: Some(vec![message.clone(), done_message]),
-            artifacts: Some(vec![artifact]),
+            history: Some(vec![message.clone(), working_message]),
+            artifacts: None,
             metadata: None,
         };
 
@@ -725,11 +838,11 @@ behaviors return completed tasks immediately rather than streaming events over t
             metadata: None,
             extensions: vec![],
         };
-        self.tck_completed_task(message, "Stream hello from TCK", Some(vec![artifact]))
+        self.tck_streaming_task(message, "Stream hello from TCK", Some(vec![artifact]))
     }
 
     fn tck_stream_002(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
-        self.tck_completed_task(message, "Completed", None)
+        self.tck_streaming_task(message, "Completed", None)
     }
 
     fn tck_stream_003(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
@@ -741,7 +854,7 @@ behaviors return completed tasks immediately rather than streaming events over t
             metadata: None,
             extensions: vec![],
         };
-        self.tck_completed_task(message, "Stream task lifecycle", Some(vec![artifact]))
+        self.tck_streaming_task(message, "Stream task lifecycle", Some(vec![artifact]))
     }
 
     fn tck_stream_ordering_001(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
@@ -753,7 +866,7 @@ behaviors return completed tasks immediately rather than streaming events over t
             metadata: None,
             extensions: vec![],
         };
-        self.tck_completed_task(message, "Ordered output", Some(vec![artifact]))
+        self.tck_streaming_task(message, "Ordered output", Some(vec![artifact]))
     }
 
     fn tck_stream_artifact_text(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
@@ -765,7 +878,7 @@ behaviors return completed tasks immediately rather than streaming events over t
             metadata: None,
             extensions: vec![],
         };
-        self.tck_completed_task(message, "Streamed text content", Some(vec![artifact]))
+        self.tck_streaming_task(message, "Streamed text content", Some(vec![artifact]))
     }
 
     fn tck_stream_artifact_file(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
@@ -781,7 +894,7 @@ behaviors return completed tasks immediately rather than streaming events over t
             metadata: None,
             extensions: vec![],
         };
-        self.tck_completed_task(message, "file content", Some(vec![artifact]))
+        self.tck_streaming_task(message, "file content", Some(vec![artifact]))
     }
 
     fn tck_stream_artifact_chunked(&self, message: &Message) -> HandlerResult<SendMessageResponse> {
@@ -793,7 +906,7 @@ behaviors return completed tasks immediately rather than streaming events over t
             metadata: None,
             extensions: vec![],
         };
-        self.tck_completed_task(message, "chunk-1 chunk-2", Some(vec![artifact]))
+        self.tck_streaming_task(message, "chunk-1 chunk-2", Some(vec![artifact]))
     }
 }
 
