@@ -44,13 +44,13 @@
 </head>
 <body>
 <h1>AgentBin A2A Report Card (.NET Server)</h1>
-<p class="subtitle">Generated 2026-04-04 01:14 UTC &bull; Target: <code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
+<p class="subtitle">Generated 2026-04-11 01:37 UTC &bull; Target: <code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
 
 <div class="client-section">
   <div class="client-header">
     <span class="client-name">&#9726; .NET</span>
     <span class="client-sdk">A2A 1.0.0-preview2</span>
-    <span class="client-score" style="color:#f85149">56/62</span>
+    <span class="client-score" style="color:#f85149">58/62</span>
   </div>
   <div class="binding-group">
     <div class="binding-label">JSON-RPC</div>
@@ -58,7 +58,6 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="known-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">The operation was canceled.</td><td class="col-known">Known: SubscribeToTask returns 'Task is in a terminal state' — server-side issue with resubscription to completed tasks.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -69,7 +68,6 @@
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">The operation was canceled.</td><td class="col-known">&mdash;</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">expected error, got events</td><td class="col-known">Known: REST subscribe returns events instead of NotFound error. Server-side issue with REST SSE error handling for non-existent tasks.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -86,7 +84,7 @@
 <div class="client-section">
   <div class="client-header">
     <span class="client-name">&#9671; Go</span>
-    <span class="client-sdk">a2a-go</span>
+    <span class="client-sdk">a2a-go v2.1.0</span>
     <span class="client-score" style="color:#f85149">4/60</span>
   </div>
   <div class="binding-group">
@@ -94,7 +92,7 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-spec</code></td><td class="col-name">Spec Agent Card</td><td class="col-detail">error: card parsing failed: unknown security scheme type for &quot;bearer_token&quot;: found keys [httpAuthSecurityScheme]</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-spec</code></td><td class="col-name">Spec Agent Card</td><td class="col-detail">error: card parsing failed: json: cannot unmarshal object into Go struct field AgentCard.securityRequirements.schemes of type a2a.SecuritySchemeScopes</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-message-only</code></td><td class="col-name">Message Only</td><td class="col-detail">skipped â€” no spec client</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">skipped â€” no spec client</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped â€” no spec client</td><td class="col-known">&mdash;</td></tr>
@@ -128,7 +126,7 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-spec</code></td><td class="col-name">Spec Agent Card</td><td class="col-detail">error: card parsing failed: unknown security scheme type for &quot;bearer_token&quot;: found keys [httpAuthSecurityScheme]</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-spec</code></td><td class="col-name">Spec Agent Card</td><td class="col-detail">error: card parsing failed: json: cannot unmarshal object into Go struct field AgentCard.securityRequirements.schemes of type a2a.SecuritySchemeScopes</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-message-only</code></td><td class="col-name">Message Only</td><td class="col-detail">skipped â€” no REST spec client</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">skipped â€” no REST spec client</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped â€” no REST spec client</td><td class="col-known">&mdash;</td></tr>
@@ -173,15 +171,15 @@
 <div class="client-section">
   <div class="client-header">
     <span class="client-name">&#9673; Python</span>
-    <span class="client-sdk">a2a-sdk 1.0.0a0</span>
-    <span class="client-score" style="color:#f85149">55/60</span>
+    <span class="client-sdk">a2a-sdk 1.0.0a1</span>
+    <span class="client-score" style="color:#f85149">56/60</span>
   </div>
   <div class="binding-group">
     <div class="binding-label">HTTP+JSON (REST)</div>
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=1a9eb07d08364aee840981ac96aaa0e5, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=0f93a70ba014489e9c8419714bfa6710, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
       </tbody>
     </table>
   </div>
@@ -190,10 +188,9 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">SDK resolver failed: AttributeError: url</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK v0.3 connect failed: ImportError: Database models require SQLAlchemy. Install with one of: 'pip install a2a-sdk[postgresql]', 'pip ins</td><td class="col-known">Known: Python SDK sends v1.0 method names (message/send) to v0.3 agent which only accepts v0.3 method names (tasks/send). SDK does not fall back.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK v0.3 connect failed: ImportError: Database models require SQLAlchemy. Install with one of: 'pip install a2a-sdk[postgresql]', 'pip ins</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK v0.3 connect failed: ImportError: Database models require SQLAlchemy. Install with one of: 'pip install a2a-sdk[postgresql]', 'pip ins</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK v0.3 send failed: MethodNotFoundError: Invalid JSON-RPC request: 'method' field is not a valid A2A method.</td><td class="col-known">Known: Python SDK sends v1.0 method names (message/send) to v0.3 agent which only accepts v0.3 method names (tasks/send). SDK does not fall back.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK v0.3 send failed: MethodNotFoundError: Invalid JSON-RPC request: 'method' field is not a valid A2A method.</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK v0.3 stream failed: MethodNotFoundError: Invalid JSON-RPC request: 'method' field is not a valid A2A method.</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
       </tbody>
     </table>
   </div>
@@ -238,7 +235,7 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=AgentBin Spec Agent â€” A2A v1.0 Test Bed  Send a message starting with one of these skill keywords:    message-only    â†’ Stateless message response (no task)   task-lifecycle  â†’ Full task: submitted â†’ working â†’ completed   task-failure    â†’ Task that fails with error message   task-cancel     â†’ Task that waits to be canceled   multi-turn      â†’ Multi-turn conversation (input-required)   streaming       â†’ Streamed response with multiple chunks   long-running    â†’ Long-running task with periodic updates   data-types      â†’ Mixed content: text, JSON, file, multi-part  Example: 'task-lifecycle hello world'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=190a442db2d140d19f4791b8ad8a6fe4, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: REST cancel succeeds but cancel metadata (reason/requestedBy) not echoed in response. Server-side limitation.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=97ad4c0257b5483fad57f6c253f84c76, state=CANCELED, metadata not echoed (reason/requestedBy not in response)</td><td class="col-known">Known: REST cancel succeeds but cancel metadata (reason/requestedBy) not echoed in response. Server-side limitation.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">InvalidParamsError: Parameter 'id' may not be null</td><td class="col-known">Known: Java SDK REST listTasks fails — client-side null 'id' bug during response deserialization.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate terminal-state errors.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">Known: Java SDK Beta1 — expected error but got success. REST binding may not properly propagate task-not-found errors.</td></tr>
@@ -262,7 +259,7 @@
   <div class="client-header">
     <span class="client-name">&#9724; JavaScript</span>
     <span class="client-sdk">a2a-js (local build, 0.3.13)</span>
-    <span class="client-score" style="color:#f85149">13/60</span>
+    <span class="client-score" style="color:#f85149">16/60</span>
   </div>
   <div class="binding-group">
     <div class="binding-label">JSON-RPC</div>
@@ -270,27 +267,24 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">name=AgentBin Spec Agent, skills=8</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-message-only</code></td><td class="col-name">Message Only</td><td class="col-detail">JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">JSON-RPC error: method not found (Code: -32601) Data: {&quot;error&quot;:&quot;method not found&quot;}</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-message-only</code></td><td class="col-name">Message Only</td><td class="col-detail">JSON-RPC error: method not found (Code: -32601) Data: {&quot;error&quot;:&quot;method not found&quot;}</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped â€” no taskId from lifecycle</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">JSON-RPC error: method not found (Code: -32601) Data: {&quot;error&quot;:&quot;method not found&quot;}</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
       <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">SDK not supported: JS SDK does not expose listTasks</td><td class="col-known">Known: JS SDK does not expose listTasks method.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-task-not-found</code></td><td class="col-name">Task Not Found Error</td><td class="col-detail">error=JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as Ge</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-cancel-not-found</code></td><td class="col-name">Cancel Not Found</td><td class="col-detail">error=JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as Ca</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">JSON-RPC error: method not found (Code: -32601) Data: {&quot;error&quot;:&quot;method not found&quot;}</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">error=Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">error=JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as Se</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
       <tr class="known-row"><td class="col-id"><code>jsonrpc/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">error=Error: Invalid response Content-Type for SSE stream for tasks/resubscribe. Expected 'te</td><td class="col-known">Known: Server returns 'internal error during streaming' instead of NotFound error. Server-side issue with subscription error handling.</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/stream-message-only</code></td><td class="col-name">Stream Message Only</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (Code: -32602) Data: {</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">JSON-RPC error: method not found (Code: -32601) Data: {&quot;error&quot;:&quot;method not found&quot;}</td><td class="col-known">&mdash;</td></tr>
       <tr class="known-row"><td class="col-id"><code>jsonrpc/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">Known: Server returns task with 0 history items. Server may not persist message history for getTask requests.</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
       </tbody>
@@ -302,25 +296,25 @@
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">name=AgentBin Spec Agent, skills=8</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">HTTP error for /v1/message:send! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-message-only</code></td><td class="col-name">Message Only</td><td class="col-detail">HTTP error for /v1/message:send! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-message-only</code></td><td class="col-name">Message Only</td><td class="col-detail">HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped â€” no taskId from lifecycle</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">HTTP error for /v1/message:send! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">Known: REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">Known: REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">SDK not supported: JS SDK does not expose listTasks</td><td class="col-known">Known: JS SDK does not expose listTasks method.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">HTTP error for /v1/message:send! Status: 404 Not Found. Response: </td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">error=Error: HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">Known: REST subscribe returns 0 events. Server-side issue with REST SSE resubscription to completed tasks.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/stream-message-only</code></td><td class="col-name">Stream Message Only</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">HTTP error for /v1/message:send! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">Known: Server returns task with 0 history items. Server may not persist message history for getTask requests.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: </td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">error=Error: HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">Known: REST subscribe returns 0 events. Server-side issue with REST SSE resubscription to completed tasks.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/stream-message-only</code></td><td class="col-name">Stream Message Only</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">HTTP error for /v1/message:send! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">Known: Server returns task with 0 history items. Server may not persist message history for getTask requests.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">HTTP error for /v1/message:stream! Status: 404 Not Found. Response: 404 page not found&#10;</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -329,7 +323,7 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK v0.3 failed: JSONRPCTransportError: JSON-RPC error: Invalid parameters: request body could not be deserialized as SendMessageRequest. (C</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK v0.3 failed: JSONRPCTransportError: JSON-RPC error: method not found (Code: -32601) Data: {&quot;error&quot;:&quot;method not found&quot;}</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK v0.3 failed: Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK v0.3 failed: Error: Invalid response Content-Type for SSE stream for message/stream. Expected 'text/event-stream'.</td><td class="col-known">&mdash;</td></tr>
       </tbody>
@@ -339,7 +333,7 @@
 <div class="client-section">
   <div class="client-header">
     <span class="client-name">&#9883; Rust</span>
-    <span class="client-sdk">a2a-rs-client 1.0.11</span>
+    <span class="client-sdk">a2a-rs-client 1.0.17</span>
     <span class="client-score" style="color:#f85149">54/60</span>
   </div>
   <div class="binding-group">
@@ -357,9 +351,9 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5000...</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5000...</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">HTTP status client error (404 Not Found) for url (http://localhost:5000/spec/tasks/419b6bc5ca394b27b09088a6d8e1ca99/subs...</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100...</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100...</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/edeb6960000247a785ed0126178dfdf5/subs...</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">historyLength=0</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
@@ -378,8 +372,8 @@
       <tbody>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-spec</code></td><td class="col-name">Spec Agent Card</td><td class="col-detail">error: keyNotFound(CodingKeys(stringValue: &quot;type&quot;, intValue: nil), Swift.DecodingError.Context(codingPath: [CodingKeys(stringVaâ€¦</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">error: keyNotFound(CodingKeys(stringValue: &quot;type&quot;, intValue: nil), Swift.DecodingError.Context(codingPath: [CodingKeys(stringVaâ€¦</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;b75447900f474f079ab6768c6312d60c&quot;, state: A2AClient.TaskState.working, message: Optional(&quot;Tasâ€¦</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;1d6b2fa69a64465ba857183f643dab59&quot;, state: A2AClient.TaskState.working, message: Optional(&quot;Tasâ€¦</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;aa568dc7d25f4563af9ca46b1f677d2d&quot;, state: A2AClient.TaskState.working, message: Optional(&quot;Tasâ€¦</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">error: taskNotCancelable(taskId: &quot;845e93593dc141028e156f19919ec1c7&quot;, state: A2AClient.TaskState.working, message: Optional(&quot;Tasâ€¦</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">error: unsupportedOperation(operation: &quot;&quot;, message: Optional(&quot;Task is in a terminal state and cannot be subscribed to.&quot;))</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>

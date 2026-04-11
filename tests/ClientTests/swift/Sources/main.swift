@@ -7,7 +7,18 @@ import FoundationNetworking
 // MARK: - Constants & Globals
 
 let defaultBaseURL = "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io"
-let sdkName = "a2a-client-swift 1.0.12"
+let sdkName: String = {
+    // Auto-detect version from Package.resolved to stay in sync
+    if let data = FileManager.default.contents(atPath: "Package.resolved"),
+       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+       let pins = json["pins"] as? [[String: Any]],
+       let pin = pins.first(where: { ($0["identity"] as? String) == "a2a-client-swift" }),
+       let state = pin["state"] as? [String: Any],
+       let version = state["version"] as? String {
+        return "a2a-client-swift \(version)"
+    }
+    return "a2a-client-swift unknown"
+}()
 
 struct TestResult: Codable, Sendable {
     let id: String

@@ -1,6 +1,6 @@
 {
   "client": "rust",
-  "sdk": "a2a-rs-client 1.0.11",
+  "sdk": "a2a-rs-client 1.0.17",
   "protocolVersion": "1.0",
   "timestamp": "2026-04-10T15:28:41.750194900+00:00",
   "baseUrl": "http://localhost:5300",

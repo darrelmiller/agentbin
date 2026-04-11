@@ -16,7 +16,7 @@ use tokio_stream::StreamExt;
 
 const DEFAULT_BASE_URL: &str =
     "https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io";
-const SDK_VERSION: &str = "a2a-rs-client 1.0.11";
+const SDK_VERSION: &str = env!("A2A_SDK_VERSION");
 
 // ── Result structures ──────────────────────────────────────────────
 

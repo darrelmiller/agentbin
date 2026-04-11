@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
+import java.util.regex.*;
 
 /**
  * AgentBin Java SDK acceptance tests.
@@ -1359,11 +1360,20 @@ public class TestJavaClient {
         return s.length() > max ? s.substring(0, max) + "..." : s;
     }
 
+    static String detectSdkVersion() {
+        try {
+            String pom = Files.readString(Path.of("pom.xml"));
+            Matcher m = Pattern.compile("<a2a\\.version>([^<]+)</a2a\\.version>").matcher(pom);
+            if (m.find()) return "a2a-java-sdk " + m.group(1);
+        } catch (Exception e) { /* fall through */ }
+        return "a2a-java-sdk unknown";
+    }
+
     static void writeResultsJson(String baseUrl) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
         sb.append("  \"client\": \"java\",\n");
-        sb.append("  \"sdk\": \"a2a-java-sdk 1.0.0.Beta1-SNAPSHOT\",\n");
+        sb.append("  \"sdk\": \"").append(detectSdkVersion()).append("\",\n");
         sb.append("  \"protocolVersion\": \"1.0\",\n");
         sb.append("  \"timestamp\": \"").append(Instant.now()).append("\",\n");
         sb.append("  \"baseUrl\": \"").append(baseUrl).append("\",\n");
