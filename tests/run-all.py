@@ -11,10 +11,17 @@ Usage:
     python run-all.py --dashboard-only --publish     # also update docs/ dashboard (publish-gated clients only)
     python run-all.py --dashboard-only --publish --server=.NET     # label as .NET Server dashboard
     python run-all.py --dashboard-only --publish --server=Go --results-dir=path/to/go/results
+
+When --publish is specified, the extended publish also:
+  1. Copies all per-server dashboard-*.html and report-card-*.html from tests/ to docs/
+  2. Regenerates TCK compliance reports (compliance-{server}.html) from tests/TCKResults/
+  3. Auto-updates docs/index.html TCK stats (pass/fail/skip counts and percentages)
 """
 
 import json
 import os
+import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -717,6 +724,159 @@ def generate_report_card(all_results: dict[str, dict], base_url: str, server_lab
     return html
 
 
+# ---------------------------------------------------------------------------
+# Extended publish: per-server files, compliance reports, and index.html stats
+# ---------------------------------------------------------------------------
+
+# TCK server directory names → display labels
+TCK_SERVERS = {"net": ".NET", "go": "Go", "python": "Python", "java": "Java", "rust": "Rust"}
+
+# Icon and SDK package-name prefix shown in index.html for each server
+_SERVER_DISPLAY = {
+    "java":   {"icon": "☕", "label": "Java"},
+    "net":    {"icon": "◼", "label": ".NET"},
+    "go":     {"icon": "🚀", "label": "Go"},
+    "python": {"icon": "🐍", "label": "Python"},
+    "rust":   {"icon": "⚙", "label": "Rust"},
+}
+
+
+def _count_tck_outcomes(results_dir: Path) -> tuple:
+    """Count pass/fail/skip from TCK *_results.json files, grouped by test function.
+
+    Grouping mirrors generate_compliance.py: each test function is counted once
+    using the worst outcome across transports (error > failed > skipped > passed).
+    Returns (passed, failed, skipped) counts.
+    """
+    rank = {"error": 0, "failed": 1, "skipped": 2, "passed": 3}
+    grouped: dict[tuple, str] = {}
+
+    for fpath in sorted(results_dir.glob("*_results.json")):
+        data = json.loads(fpath.read_text(encoding="utf-8"))
+        fname = fpath.stem.replace("_results", "")
+        parts = fname.rsplit("_", 1)
+        category = parts[0] if len(parts) == 2 and parts[1] in ("jsonrpc", "rest") else fname.replace("_results", "")
+
+        for test in data.get("tests", []):
+            nodeid = test.get("nodeid", "")
+            test_name = nodeid.split("::")[-1] if "::" in nodeid else nodeid
+            outcome = test.get("outcome", "unknown")
+            key = (category, test_name)
+            if key not in grouped:
+                grouped[key] = outcome
+            elif rank.get(outcome, 4) < rank.get(grouped[key], 4):
+                grouped[key] = outcome
+
+    passed = sum(1 for o in grouped.values() if o == "passed")
+    failed = sum(1 for o in grouped.values() if o in ("failed", "error"))
+    skipped = sum(1 for o in grouped.values() if o == "skipped")
+    return passed, failed, skipped
+
+
+def _update_index_tck_stats(docs_dir: Path, tck_dir: Path):
+    """Update docs/index.html with fresh TCK pass/fail/skip counts and percentages."""
+    index_path = docs_dir / "index.html"
+    if not index_path.exists():
+        print("  ⚠️  docs/index.html not found, skipping TCK stats update")
+        return
+
+    lines = index_path.read_text(encoding="utf-8").splitlines(keepends=True)
+    updated = 0
+
+    for server_id in TCK_SERVERS:
+        results_dir = tck_dir / server_id
+        if not results_dir.is_dir() or not list(results_dir.glob("*_results.json")):
+            continue
+
+        passed, failed, skipped = _count_tck_outcomes(results_dir)
+        total = passed + failed
+        pct = round(100 * passed / total) if total else 0
+        color = "#3fb950" if pct >= 80 else "#d29922" if pct >= 40 else "#f85149"
+
+        info = _SERVER_DISPLAY.get(server_id, {"icon": "?", "label": server_id})
+        anchor_marker = f'href="compliance-{server_id}.html"'
+
+        for i, line in enumerate(lines):
+            if anchor_marker not in line:
+                continue
+            # Extract existing SDK version string from the desc line
+            sdk_version = ""
+            for j in range(i + 1, min(i + 5, len(lines))):
+                m = re.search(r'—\s*([^<]+)</div>', lines[j])
+                if m and "class=\"desc\"" in lines[j]:
+                    sdk_version = m.group(1).strip()
+                    break
+
+            # Replace the 3 inner lines (h3, progress bar, desc) — keep anchor + </a>
+            lines[i + 1:i + 4] = [
+                f'        <h3>{info["icon"]} {info["label"]} — <span style="color:{color}">{pct}%</span></h3>\n',
+                f'        <div style="height:6px;background:var(--border);border-radius:3px;margin:8px 0">'
+                f'<div style="width:{pct}%;height:100%;background:{color};border-radius:3px"></div></div>\n',
+                f'        <div class="desc">{passed} pass · {failed} fail · {skipped} skip — {sdk_version}</div>\n',
+            ]
+            print(f"  📊 index.html: {info['label']} → {pct}% ({passed}p/{failed}f/{skipped}s)")
+            updated += 1
+            break
+
+    if updated:
+        index_path.write_text("".join(lines), encoding="utf-8")
+        print(f"  ✅ index.html updated with {updated} server TCK stats")
+    else:
+        print("  ℹ️  No TCK results found to update index.html")
+
+
+def publish_all_docs():
+    """Extended publish: per-server dashboards, compliance reports, and index.html TCK stats.
+
+    Called after the main --publish block to ensure docs/ has ALL generated files,
+    not just the aggregate dashboard and report-card.
+    """
+    docs_dir = TESTS_DIR.parent / "docs"
+    if not docs_dir.exists():
+        print("⚠️  docs/ directory not found, skipping extended publish")
+        return
+
+    print("\n📦 Extended publish — syncing all docs/ files...")
+
+    # --- Step 1: Copy per-server dashboard and report-card files ---
+    copied = 0
+    for pattern in ["dashboard-*.html", "report-card-*.html"]:
+        for src in sorted(TESTS_DIR.glob(pattern)):
+            dest = docs_dir / src.name
+            shutil.copy2(src, dest)
+            print(f"  📄 {src.name} → docs/")
+            copied += 1
+    if copied:
+        print(f"  ✅ {copied} per-server files copied to docs/")
+
+    # --- Step 2: Regenerate TCK compliance reports from result JSONs ---
+    tck_dir = TESTS_DIR / "TCKResults"
+    regen = 0
+    for server_id, server_name in TCK_SERVERS.items():
+        results_dir = tck_dir / server_id
+        if not results_dir.is_dir():
+            print(f"  ⚠️  TCKResults/{server_id}/ not found, skipping compliance-{server_id}.html")
+            continue
+        if not list(results_dir.glob("*_results.json")):
+            print(f"  ⚠️  No *_results.json in TCKResults/{server_id}/, skipping")
+            continue
+        output = docs_dir / f"compliance-{server_id}.html"
+        try:
+            # Import generate_compliance from sibling script
+            if str(TESTS_DIR) not in sys.path:
+                sys.path.insert(0, str(TESTS_DIR))
+            from generate_compliance import generate_compliance_html
+            generate_compliance_html(str(results_dir), str(output), server=server_name)
+            regen += 1
+        except Exception as e:
+            print(f"  ⚠️  compliance-{server_id}.html failed: {e}")
+    if regen:
+        print(f"  ✅ {regen} compliance reports regenerated")
+
+    # --- Step 3: Update index.html TCK stats ---
+    _update_index_tck_stats(docs_dir, tck_dir)
+
+
 def main():
     base_url = BASE_URL
     dashboard_only = False
@@ -780,6 +940,9 @@ def main():
             public_rc_html = generate_report_card(publishable, base_url, server_label)
             rc_docs_path.write_text(public_rc_html, encoding="utf-8")
             print(f"✅ Public report card updated ({rc_docs_path.name})")
+
+        # Extended publish: per-server files, compliance reports, index.html stats
+        publish_all_docs()
     else:
         print("📌 Public dashboard NOT updated (use --publish to update docs/)")
 

@@ -169,3 +169,16 @@
 - **.NET client hung against Rust server** on first attempt — had to restart Rust server and retry
 - The `--publish` flag generates per-server dashboards: `dashboard-{server}.html` and `report-card-{server}.html`
 - All dashboards published to docs/ for GitHub Pages
+
+### 2026-07-29 — Extended publish: full docs/ sync from --publish flag
+- Enhanced `--publish` in `tests/run-all.py` to sync ALL generated files to `docs/`, not just the aggregate dashboard/report-card
+- **Step 1:** Copies all `tests/dashboard-*.html` and `tests/report-card-*.html` to `docs/` using `shutil.copy2`
+- **Step 2:** Regenerates TCK compliance reports (`docs/compliance-{server}.html`) by importing `generate_compliance.generate_compliance_html()` and running it against `tests/TCKResults/{server}/` result JSONs
+- **Step 3:** Auto-updates `docs/index.html` TCK stats blocks (pass/fail/skip counts, percentage, color-coded progress bars) by parsing TCK `*_results.json` files with the same grouping logic as `generate_compliance.py`
+- SDK version strings in index.html are preserved from existing HTML (not auto-detected from results)
+- TCK outcome counting groups by `(category, test_name)` using worst-outcome-across-transports, matching `generate_compliance.py`'s `_group_tests()` logic
+- Color coding: ≥80% green (#3fb950), 40-79% yellow (#d29922), <40% red (#f85149)
+- All steps are gracefully skipped with warnings if source files/directories don't exist
+- `--dashboard-only` without `--publish` is completely unaffected
+- New functions: `publish_all_docs()`, `_count_tck_outcomes()`, `_update_index_tck_stats()`
+- Key architectural choice: imports `generate_compliance_html` at runtime (lazy) to avoid coupling at module load time
