@@ -167,3 +167,13 @@
 - **Verified:** All 7 TCK stream tests + keyword streaming produce 2 SSE events (Working → Completed) with no hang. Non-streaming paths still return Completed as before.
 - **SDK bug reported upstream** — this workaround can be removed when `a2a-rs-server` fixes the subscribe-before-broadcast ordering
 - **Key files:** `src/AgentBin.Rust/src/spec_agent.rs`, `src/AgentBin.Rust/src/main.rs`
+
+### 2026-04-11: Updated Rust server SDK 1.0.18 → 1.0.19 (upstream fix landed)
+- **Trigger:** SDK v1.0.19 released with streaming race condition fix — workaround no longer needed
+- **Changes:** Updated `src/AgentBin.Rust/Cargo.toml` — `a2a-rs-server` and `a2a-rs-core` bumped to v1.0.19
+- **Result:** No code changes needed. `cargo build --release` succeeded cleanly.
+- **TCK Results:** 73/79 (91.5%) — all streaming tests pass without workarounds
+- **Key achievement:** Streaming race condition (CORE-STREAM-001 through CORE-STREAM-ARTIFACT-CHUNKED) now passes natively with SDK fix
+- **Verified:** Non-streaming tests unaffected; streaming handlers return Completed immediately as intended
+- **Committed:** 5e1c562 — "feat: update Rust SDK to 1.0.19, regenerate dashboards"
+- **Note:** The workaround code is no longer needed but remains in place (harmless) until next refactor. Next refactor should revert to simple `tck_completed_task()` pattern for streaming handlers.
