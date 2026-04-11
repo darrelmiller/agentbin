@@ -4,8 +4,8 @@ version = "1.0.0"
 edition = "2021"
 
 [dependencies]
-a2a-rs-server = "1.0.17"
-a2a-rs-core = "1.0.17"
+a2a-rs-server = "1.0.18"
+a2a-rs-core = "1.0.18"
 tokio = { version = "1", features = ["full"] }
 axum = "0.7"
 tower-http = { version = "0.5", features = ["cors"] }
