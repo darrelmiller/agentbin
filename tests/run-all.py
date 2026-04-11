@@ -774,7 +774,11 @@ def _count_tck_outcomes(results_dir: Path) -> tuple:
 
 
 def _update_index_tck_stats(docs_dir: Path, tck_dir: Path):
-    """Update docs/index.html with fresh TCK pass/fail/skip counts and percentages."""
+    """Update docs/index.html with fresh TCK pass/fail/skip counts and percentages.
+
+    Skips servers whose newest result file is older than 7 days to avoid
+    overwriting manually-updated stats with stale data.
+    """
     index_path = docs_dir / "index.html"
     if not index_path.exists():
         print("  ⚠️  docs/index.html not found, skipping TCK stats update")
@@ -785,7 +789,17 @@ def _update_index_tck_stats(docs_dir: Path, tck_dir: Path):
 
     for server_id in TCK_SERVERS:
         results_dir = tck_dir / server_id
-        if not results_dir.is_dir() or not list(results_dir.glob("*_results.json")):
+        result_files = list(results_dir.glob("*_results.json")) if results_dir.is_dir() else []
+        if not result_files:
+            continue
+
+        # Skip servers with stale results (older than 7 days) to avoid overwriting
+        # manually-updated stats with outdated data
+        newest = max(f.stat().st_mtime for f in result_files)
+        age_days = (datetime.now(timezone.utc).timestamp() - newest) / 86400
+        if age_days > 7:
+            info = _SERVER_DISPLAY.get(server_id, {"icon": "?", "label": server_id})
+            print(f"  ⏭️  {info['label']} TCK results are {age_days:.0f} days old, skipping index.html update")
             continue
 
         passed, failed, skipped = _count_tck_outcomes(results_dir)
