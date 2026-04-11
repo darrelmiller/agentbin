@@ -251,3 +251,53 @@ Upstream PR#339 removed `.well-known/agent-card.json` route registration from `M
 - **Fix:** Added explicit `app.MapGet("/spec/.well-known/agent-card.json", ...)` — same pattern as echo and spec03
 - **Lesson:** All three agents (spec, echo, spec03) now use explicit manual `.well-known` routes — we no longer depend on `MapA2A` for discovery
 - **Team impact:** If any new agents are added, they MUST register their own `.well-known` endpoint manually
+
+### Rust Server Streaming: SDK Race Condition Workaround (2026-04-11)
+**Status:** Implemented | **Author:** Spec
+
+The `a2a-rs-server` SDK v1.0.18 has a race condition in `handle_message_stream()`: it broadcasts the task returned by `handle_message()` BEFORE subscribing to the event channel. If the handler returns a terminal task (Completed/Failed), the broadcast is missed and the SSE stream hangs forever.
+
+- **Symptom:** All TCK streaming tests (CORE-STREAM-001 through CORE-STREAM-ARTIFACT-CHUNKED) hung indefinitely
+- **Workaround:** Split streaming responses into two phases:
+  1. Return `Working` from `handle_message()` — non-terminal, so the missed broadcast is harmless
+  2. Send `Completed` asynchronously via SDK's broadcast channel with 50ms delay — arrives after subscribe
+- **Implementation:** `SpecAgent` holds Arc&lt;OnceLock&lt;broadcast::Sender&lt;StreamResponse&gt;&gt;&gt; obtained from `A2aServer::get_event_sender()` before `build_router()` consumes the server
+- **Impact:** All 7 TCK stream variants now produce Working→Completed events without hanging; non-streaming tests unaffected
+- **Temporary:** Bug reported upstream; workaround can be removed when SDK fix lands
+- **Team relevance:** Reusable pattern for any `a2a-rs-server` agent needing streaming support
+- **Committed:** 4055a4f
+
+### Java Server Protobuf Version Override Required (2026-07-29)
+**Status:** Implemented | **Author:** Java
+
+Upstream a2a-java SDK package rename (io.a2a → org.a2aproject.sdk) regenerated protobuf code with protobuf 4.33.1 compiler. Quarkus BOM 3.17.7 pulls protobuf-java 3.25.5, causing `NoClassDefFoundError: RuntimeVersion$RuntimeDomain` at runtime.
+
+- **Symptom:** All JSON-RPC and REST message handling broke; only agent card discovery passed
+- **Root cause:** Incompatible protobuf versions — SDK compiled with 4.33.1, runtime pulled 3.25.5 from Quarkus BOM
+- **Fix:** Override `protobuf-java` and `protobuf-java-util` to 4.33.1 in `pom.xml` dependencyManagement, after Quarkus BOM import
+- **Impact:** Server tests restored to baseline (all bindings work again)
+- **Team action:** Any future Quarkus version bump must preserve protobuf override; if Quarkus upgrades to 4.x natively, override can be removed
+- **Committed:** 916cd09
+
+### Java SDK Package Rename: org.a2aproject.sdk (2026-07-29)
+**Status:** Completed | **Author:** Java
+
+Upstream `a2a-java` SDK renamed root package from `io.a2a` → `org.a2aproject.sdk`.
+
+- **Breaking change:** All imports must be updated (`io.a2a.*` → `org.a2aproject.sdk.*`)
+- **GroupId/Version:** Unchanged (`org.a2aproject.sdk`, `1.0.0.Beta1-SNAPSHOT`)
+- **AgentBin changes:** Updated 5 files (4 server, 1 client) — all imports migrated and verified
+- **New fixes pulled in:** HTTP+JSON transport error codes (501 for UnsupportedOp), subscribing-to-terminal-tasks error handling, event stream race condition fixes
+- **Team action:** Update imports if using a2a-java SDK
+- **Committed:** Integrated with 916cd09
+
+### Adopt A2A.V0_3Compat for spec03 Agent (2026-07-29)
+**Status:** Proposed | **Author:** Spec
+
+PR#338 on a2a-dotnet adds `A2A.V0_3Compat` — an official server-side compat layer that auto-translates v0.3 clients talking to v1.0 servers. AgentBin currently has hand-rolled `V03Compat/` middleware (~300 lines).
+
+- **Proposal:** Replace hand-rolled `src/AgentBin/V03Compat/` with SDK's `MapA2AWithV03Compat()` and `MapAgentCardGetWithV03Compat()` from `A2A.V0_3Compat` package
+- **Benefits:** Removes ~300 lines, automatic upstream bug fixes, canonical SDK approach
+- **Risks:** PR#338 not yet merged; API may change during review; need to verify edge cases
+- **Recommendation:** Wait for PR#338 merge to main, then migrate (current hand-rolled compat is production-ready)
+- **Packages ready:** Version 1.0.0-preview4 (A2A, A2A.AspNetCore, A2A.V0_3, A2A.V0_3Compat) — server and client build cleanly

@@ -153,3 +153,17 @@
 - Cleared NuGet global cache to ensure fresh package resolution
 - Both `dotnet build` for server and test client succeeded cleanly — no breaking API changes
 - **Impact:** Subscribe-after-stream-disconnect tests should now pass; V0_3Compat is now available for production use
+
+### 2026-04-11: Fixed Rust server streaming — SDK race condition workaround
+- **Root cause:** `a2a-rs-server` 1.0.18 `handle_message_stream()` has a race: broadcasts task BEFORE subscribing to events. If handler returns a terminal (Completed) task, the broadcast is missed and the SSE stream hangs forever waiting for a terminal event.
+- **Workaround pattern:** Streaming handlers now return a **Working** task from `handle_message()`, then send the **Completed** task asynchronously via the SDK's broadcast channel with a 50ms delay. This ensures the subscribe happens before the terminal event.
+- **Implementation:**
+  - `SpecAgent` struct now holds `Arc<OnceLock<broadcast::Sender<StreamResponse>>>` — filled from `A2aServer::get_event_sender()` before `build_router()` consumes the server
+  - Added `send_delayed_completion()` — spawns a tokio task that sleeps 50ms then broadcasts a Completed task
+  - Added `tck_streaming_task()` — returns Working task + schedules delayed completion (used by all 7 TCK stream handlers)
+  - `handle_streaming_sync()` (keyword route) also updated to same pattern
+  - `supports_streaming()` overridden to return `true` in MessageHandler impl
+- **Non-streaming paths unaffected:** `tck_completed_task()` and all non-stream handlers still return Completed directly
+- **Verified:** All 7 TCK stream tests + keyword streaming produce 2 SSE events (Working → Completed) with no hang. Non-streaming paths still return Completed as before.
+- **SDK bug reported upstream** — this workaround can be removed when `a2a-rs-server` fixes the subscribe-before-broadcast ordering
+- **Key files:** `src/AgentBin.Rust/src/spec_agent.rs`, `src/AgentBin.Rust/src/main.rs`
