@@ -4,9 +4,9 @@ version = 4
 
 [[package]]
 name = "a2a-rs-client"
-version = "1.0.19"
+version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8f42653f6ac39b9a15bb4a93ebaa0baaf9cb793453d249a19a0c2599b0c35e0"
+checksum = "f252b578f047257f4cc1419c3d7577f9c99c8384df4ca2d61725d9c2a21a552c"
 dependencies = [
  "a2a-rs-core",
  "anyhow",
@@ -27,9 +27,9 @@ dependencies = [
 
 [[package]]
 name = "a2a-rs-core"
-version = "1.0.19"
+version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5c1ca6e68b5a05ad43f77aa0891ea3f372eaa0e70b88cc7434cddb513c645a1"
+checksum = "53fc9d8af4fccabea99739a1e4f8983be85d9e35ccfc61a467d9cd287902a4e3"
 dependencies = [
  "chrono",
  "serde",

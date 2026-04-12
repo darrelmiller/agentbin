@@ -62,12 +62,20 @@ impl MessageHandler for EchoAgent {
             name: "AgentBin Echo Agent".to_string(),
             description: "Simple echo agent for basic connectivity testing.".to_string(),
             version: "1.0.0".to_string(),
-            supported_interfaces: vec![AgentInterface {
-                url: format!("{}{}/v1/rpc", base_url, self.prefix),
-                protocol_binding: "JSONRPC".to_string(),
-                protocol_version: PROTOCOL_VERSION.to_string(),
-                tenant: None,
-            }],
+            supported_interfaces: vec![
+                AgentInterface {
+                    url: format!("{}{}/v1/rpc", base_url, self.prefix),
+                    protocol_binding: "JSONRPC".to_string(),
+                    protocol_version: PROTOCOL_VERSION.to_string(),
+                    tenant: None,
+                },
+                AgentInterface {
+                    url: format!("{}{}/v1", base_url, self.prefix),
+                    protocol_binding: "HTTP+JSON".to_string(),
+                    protocol_version: PROTOCOL_VERSION.to_string(),
+                    tenant: None,
+                },
+            ],
             provider: None,
             documentation_url: None,
             capabilities: AgentCapabilities::default(),

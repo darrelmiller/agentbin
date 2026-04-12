@@ -2,7 +2,7 @@
   "client": "python",
   "sdk": "a2a-sdk 1.0.0a1",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-10T15:31:15Z",
+  "timestamp": "2026-04-12T22:32:57Z",
   "baseUrl": "http://localhost:5400",
   "results": [
     {
@@ -10,420 +10,420 @@
       "name": "Echo Agent Card",
       "passed": false,
       "detail": "name=AgentBin Echo Agent, skills=1",
-      "durationMs": 503
+      "durationMs": 31
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=['message-only', 'task-lifecycle', 'task-failure', 'task-cancel', 'multi-turn', 'streaming', 'long-running', 'data-types']",
-      "durationMs": 279
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/spec-extended-card",
       "name": "Spec Extended Agent Card",
       "passed": false,
-      "detail": "capabilities.extendedAgentCard not true",
-      "durationMs": 276
+      "detail": "JSON-RPC error: {'code': -32600, 'message': 'authentication required for extended agent card'}",
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/echo-send-message",
-      "name": "jsonrpc/echo-send-message",
+      "name": "Echo Send Message",
       "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "detail": "reply=''",
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/spec-message-only",
-      "name": "jsonrpc/spec-message-only",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Spec Message Only",
+      "passed": true,
+      "detail": "gotMessage=True, text='[message-only] You said: message-only hello world'",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
-      "name": "jsonrpc/spec-task-lifecycle",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Spec Task Lifecycle",
+      "passed": true,
+      "detail": "state=TASK_STATE_COMPLETED, artifacts=True, taskId=1632ce61-9214-4a88-a8ed-c17ce85d5b62",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-get-task",
       "name": "Spec GetTask",
-      "passed": false,
-      "detail": "skipped \u2014 no taskId from lifecycle",
-      "durationMs": 0
+      "passed": true,
+      "detail": "taskId=1632ce61-9214-4a88-a8ed-c17ce85d5b62, state=TASK_STATE_COMPLETED",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-task-failure",
-      "name": "jsonrpc/spec-task-failure",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Spec Task Failure",
+      "passed": true,
+      "detail": "state=TASK_STATE_FAILED",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-data-types",
-      "name": "jsonrpc/spec-data-types",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Spec Data Types",
+      "passed": true,
+      "detail": "kinds=['data', 'file', 'text']",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/spec-streaming",
-      "name": "jsonrpc/spec-streaming",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Spec Streaming",
+      "passed": true,
+      "detail": "events=3, text='[streaming] Chunk 4: Finalizing output...'",
+      "durationMs": 58
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Error Task Not Found",
       "passed": true,
-      "detail": "got expected error: A2AClientError: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/r",
-      "durationMs": 270
+      "detail": "got expected error: TaskNotFoundError: task not found",
+      "durationMs": 6
     },
     {
       "id": "jsonrpc/spec-multi-turn",
-      "name": "jsonrpc/spec-multi-turn",
+      "name": "Spec Multi-Turn",
       "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "detail": "step2: expected INPUT_REQUIRED got TASK_STATE_WORKING",
+      "durationMs": 8
     },
     {
       "id": "jsonrpc/spec-task-cancel",
-      "name": "jsonrpc/spec-task-cancel",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Spec Task Cancel",
+      "passed": true,
+      "detail": "taskId=6d5ce78a-aa3c-490e-aeb5-c27549e7a658, canceled=True",
+      "durationMs": 11
     },
     {
       "id": "jsonrpc/spec-list-tasks",
-      "name": "jsonrpc/spec-list-tasks",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Spec ListTasks",
+      "passed": true,
+      "detail": "taskCount=50",
+      "durationMs": 8
     },
     {
       "id": "jsonrpc/spec-return-immediately",
-      "name": "jsonrpc/spec-return-immediately",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Spec Return Immediately",
+      "passed": true,
+      "detail": "returned in 0.0s with state=TASK_STATE_COMPLETED",
+      "durationMs": 6
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
       "name": "Error Cancel Not Found",
       "passed": true,
-      "detail": "got expected error: A2AClientError: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/r",
-      "durationMs": 274
+      "detail": "got expected error: TaskNotFoundError: task not found",
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/error-cancel-terminal",
-      "name": "jsonrpc/error-cancel-terminal",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Error Cancel Terminal",
+      "passed": true,
+      "detail": "got expected error: TaskNotCancelableError: task not cancelable",
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/error-send-terminal",
-      "name": "jsonrpc/error-send-terminal",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Error Send Terminal",
+      "passed": true,
+      "detail": "got expected error: UnsupportedOperationError: cannot send message to a task in terminal state",
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/error-send-invalid-task",
       "name": "Error Send Invalid Task",
       "passed": true,
-      "detail": "got expected error: A2AClientError: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/r",
-      "durationMs": 274
+      "detail": "got expected error: TaskNotFoundError: task not found",
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/error-push-not-supported",
       "name": "Error Push Not Supported",
       "passed": true,
       "detail": "SDK does not support push notification config",
-      "durationMs": 279
+      "durationMs": 4
     },
     {
       "id": "jsonrpc/subscribe-to-task",
-      "name": "jsonrpc/subscribe-to-task",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Subscribe To Task",
+      "passed": true,
+      "detail": "subscription events=2",
+      "durationMs": 1012
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Error Subscribe Not Found",
       "passed": true,
       "detail": "got expected error: NotImplementedError: client and/or server do not support resubscription.",
-      "durationMs": 274
+      "durationMs": 9
     },
     {
       "id": "jsonrpc/stream-message-only",
-      "name": "jsonrpc/stream-message-only",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Stream Message Only",
+      "passed": true,
+      "detail": "events=1, hasMessage=True",
+      "durationMs": 7
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
-      "name": "jsonrpc/stream-task-lifecycle",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "Stream Task Lifecycle",
+      "passed": true,
+      "detail": "hasTaskEvent=True, finalState=TASK_STATE_COMPLETED, events=1",
+      "durationMs": 7
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
-      "name": "jsonrpc/multi-turn-context-preserved",
+      "name": "Multi-Turn Context Preserved",
       "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "detail": "contextId1=17d6cdf2-cedd-46e7-a266-3770decefa0e, contextId2=d55654df-ace0-4f01-855b-708fecacf271, match=False",
+      "durationMs": 10
     },
     {
       "id": "jsonrpc/get-task-with-history",
-      "name": "jsonrpc/get-task-with-history",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "GetTask With History",
+      "passed": true,
+      "detail": "taskId=b90c6da7-38a8-46f9-bd33-84e6191770aa, historyCount=2",
+      "durationMs": 7
     },
     {
       "id": "jsonrpc/get-task-after-failure",
-      "name": "jsonrpc/get-task-after-failure",
-      "passed": false,
-      "detail": "EXCEPTION: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
-      "durationMs": 0
+      "name": "GetTask After Failure",
+      "passed": true,
+      "detail": "state=TASK_STATE_FAILED, hasStatusMsg=True",
+      "durationMs": 6
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Spec Cancel With Metadata",
       "passed": false,
-      "detail": "exception: A2AClientError: HTTP Error 404: Client error '404 Not Found' for url 'http://localhost:5400/v1/rpc'\nFor more information check: https://",
-      "durationMs": 273
+      "detail": "taskId=81171988-03fc-4090-a05c-d484e72a7c0f, canceled=True, metadataOk=False, keys=[]",
+      "durationMs": 7
     },
     {
       "id": "rest/agent-card-echo",
-      "name": "rest/agent-card-echo",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Echo Agent Card",
+      "passed": true,
+      "detail": "card resolved with HTTP+JSON transport",
+      "durationMs": 4
     },
     {
       "id": "rest/agent-card-spec",
-      "name": "rest/agent-card-spec",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Spec Agent Card",
+      "passed": true,
+      "detail": "card resolved with HTTP+JSON transport",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-extended-card",
       "name": "REST Spec Extended Agent Card",
       "passed": false,
-      "detail": "capabilities.extendedAgentCard not true",
-      "durationMs": 277
+      "detail": "HTTP 404",
+      "durationMs": 4
     },
     {
       "id": "rest/echo-send-message",
-      "name": "rest/echo-send-message",
+      "name": "REST Echo Send Message",
       "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "detail": "reply=''",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-message-only",
-      "name": "rest/spec-message-only",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Spec Message Only",
+      "passed": true,
+      "detail": "gotMessage=True, text='[message-only] You said: message-only hello world'",
+      "durationMs": 5
     },
     {
       "id": "rest/spec-task-lifecycle",
-      "name": "rest/spec-task-lifecycle",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Spec Task Lifecycle",
+      "passed": true,
+      "detail": "state=TASK_STATE_COMPLETED, artifacts=True, taskId=d94f8f6f-2dbe-4a93-aeb6-8bddb7e67a98",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-get-task",
       "name": "REST Spec GetTask",
-      "passed": false,
-      "detail": "skipped \u2014 no taskId from lifecycle",
-      "durationMs": 0
+      "passed": true,
+      "detail": "taskId=d94f8f6f-2dbe-4a93-aeb6-8bddb7e67a98, state=TASK_STATE_COMPLETED",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-task-failure",
-      "name": "rest/spec-task-failure",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Spec Task Failure",
+      "passed": true,
+      "detail": "state=TASK_STATE_FAILED",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-data-types",
-      "name": "rest/spec-data-types",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Spec Data Types",
+      "passed": true,
+      "detail": "kinds=['data', 'file', 'text']",
+      "durationMs": 4
     },
     {
       "id": "rest/spec-streaming",
-      "name": "rest/spec-streaming",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Spec Streaming",
+      "passed": true,
+      "detail": "events=3",
+      "durationMs": 57
     },
     {
       "id": "rest/error-task-not-found",
-      "name": "rest/error-task-not-found",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Error Task Not Found",
+      "passed": true,
+      "detail": "got expected error: MethodNotFoundError: Resource not found: http://localhost:5400/spec/v1/tasks/00000000-0000-0000-0000-",
+      "durationMs": 6
     },
     {
       "id": "rest/spec-multi-turn",
-      "name": "rest/spec-multi-turn",
+      "name": "REST Spec Multi-Turn",
       "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "detail": "step2: expected INPUT_REQUIRED got TASK_STATE_WORKING",
+      "durationMs": 10
     },
     {
       "id": "rest/spec-task-cancel",
-      "name": "rest/spec-task-cancel",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Spec Task Cancel",
+      "passed": true,
+      "detail": "taskId=3fe93ef2-3c92-407f-a41b-a0aa12e0fbc3, canceled=True",
+      "durationMs": 6
     },
     {
       "id": "rest/spec-list-tasks",
-      "name": "rest/spec-list-tasks",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Spec ListTasks",
+      "passed": true,
+      "detail": "taskCount=50",
+      "durationMs": 7
     },
     {
       "id": "rest/spec-return-immediately",
-      "name": "rest/spec-return-immediately",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Spec Return Immediately",
+      "passed": true,
+      "detail": "returned in 0.0s with state=TASK_STATE_COMPLETED",
+      "durationMs": 5
     },
     {
       "id": "rest/error-cancel-not-found",
-      "name": "rest/error-cancel-not-found",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Error Cancel Not Found",
+      "passed": true,
+      "detail": "got expected error: MethodNotFoundError: Resource not found: http://localhost:5400/spec/v1/tasks/00000000-0000-0000-0000-",
+      "durationMs": 4
     },
     {
       "id": "rest/error-cancel-terminal",
-      "name": "rest/error-cancel-terminal",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Error Cancel Terminal",
+      "passed": true,
+      "detail": "got expected error: A2AClientError: HTTP Error 409: Client error '409 Conflict' for url 'http://localhost:5400/spec/",
+      "durationMs": 5
     },
     {
       "id": "rest/error-send-terminal",
-      "name": "rest/error-send-terminal",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Error Send Terminal",
+      "passed": true,
+      "detail": "got expected error: A2AClientError: HTTP Error 400: Client error '400 Bad Request' for url 'http://localhost:5400/sp",
+      "durationMs": 5
     },
     {
       "id": "rest/error-send-invalid-task",
-      "name": "rest/error-send-invalid-task",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Error Send Invalid Task",
+      "passed": true,
+      "detail": "got expected error: MethodNotFoundError: Resource not found: http://localhost:5400/spec/v1/message:send",
+      "durationMs": 4
     },
     {
       "id": "rest/error-push-not-supported",
-      "name": "rest/error-push-not-supported",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Error Push Not Supported",
+      "passed": true,
+      "detail": "SDK does not support push notification config",
+      "durationMs": 4
     },
     {
       "id": "rest/subscribe-to-task",
-      "name": "rest/subscribe-to-task",
+      "name": "REST Subscribe To Task",
       "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "detail": "subscription events=0",
+      "durationMs": 1008
     },
     {
       "id": "rest/error-subscribe-not-found",
-      "name": "rest/error-subscribe-not-found",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Error Subscribe Not Found",
+      "passed": true,
+      "detail": "got expected error: NotImplementedError: client and/or server do not support resubscription.",
+      "durationMs": 10
     },
     {
       "id": "rest/stream-message-only",
-      "name": "rest/stream-message-only",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Stream Message Only",
+      "passed": true,
+      "detail": "events=1, hasMessage=True",
+      "durationMs": 8
     },
     {
       "id": "rest/stream-task-lifecycle",
-      "name": "rest/stream-task-lifecycle",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST Stream Task Lifecycle",
+      "passed": true,
+      "detail": "hasTaskEvent=True, finalState=TASK_STATE_COMPLETED, events=1",
+      "durationMs": 11
     },
     {
       "id": "rest/multi-turn-context-preserved",
-      "name": "rest/multi-turn-context-preserved",
+      "name": "REST Multi-Turn Context Preserved",
       "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "detail": "contextId1=d4842261-194d-42d9-acc0-e7974a3ac591, contextId2=6343dc76-fd24-42a8-8f0d-a379972d9e4d, match=False",
+      "durationMs": 7
     },
     {
       "id": "rest/get-task-with-history",
-      "name": "rest/get-task-with-history",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST GetTask With History",
+      "passed": true,
+      "detail": "taskId=09761c24-0ec9-4bad-8871-4761642ee8f8, historyCount=2",
+      "durationMs": 6
     },
     {
       "id": "rest/get-task-after-failure",
-      "name": "rest/get-task-after-failure",
-      "passed": false,
-      "detail": "EXCEPTION: no compatible transports found.",
-      "durationMs": 0
+      "name": "REST GetTask After Failure",
+      "passed": true,
+      "detail": "state=TASK_STATE_FAILED, hasStatusMsg=True",
+      "durationMs": 6
     },
     {
       "id": "rest/spec-cancel-with-metadata",
       "name": "REST Spec Cancel With Metadata",
       "passed": false,
-      "detail": "exception: ValueError: no compatible transports found.",
-      "durationMs": 276
+      "detail": "taskId=ecb7ed2f-0647-4456-8f19-25b276d2704e, canceled=True, metadataOk=False, keys=[]",
+      "durationMs": 7
     },
     {
       "id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
       "passed": false,
       "detail": "SDK resolver failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404): Client error '404 N",
-      "durationMs": 279
+      "durationMs": 4
     },
     {
       "id": "v03/spec03-send-message",
       "name": "v0.3 Send Message",
       "passed": false,
       "detail": "SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404):",
-      "durationMs": 264
+      "durationMs": 4
     },
     {
       "id": "v03/spec03-task-lifecycle",
       "name": "v0.3 Task Lifecycle",
       "passed": false,
       "detail": "SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404):",
-      "durationMs": 266
+      "durationMs": 4
     },
     {
       "id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
       "passed": false,
       "detail": "SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404):",
-      "durationMs": 278
+      "durationMs": 4
     }
   ]
 }
