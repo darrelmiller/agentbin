@@ -44,40 +44,26 @@
 </head>
 <body>
 <h1>AgentBin A2A Report Card</h1>
-<p class="subtitle">Generated 2026-04-11 03:55 UTC &bull; Target: <code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
+<p class="subtitle">Generated 2026-04-12 23:22 UTC &bull; Target: <code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
 
 <div class="client-section">
   <div class="client-header">
     <span class="client-name">&#9726; .NET</span>
     <span class="client-sdk">A2A 1.0.0-preview2</span>
-    <span class="client-score" style="color:#f85149">15/62</span>
+    <span class="client-score" style="color:#f85149">43/62</span>
   </div>
   <div class="binding-group">
     <div class="binding-label">JSON-RPC</div>
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">HTTP request failed</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">Response status code does not indicate success: 404 (Not Found).</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">got message, expected task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">state=</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">text=False, data=False, file=False</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">events=1, artifact=False, completed=False</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step1: no taskId returned</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">no taskId from streaming</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">no taskId</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">tasks=0, totalSize=0</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>jsonrpc/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">state=, time=9ms (expected quick response within 2s)</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">no taskId</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">no taskId from lifecycle</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">no taskId from non-blocking send</td><td class="col-known">Known: SubscribeToTask returns 'Task is in a terminal state' — server-side issue with resubscription to completed tasks.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">firstHasTask=False, lastTerminal=False, events=1</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">step1: taskId=, contextId=</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">no taskId</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">no taskId from failure test</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">no taskId from streaming</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">events=3, artifact=False, completed=True</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step1=InputRequired, step2=Working, step3=Working</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">The operation was canceled.</td><td class="col-known">Known: SubscribeToTask returns 'Task is in a terminal state' — server-side issue with resubscription to completed tasks.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">ctx1=e80508d6-7f7e-4bf7-b0dd-644c09cc1062, ctx2=6dae0e81-2dee-4204-b280-9f541ec5a3ca</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">cannot subscribe to a task in terminal state</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">authentication required for extended agent card</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -86,28 +72,14 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">HTTP request failed</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">REST echo client not available</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">got message, expected task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">state=</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">text=False, data=False, file=False</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">events=1, artifact=False, completed=False</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step1: no taskId returned</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">no taskId from streaming</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">no taskId</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">tasks=0, totalSize=0</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-return-immediately</code></td><td class="col-name">Return Immediately</td><td class="col-detail">state=, time=3ms (expected quick response within 2s)</td><td class="col-known">Known: .NET A2A server does not implement returnImmediately. The SDK blocks until the task completes instead of returning early.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">no taskId</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">no taskId from lifecycle</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">no taskId from non-blocking send</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">events=3, artifact=False, completed=True</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step1=InputRequired, step2=Working, step3=Working</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">taskId=adbabef2-cfcd-415d-84b6-259be2247c61, events=0</td><td class="col-known">&mdash;</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">expected error, got events</td><td class="col-known">Known: REST subscribe returns events instead of NotFound error. Server-side issue with REST SSE error handling for non-existent tasks.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">firstHasTask=False, lastTerminal=False, events=1</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">step1: taskId=, contextId=</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">no taskId</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">no taskId from failure test</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">no taskId from streaming</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">ctx1=718106ec-9a6c-44ea-996c-9c61e148402d, ctx2=ff517f42-3d4f-4af6-a24f-6a88d977140f</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">taskId=6eb9eb58-f4c2-4dc8-9a85-2e57b9d9a41e, events=0, stream ended without terminal state (possible hang/timeout)</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">HTTP 401: authentication required for extended agent card</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -201,32 +173,19 @@
   <div class="client-header">
     <span class="client-name">&#9673; Python</span>
     <span class="client-sdk">a2a-sdk 1.0.0a1</span>
-    <span class="client-score" style="color:#f85149">18/60</span>
+    <span class="client-score" style="color:#f85149">44/60</span>
   </div>
   <div class="binding-group">
     <div class="binding-label">JSON-RPC</div>
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">EXCEPTION: Failed to fetch agent card from http://localhost:5000/echo/.well-known/agent-card.json (HTTP 404): Client error '404 Not Found' for url 'http://localhost:5000/echo/.well-known/agent-card.json'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">EXCEPTION: Failed to fetch agent card from http://localhost:5000/echo/.well-known/agent-card.json (HTTP 404): Client error '404 Not Found' for url 'http://localhost:5000/echo/.well-known/agent-card.json'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">state=NO_TASK, artifacts=False, taskId=None</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped — no taskId from lifecycle</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">state=NO_TASK</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">kinds=['text']</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">events=1, text='Echo: streaming generate output'</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step1: expected INPUT_REQUIRED got NO_TASK</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">taskId=None, canceled=False</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">taskCount=0</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">could not create completed task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">could not create completed task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">could not start working task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">hasTaskEvent=False, finalState=NO_TASK, events=1</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">step1 returned no task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">could not create task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">could not create failed task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">no task id received from streaming</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">name=AgentBin Echo Agent, skills=1</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">JSON-RPC error: {'code': -32600, 'message': 'authentication required for extended agent card'}</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">reply=''</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step2: expected INPUT_REQUIRED got TASK_STATE_WORKING</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">contextId1=17d6cdf2-cedd-46e7-a266-3770decefa0e, contextId2=d55654df-ace0-4f01-855b-708fecacf271, match=False</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=81171988-03fc-4090-a05c-d484e72a7c0f, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -235,25 +194,12 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">EXCEPTION: Failed to fetch agent card from http://localhost:5000/echo/.well-known/agent-card.json (HTTP 404): Client error '404 Not Found' for url 'http://localhost:5000/echo/.well-known/agent-card.json'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">EXCEPTION: Failed to fetch agent card from http://localhost:5000/echo/.well-known/agent-card.json (HTTP 404): Client error '404 Not Found' for url 'http://localhost:5000/echo/.well-known/agent-card.json'&#10;For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">state=NO_TASK, artifacts=False, taskId=None</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped — no taskId from lifecycle</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">state=NO_TASK</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">kinds=['text']</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">events=1</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step1: expected INPUT_REQUIRED got NO_TASK</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">taskId=None, canceled=False</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">taskCount=0</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">could not create completed task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">could not create completed task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">could not start working task</td><td class="col-known">Known: Python SDK REST subscribe returns 0 events. Possible server or SDK issue with REST SSE subscription.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">hasTaskEvent=False, finalState=NO_TASK, events=1</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">step1 returned no task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">could not create task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">could not create failed task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">no task id received from streaming</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">HTTP 404</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">reply=''</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step2: expected INPUT_REQUIRED got TASK_STATE_WORKING</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">subscription events=0</td><td class="col-known">Known: Python SDK REST subscribe returns 0 events. Possible server or SDK issue with REST SSE subscription.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">contextId1=d4842261-194d-42d9-acc0-e7974a3ac591, contextId2=6343dc76-fd24-42a8-8f0d-a379972d9e4d, match=False</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">taskId=ecb7ed2f-0647-4456-8f19-25b276d2704e, canceled=True, metadataOk=False, keys=[]</td><td class="col-known">Known: Python SDK REST cancel succeeds but metadata keys are empty. REST binding does not echo cancel metadata back in response.</td></tr>
       </tbody>
     </table>
   </div>
@@ -262,10 +208,10 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">SDK resolver failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404): Client error '404 N</td><td class="col-known">&mdash;</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names (message/send) to v0.3 agent which only accepts v0.3 method names (tasks/send). SDK does not fall back.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5000/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">SDK resolver failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404): Client error '404 N</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names (message/send) to v0.3 agent which only accepts v0.3 method names (tasks/send). SDK does not fall back.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK v0.3 connect failed: AgentCardResolutionError: Failed to fetch agent card from http://localhost:5400/spec03/.well-known/agent-card.json (HTTP 404):</td><td class="col-known">Known: Python SDK sends v1.0 method names to v0.3 agent. Same root cause as spec03-send-message.</td></tr>
       </tbody>
     </table>
   </div>
@@ -429,16 +375,17 @@
 <div class="client-section">
   <div class="client-header">
     <span class="client-name">&#9883; Rust</span>
-    <span class="client-sdk">a2a-rs-client 1.0.19</span>
-    <span class="client-score" style="color:#f85149">54/60</span>
+    <span class="client-sdk">a2a-rs-client 1.0.24</span>
+    <span class="client-score" style="color:#f85149">50/60</span>
   </div>
   <div class="binding-group">
     <div class="binding-label">JSON-RPC</div>
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">Server error -32004: Task is in a terminal state and cannot be subscribed to.</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">historyLength=0</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-push-not-supported</code></td><td class="col-name">Push Not Supported</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">Server error -32004: cannot subscribe to a task in terminal state</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">RPC error: {&quot;code&quot;:-32600,&quot;message&quot;:&quot;authentication required for extended agent card&quot;}</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -447,75 +394,9 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100...</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100...</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/ce12db71fb814a2ebcd705d8bec6b2ff/subs...</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">historyLength=0</td><td class="col-known">&mdash;</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-<div class="client-section">
-  <div class="client-header">
-    <span class="client-name">&#9830; Swift</span>
-    <span class="client-sdk">a2a-client-swift 1.0.12</span>
-    <span class="client-score" style="color:#f85149">14/60</span>
-  </div>
-  <div class="binding-group">
-    <div class="binding-label">JSON-RPC</div>
-    <table>
-      <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
-      <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/agent-card-spec</code></td><td class="col-name">Spec Agent Card</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">error: internalError(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">expected Task, got Message</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped â€” no task ID from lifecycle test</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">expected failed Task, got Message</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">text=true, data=false, file=false</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">events=1, lastState=nil, hasArtifact=false</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step1: expected Task, got Message</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">error: taskNotFound(taskId: &quot;&quot;, message: Optional(&quot;Task not found&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">error: taskNotFound(taskId: &quot;&quot;, message: Optional(&quot;Task not found&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">tasks=0 (need&gt;=1)</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">could not create completed task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">could not create completed task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">error: taskNotFound(taskId: &quot;&quot;, message: Optional(&quot;Task not found&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">gotTaskEvent=false, lastState=nil</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">step1 returned Message, expected Task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">could not create task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">could not create failed task</td><td class="col-known">&mdash;</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="binding-group">
-    <div class="binding-label">HTTP+JSON (REST)</div>
-    <table>
-      <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
-      <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-echo</code></td><td class="col-name">Echo Agent Card</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/agent-card-spec</code></td><td class="col-name">Spec Agent Card</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;Resource not found (HTTP 404)&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-lifecycle</code></td><td class="col-name">Task Lifecycle</td><td class="col-detail">expected Task, got Message</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">skipped â€” no task ID from lifecycle test</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-failure</code></td><td class="col-name">Task Failure</td><td class="col-detail">expected failed Task, got Message</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-data-types</code></td><td class="col-name">Data Types</td><td class="col-detail">text=true, data=false, file=false</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">events=1, lastState=nil, hasArtifact=false</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step1: expected Task, got Message</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-task-cancel</code></td><td class="col-name">Task Cancel (via streaming)</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;Resource not found (HTTP 404)&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;Resource not found (HTTP 404)&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-list-tasks</code></td><td class="col-name">ListTasks</td><td class="col-detail">tasks=0 (need&gt;=1)</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-cancel-terminal</code></td><td class="col-name">Cancel Terminal Task</td><td class="col-detail">could not create completed task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-send-terminal</code></td><td class="col-name">Send To Terminal Task</td><td class="col-detail">could not create completed task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/error-send-invalid-task</code></td><td class="col-name">Send Invalid TaskId</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;Resource not found (HTTP 404)&quot;))</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/stream-task-lifecycle</code></td><td class="col-name">Stream Task Lifecycle</td><td class="col-detail">gotTaskEvent=false, lastState=nil</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">step1 returned Message, expected Task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">could not create task</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">could not create failed task</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/error-push-not-supported</code></td><td class="col-name">Push Not Supported</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">HTTP status client error (400 Bad Request) for url (http://localhost:5400/spec/v1/tasks/ca58b76d-a8ac-40ba-9436-56278945...</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">parse error: error decoding response body</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -524,7 +405,52 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">HTTP status client error (404 Not Found) for url (http://localhost:5400/spec03/.well-known/agent-card.json)</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">client create error (SDK may not support v0.3): agent card has no supported interfaces</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">client create error (SDK may not support v0.3): agent card has no supported interfaces</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">client create error (SDK may not support v0.3): agent card has no supported interfaces</td><td class="col-known">&mdash;</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="client-section">
+  <div class="client-header">
+    <span class="client-name">&#9830; Swift</span>
+    <span class="client-sdk">a2a-client-swift 1.0.19</span>
+    <span class="client-score" style="color:#f85149">46/60</span>
+  </div>
+  <div class="binding-group">
+    <div class="binding-label">JSON-RPC</div>
+    <table>
+      <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
+      <tbody>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">error: internalError(message: Optional(&quot;HTTP 405&quot;))</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">error: invalidRequest(message: Optional(&quot;Context in event doesn\'t match TaskManager 3866dd14-0945-4766-b3b9-b659352c33b6 : a03â€¦</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">expected error, got success</td><td class="col-known">&mdash;</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="binding-group">
+    <div class="binding-label">HTTP+JSON (REST)</div>
+    <table>
+      <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
+      <tbody>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;Resource not found (HTTP 404)&quot;))</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;Resource not found (HTTP 404)&quot;))</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-get-task</code></td><td class="col-name">GetTask</td><td class="col-detail">error: jsonRPCError(code: 500, message: &quot;unknown exception&quot;, data: nil)</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">error: jsonRPCError(code: 400, message: &quot;Context in event doesn\'t match TaskManager e261d040-fa74-4f8e-862d-4d58e66bb6a8 : eb2â€¦</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/spec-cancel-with-metadata</code></td><td class="col-name">Cancel With Metadata</td><td class="col-detail">error: jsonRPCError(code: 500, message: &quot;unknown exception&quot;, data: nil)</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-with-history</code></td><td class="col-name">GetTask With History</td><td class="col-detail">error: jsonRPCError(code: 500, message: &quot;unknown exception&quot;, data: nil)</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/get-task-after-failure</code></td><td class="col-name">GetTask After Failure</td><td class="col-detail">error: jsonRPCError(code: 500, message: &quot;unknown exception&quot;, data: nil)</td><td class="col-known">&mdash;</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="binding-group">
+    <div class="binding-label">v0.3 Backward Compatibility</div>
+    <table>
+      <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
+      <tbody>
+      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">error: invalidResponse(message: Optional(&quot;HTTP 404 fetching agent card at http://localhost:5300/spec03/.well-known/agent.json&quot;)â€¦</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">error: internalError(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">error: internalError(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
       <tr class="unknown-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">error: internalError(message: Optional(&quot;HTTP 404&quot;))</td><td class="col-known">&mdash;</td></tr>
