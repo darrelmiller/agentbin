@@ -1,352 +1,352 @@
 {
   "client": "rust",
-  "sdk": "a2a-rs-client 1.0.19",
+  "sdk": "a2a-rs-client 1.0.24",
   "protocolVersion": "1.0",
-  "timestamp": "2026-04-11T03:54:54.342849700+00:00",
+  "timestamp": "2026-04-12T22:30:23.516975+00:00",
   "baseUrl": "http://localhost:5100",
   "results": [
     {
       "id": "jsonrpc/agent-card-echo",
       "name": "Echo Agent Card",
       "passed": true,
-      "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 44
+      "detail": "name=Echo Agent, skills=1",
+      "durationMs": 19
     },
     {
       "id": "jsonrpc/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 4
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/echo-send-message",
       "name": "Echo Send Message",
       "passed": true,
       "detail": "response contains 'hello': true, text=Echo: hello from Rust",
-      "durationMs": 127
+      "durationMs": 35
     },
     {
       "id": "jsonrpc/spec-message-only",
       "name": "Message Only",
       "passed": true,
       "detail": "isMessage=true, text=[message-only] You said: message-only",
-      "durationMs": 11
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=Completed, taskId=868a723b7b5540ae85b7...",
-      "durationMs": 12
+      "detail": "state=Completed, taskId=504c591d1c194823bb2f...",
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-get-task",
       "name": "GetTask",
       "passed": true,
       "detail": "state=Completed, id match=true",
-      "durationMs": 4
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-task-failure",
       "name": "Task Failure",
       "passed": true,
       "detail": "state=Failed",
-      "durationMs": 3
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-data-types",
       "name": "Data Types",
       "passed": true,
       "detail": "kinds=[\"data\", \"file\", \"text\"], text=true, data=true, file=true",
-      "durationMs": 11
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/spec-streaming",
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
-      "durationMs": 2086
+      "durationMs": 2015
     },
     {
       "id": "jsonrpc/spec-multi-turn",
       "name": "Multi-Turn",
       "passed": true,
       "detail": "turn1=Some(InputRequired), turn2=Some(InputRequired), contextMatch=true",
-      "durationMs": 6
+      "durationMs": 3
     },
     {
       "id": "jsonrpc/spec-task-cancel",
       "name": "Task Cancel (via streaming)",
       "passed": true,
       "detail": "state=Canceled",
-      "durationMs": 15
+      "durationMs": 5
     },
     {
       "id": "jsonrpc/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
       "passed": true,
       "detail": "state=Canceled",
-      "durationMs": 4
+      "durationMs": 1
     },
     {
       "id": "jsonrpc/spec-list-tasks",
       "name": "ListTasks",
       "passed": true,
       "detail": "returned 7 tasks",
-      "durationMs": 18
+      "durationMs": 7
     },
     {
       "id": "jsonrpc/spec-return-immediately",
       "name": "Return Immediately",
       "passed": true,
       "detail": "got Message, took=0.0s — returned promptly",
-      "durationMs": 2
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 2
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": true,
       "detail": "got expected error: Server error -32002: Task is already in a terminal state.",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-send-terminal",
       "name": "Send To Terminal Task",
       "passed": true,
       "detail": "got expected error: Server error -32004: Task is in a terminal state and cannot accept messages.",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/error-push-not-supported",
       "name": "Push Not Supported",
       "passed": true,
       "detail": "got expected error: Server error -32003: Push notifications not supported.",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
       "detail": "Server error -32004: Task is in a terminal state and cannot be subscribed to.",
-      "durationMs": 6
+      "durationMs": 2
     },
     {
       "id": "jsonrpc/error-subscribe-not-found",
       "name": "Subscribe Not Found",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/stream-message-only",
       "name": "Stream Message Only",
       "passed": true,
       "detail": "events=1, gotMessage=true",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": true,
       "detail": "events=4, states=[Submitted, Working, Completed]",
-      "durationMs": 2
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": true,
-      "detail": "contextId1=8efea09b-191a-4e0d-a..., contextId2=8efea09b-191a-4e0d-a..., match=true",
-      "durationMs": 4
+      "detail": "contextId1=f4c33e72-c308-4536-b..., contextId2=f4c33e72-c308-4536-b..., match=true",
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/get-task-with-history",
       "name": "GetTask With History",
       "passed": false,
       "detail": "historyLength=0",
-      "durationMs": 5
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/get-task-after-failure",
       "name": "GetTask After Failure",
       "passed": true,
       "detail": "state=Failed",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "jsonrpc/spec-extended-card",
       "name": "Extended Agent Card",
       "passed": true,
       "detail": "public=8 extended=9 has_admin=false",
-      "durationMs": 43
+      "durationMs": 14
     },
     {
       "id": "rest/agent-card-echo",
       "name": "Echo Agent Card",
       "passed": true,
-      "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 5
+      "detail": "name=Echo Agent, skills=1",
+      "durationMs": 1
     },
     {
       "id": "rest/agent-card-spec",
       "name": "Spec Agent Card",
       "passed": true,
       "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 3
+      "durationMs": 0
     },
     {
       "id": "rest/echo-send-message",
       "name": "Echo Send Message",
       "passed": true,
       "detail": "response contains 'hello': true, text=Echo: hello from Rust REST",
-      "durationMs": 18
+      "durationMs": 4
     },
     {
       "id": "rest/spec-message-only",
       "name": "Message Only",
       "passed": true,
       "detail": "isMessage=true, text=[message-only] You said: message-only",
-      "durationMs": 3
+      "durationMs": 0
     },
     {
       "id": "rest/spec-task-lifecycle",
       "name": "Task Lifecycle",
       "passed": true,
-      "detail": "state=Completed, taskId=cf030f14bc6e495c9539...",
-      "durationMs": 2
+      "detail": "state=Completed, taskId=fec06af58aae4607a3ed...",
+      "durationMs": 0
     },
     {
       "id": "rest/spec-get-task",
       "name": "GetTask",
       "passed": true,
       "detail": "state=Completed, id match=true",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/spec-task-failure",
       "name": "Task Failure",
       "passed": true,
       "detail": "state=Failed",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/spec-data-types",
       "name": "Data Types",
       "passed": true,
       "detail": "kinds=[\"data\", \"file\", \"text\"], text=true, data=true, file=true",
-      "durationMs": 2
+      "durationMs": 0
     },
     {
       "id": "rest/spec-streaming",
       "name": "Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed), hasArtifact=true",
-      "durationMs": 2040
+      "durationMs": 2007
     },
     {
       "id": "rest/spec-multi-turn",
       "name": "Multi-Turn",
       "passed": true,
       "detail": "turn1=Some(InputRequired), turn2=Some(InputRequired), contextMatch=true",
-      "durationMs": 3
+      "durationMs": 1
     },
     {
       "id": "rest/spec-task-cancel",
       "name": "Task Cancel (via streaming)",
-      "passed": false,
-      "detail": "cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100...",
-      "durationMs": 2
+      "passed": true,
+      "detail": "state=Canceled",
+      "durationMs": 3
     },
     {
       "id": "rest/spec-cancel-with-metadata",
       "name": "Cancel With Metadata",
-      "passed": false,
-      "detail": "cancel error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100...",
-      "durationMs": 2
+      "passed": true,
+      "detail": "state=Canceled",
+      "durationMs": 0
     },
     {
       "id": "rest/spec-list-tasks",
       "name": "ListTasks",
       "passed": true,
-      "detail": "returned 18 tasks",
-      "durationMs": 6
+      "detail": "returned 10 tasks",
+      "durationMs": 3
     },
     {
       "id": "rest/spec-return-immediately",
       "name": "Return Immediately",
       "passed": true,
       "detail": "got Message, took=0.0s — returned promptly",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/error-task-not-found",
       "name": "Task Not Found Error",
       "passed": true,
       "detail": "got expected error: Server error -32001: Task '00000000-0000-0000-0000-000000000000' not found.",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/error-cancel-not-found",
       "name": "Cancel Not Found",
       "passed": true,
-      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100/spec/tasks/00000000...",
-      "durationMs": 0
+      "detail": "got expected error: HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/00000000-0000-000...",
+      "durationMs": 5
     },
     {
       "id": "rest/error-cancel-terminal",
       "name": "Cancel Terminal Task",
       "passed": true,
-      "detail": "got expected error: HTTP status client error (405 Method Not Allowed) for url (http://localhost:5100/spec/tasks/cf030f14...",
-      "durationMs": 0
+      "detail": "got expected error: HTTP status client error (400 Bad Request) for url (http://localhost:5100/spec/tasks/fec06af58aae460...",
+      "durationMs": 4
     },
     {
       "id": "rest/error-send-terminal",
       "name": "Send To Terminal Task",
       "passed": true,
       "detail": "got expected error: HTTP status client error (400 Bad Request) for url (http://localhost:5100/spec/message:send)",
-      "durationMs": 51
+      "durationMs": 0
     },
     {
       "id": "rest/error-send-invalid-task",
       "name": "Send Invalid TaskId",
       "passed": true,
       "detail": "got expected error: HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/message:send)",
-      "durationMs": 3
+      "durationMs": 0
     },
     {
       "id": "rest/error-push-not-supported",
       "name": "Push Not Supported",
       "passed": true,
       "detail": "got expected error: Server error -32003: Push notifications not supported.",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/subscribe-to-task",
       "name": "SubscribeToTask",
       "passed": false,
-      "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/ce12db71fb814a2ebcd705d8bec6b2ff/subs...",
-      "durationMs": 2
+      "detail": "HTTP status client error (404 Not Found) for url (http://localhost:5100/spec/tasks/6ffa79c24ae94ab080b9898e4355e330:subs...",
+      "durationMs": 1
     },
     {
       "id": "rest/error-subscribe-not-found",
@@ -360,70 +360,70 @@
       "name": "Stream Message Only",
       "passed": true,
       "detail": "events=1, gotMessage=true",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/stream-task-lifecycle",
       "name": "Stream Task Lifecycle",
       "passed": true,
       "detail": "events=4, states=[Submitted, Working, Completed]",
-      "durationMs": 2
+      "durationMs": 0
     },
     {
       "id": "rest/multi-turn-context-preserved",
       "name": "Context Preserved",
       "passed": true,
-      "detail": "contextId1=cd572891-5878-4142-9..., contextId2=cd572891-5878-4142-9..., match=true",
-      "durationMs": 2
+      "detail": "contextId1=366018aa-79ed-498a-a..., contextId2=366018aa-79ed-498a-a..., match=true",
+      "durationMs": 0
     },
     {
       "id": "rest/get-task-with-history",
       "name": "GetTask With History",
       "passed": false,
       "detail": "historyLength=0",
-      "durationMs": 9
+      "durationMs": 0
     },
     {
       "id": "rest/get-task-after-failure",
       "name": "GetTask After Failure",
       "passed": true,
       "detail": "state=Failed",
-      "durationMs": 1
+      "durationMs": 0
     },
     {
       "id": "rest/spec-extended-card",
       "name": "Extended Agent Card",
       "passed": true,
       "detail": "public=8 extended=9 has_admin=false",
-      "durationMs": 7
+      "durationMs": 2
     },
     {
       "id": "v03/spec03-agent-card",
       "name": "v0.3 Agent Card",
       "passed": true,
-      "detail": "name=AgentBin Spec Agent, skills=8",
-      "durationMs": 3
+      "detail": "name=AgentBin Spec Agent (v0.3), skills=4",
+      "durationMs": 2
     },
     {
       "id": "v03/spec03-send-message",
       "name": "v0.3 Send Message",
       "passed": true,
       "detail": "text=[message-only] You said: message-only hello",
-      "durationMs": 11
+      "durationMs": 2
     },
     {
       "id": "v03/spec03-task-lifecycle",
       "name": "v0.3 Task Lifecycle",
       "passed": true,
       "detail": "state=Completed",
-      "durationMs": 3
+      "durationMs": 0
     },
     {
       "id": "v03/spec03-streaming",
       "name": "v0.3 Streaming",
       "passed": true,
       "detail": "events=7, lastState=Some(Completed)",
-      "durationMs": 2055
+      "durationMs": 2007
     }
   ]
 }

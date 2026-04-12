@@ -21,8 +21,11 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-TCK_ROOT = Path(r'D:\github\a2aproject\a2a-tck')
-TCK_PYTHON = TCK_ROOT / '.venv' / 'Scripts' / 'python.exe'
+TCK_ROOT = Path(os.environ.get('A2A_TCK_ROOT', str(Path.home() / 'src' / 'a2a-tck')))
+# Cross-platform venv python: Windows = .venv\Scripts\python.exe, POSIX = .venv/bin/python
+_win_py = TCK_ROOT / '.venv' / 'Scripts' / 'python.exe'
+_posix_py = TCK_ROOT / '.venv' / 'bin' / 'python'
+TCK_PYTHON = _win_py if _win_py.exists() else _posix_py
 TCK_RUNNER = TCK_ROOT / 'run_tck.py'
 DOCS_DIR = REPO_ROOT / 'docs'
 TESTS_DIR = REPO_ROOT / 'tests'
@@ -33,7 +36,7 @@ SERVERS = {
     '.NET':   {'url': 'http://localhost:5100/spec', 'transports': 'jsonrpc,http_json'},
     'Go':     {'url': 'http://localhost:5200/spec', 'transports': 'jsonrpc,http_json'},
     'Python': {'url': 'http://localhost:5300/spec', 'transports': 'jsonrpc,http_json'},
-    'Rust':   {'url': 'http://localhost:5400/spec', 'transports': 'jsonrpc'},
+    'Rust':   {'url': 'http://localhost:5400/spec', 'transports': 'jsonrpc,http_json'},
     'Java':   {'url': 'http://localhost:5000/spec', 'transports': 'jsonrpc,http_json'},
 }
 

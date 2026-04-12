@@ -65,7 +65,7 @@ func makeClient(baseURL: String, binding: TransportBinding) -> A2AClient {
     let config = A2AClientConfiguration(
         baseURL: URL(string: baseURL)!,
         transportBinding: binding,
-        tenant: binding == .httpREST ? "v1" : nil,
+        tenant: nil,
         timeoutInterval: 30
     )
     return A2AClient(configuration: config)
