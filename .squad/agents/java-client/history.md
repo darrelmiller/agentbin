@@ -94,3 +94,21 @@
 - **Verification:** Server starts, both JSON-RPC (`SendMessage`) and REST (`/message:send`) endpoints return successful responses.
 - **Lesson:** When upgrading a2a-java SDK, always verify the transitive protobuf-java version matches what the SDK was compiled with. Quarkus BOM aggressively manages protobuf versions and can downgrade it.
 - **Committed:** 916cd09
+
+### Maven Central migration: Beta1-SNAPSHOT → Beta1 published (2026-04-20)
+- **Migrated both pom.xml files** from `1.0.0.Beta1-SNAPSHOT` (local build) to `1.0.0.Beta1` (Maven Central)
+- **Version correction:** Task requested `1.0.0.Alpha3` but that version does NOT exist under `org.a2aproject.sdk` on Maven Central. The old Alpha3 was under the previous groupId `io.github.a2asdk`. Available versions: `1.0.0.Alpha4` (2026-03-16) and `1.0.0.Beta1` (2026-04-17).
+- **Artifact names unchanged:** All 5 artifacts confirmed on Maven Central at Beta1:
+  - Server: `a2a-java-sdk-client`, `a2a-java-sdk-reference-jsonrpc`, `a2a-java-sdk-reference-rest`
+  - Client: `a2a-java-sdk-client`, `a2a-java-sdk-client-transport-jsonrpc`, `a2a-java-sdk-client-transport-rest`
+- **Both builds verified:** `mvn dependency:resolve -DskipTests` succeeds for both server and client
+- **No code changes needed:** Beta1 release matches the Beta1-SNAPSHOT API we were already using
+- **Benefit:** No more local SDK builds required for CI/CD — fresh environments can resolve all deps from Maven Central
+
+## Cross-Agent Updates (2026-07-29)
+
+### Published SDK Migration
+- a2a-java SDK 1.0.0.Beta1 now available on Maven Central under org.a2aproject.sdk
+- Both pom.xml files migrated from 1.0.0.Beta1-SNAPSHOT to 1.0.0.Beta1
+- No code changes required — API compatible
+- DevContainer created for consistent local development environment

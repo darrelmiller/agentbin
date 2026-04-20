@@ -177,3 +177,26 @@
 - **Verified:** Non-streaming tests unaffected; streaming handlers return Completed immediately as intended
 - **Committed:** 5e1c562 — "feat: update Rust SDK to 1.0.19, regenerate dashboards"
 - **Note:** The workaround code is no longer needed but remains in place (harmless) until next refactor. Next refactor should revert to simple `tck_completed_task()` pattern for streaming handlers.
+
+### 2026-08-07: DevContainer created, nuget.config cleaned, published packages default
+- Created `.devcontainer/devcontainer.json` with .NET 10, Go 1.24, Python 3.12, Rust, Java 21, Node 20, GitHub CLI
+- Created `.devcontainer/post-create.sh` — restores all server and client dependencies, clones TCK
+- Removed local `nupkgs/` feed from `nuget.config` — A2A 1.0.0-preview2 packages are on nuget.org, no local feed needed
+- Updated charter: published packages are the default; local nupkgs/ documented as bleeding-edge-only workflow
+- Swift client tests noted as macOS-only and excluded from devcontainer
+
+## Cross-Agent Updates (2026-07-29)
+
+### Python SDK 1.0.0a1 Published
+- PyPI now has a2a-sdk 1.0.0a1 available for published package migration
+- All Python requirements.txt files updated to pin a2a-sdk==1.0.0a1
+
+### TypeScript SDK 0.3.13 Updated
+- @a2a-js/sdk published version 0.3.13 available
+- All JS package.json files updated to @a2a-js/sdk@^0.3.13
+- Lock files regenerated
+
+### Java SDK Beta1 Published
+- a2a-java SDK published to Maven Central as 1.0.0.Beta1 under org.a2aproject.sdk groupId
+- Both Java pom.xml files migrated from 1.0.0.Beta1-SNAPSHOT to 1.0.0.Beta1
+- No code changes required — API compatible with local builds used during development

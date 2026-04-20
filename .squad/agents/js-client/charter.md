@@ -26,7 +26,7 @@
   { "dependencies": { "@a2a-js/sdk": "file:../../../a2aproject/a2a-js" } }
   ```
 - **Use local build (option 2):** `cd a2a-js && npm link` then `cd test-client && npm link @a2a-js/sdk`
-- **Published package:** Not yet on npm
+- **Published package:** 0.3.13 on npm (use for production, local repo for bleeding-edge 1.0 builds)
 
 ## How I Work
 

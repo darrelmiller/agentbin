@@ -91,3 +91,10 @@ previous partial run — producing the phantom "2 results" observation.
 - Updated `requirements.txt` to pin `a2a-sdk>=1.0.0a0`
 
 **Result:** 56/60 tests pass (up from 4/60). The 4 remaining failures are pre-existing (3 v0.3 compat + 1 REST cancel-metadata) — not caused by this migration.
+
+## Cross-Agent Updates (2026-07-29)
+
+### Published SDK Migration
+- a2a-sdk 1.0.0a1 now available on PyPI
+- requirements.txt updated to pin a2a-sdk==1.0.0a1 for both server and client
+- DevContainer created for consistent local development environment

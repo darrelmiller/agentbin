@@ -20,9 +20,10 @@
 
 ## Local SDK Source
 
-- **Repo:** `D:\github\a2aproject\a2a-dotnet`
+- **Published packages (default):** A2A 1.0.0-preview2 and A2A.AspNetCore 1.0.0-preview2 are on nuget.org. The local `nupkgs/` feed has been removed from `nuget.config` — `dotnet restore` pulls from nuget.org by default.
+- **Repo (bleeding-edge):** `D:\github\a2aproject\a2a-dotnet`
 - **Build local packages:** `dotnet pack src/A2A/A2A.csproj --output ./nupkgs && dotnet pack src/A2A.AspNetCore/A2A.AspNetCore.csproj --output ./nupkgs`
-- **Use local build:** Copy .nupkg files to agentbin's `nupkgs/` folder, then `dotnet restore`
+- **Use local build:** Re-add a `<add key="local" value="./nupkgs" />` line to `nuget.config`, copy .nupkg files to agentbin's `nupkgs/` folder, then `dotnet restore`. Only needed for unreleased SDK changes.
 
 ## How I Work
 

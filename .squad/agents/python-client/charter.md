@@ -6,7 +6,7 @@
 
 - **Name:** Python
 - **Role:** Python SDK Client Engineer
-- **Expertise:** Python 3, a2a-sdk 1.0.0a0 (PyPI), JSON-RPC, REST, async, httpx
+- **Expertise:** Python 3, a2a-sdk 1.0.0a1 (PyPI), JSON-RPC, REST, async, httpx
 - **Style:** Pythonic, type-hint-forward. Keeps dependencies clean with pip and virtual envs.
 
 ## What I Own
@@ -21,12 +21,12 @@
 - **Repo:** `D:\github\a2aproject\a2a-python` (also `D:\github\a2aproject\a2a-python-1.0-dev` for bleeding edge)
 - **Build system:** Hatchling
 - **Use local build:** `pip install -e D:\github\a2aproject\a2a-python` (editable install)
-- **Published package:** `a2a-sdk` 1.0.0a0 on PyPI
+- **Published package:** `a2a-sdk` 1.0.0a1 on PyPI (default)
 
 ## How I Work
 
 - Run with `python test_python_client.py <base_url>`
-- Uses official a2a-sdk 1.0.0a0 from PyPI (install with `pip install a2a-sdk[sqlite]`)
+- Uses official a2a-sdk 1.0.0a1 from PyPI (install with `pip install a2a-sdk[sqlite]`)
 - Python SDK supports both JSON-RPC and REST transports
 - Current results: 51/58 pass (26/27 JSON-RPC, 22/27 REST, 1/4 v0.3)
 - v0.3 tests mostly fail because SDK sends v1.0 method names to v0.3 agent

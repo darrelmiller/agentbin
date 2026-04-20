@@ -24,7 +24,8 @@
 - **Build local package:** `mvn clean install` (installs to `~/.m2/repository`)
 - **Key artifacts:** `a2a-java-sdk-client` (groupId: `org.a2aproject.sdk`)
 - **Use local build:** After `mvn install`, test client's `pom.xml` picks it up from local Maven repo automatically
-- **Published package:** Not yet on Maven Central (version `1.0.0.Beta1-SNAPSHOT`)
+- **Published package:** `1.0.0.Beta1` on Maven Central (groupId: `org.a2aproject.sdk`)
+- **Local repo:** Keep for bleeding-edge builds beyond Beta1
 
 ## How I Work
 

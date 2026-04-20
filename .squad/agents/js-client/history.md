@@ -24,6 +24,14 @@
 - REST subscribe endpoint returns 404 (server doesn't implement it)
 - Test score: **49/58** (was 13/58 before changes)
 
+## Cross-Agent Updates (2026-07-29)
+
+### Published SDK Migration
+- @a2a-js/sdk 0.3.13 now available on npm
+- package.json updated to @a2a-js/sdk@^0.3.13
+- package-lock.json regenerated
+- DevContainer created for consistent local development environment
+
 ### 2026-03-22 — Standalone run.py created
 - Created `tests/ClientTests/js/run.py` for independent test execution
 - Pattern: `python run.py [base_url]` — auto-installs deps if node_modules missing
