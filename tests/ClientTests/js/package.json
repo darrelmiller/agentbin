@@ -4,6 +4,6 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@a2a-js/sdk": "file:D:/github/a2aproject/a2a-js"
+    "@a2a-js/sdk": "^0.3.13"
   }
 }
