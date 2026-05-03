@@ -1,3 +1,3 @@
 # A2A Python SDK test client dependencies
-a2a-sdk==1.0.0a1
+a2a-sdk==1.0.2
 httpx>=0.27.0
