@@ -185,6 +185,25 @@
 - Updated charter: published packages are the default; local nupkgs/ documented as bleeding-edge-only workflow
 - Swift client tests noted as macOS-only and excluded from devcontainer
 
+### 2026-08-07: DevContainer Podman compatibility fixes
+- **Problem:** Original devcontainer.json lacked explicit user settings needed for Podman rootless mode; post-create.sh had fragile patterns (hardcoded `cd -`, no idempotent TCK clone, system-level pip installs)
+- **devcontainer.json changes:**
+  - Added `"remoteUser": "vscode"`, `"containerUser": "vscode"`, `"updateRemoteUserUID": true` — ensures rootless Podman maps host UID correctly into container
+  - Added `"containerEnv"` with `DOTNET_CLI_TELEMETRY_OPTOUT=1`
+  - Added JSONC comments documenting SELinux `--security-opt label=disable` for Fedora/RHEL users
+  - OCI base image confirmed compatible (mcr.microsoft.com/devcontainers/base is OCI-compliant)
+  - No Docker socket dependency found — nothing to remove
+- **post-create.sh changes:**
+  - Switched `pip install` to `pip install --user` — works in rootless contexts where system dirs are read-only
+  - Added `$HOME/.local/bin` to PATH in bashrc for user-level pip installs
+  - Replaced `cd -` with explicit `cd "$WORKSPACE_ROOT"` — more reliable in scripts
+  - Made TCK clone idempotent (checks if dir exists, pulls if so)
+  - Added `--quiet` flags to reduce noise (cargo fetch, mvn, pip)
+  - Added bashrc dedup check to avoid appending env vars on container rebuild
+- **Podman usage:** devcontainer CLI (v0.50+) auto-detects Podman via `DOCKER_HOST` env var pointing at Podman socket; it adds `--userns=keep-id` automatically. No manual runArgs needed.
+- **Docker compatibility:** All changes are backward-compatible; Docker users see no behavior change
+- **Verified:** JSONC parses cleanly
+
 ## Cross-Agent Updates (2026-07-29)
 
 ### Python SDK 1.0.0a1 Published

@@ -1,6 +1,13 @@
 {
   "name": "AgentBin Dev",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  // Podman compatibility: explicit user settings ensure rootless Podman maps UIDs correctly.
+  // The devcontainer CLI auto-detects Podman and adds --userns=keep-id when needed.
+  "remoteUser": "vscode",
+  "containerUser": "vscode",
+  "updateRemoteUserUID": true,
+
   "features": {
     "ghcr.io/devcontainers/features/dotnet:2": {
       "version": "10.0"
@@ -36,5 +43,14 @@
     }
   },
   "forwardPorts": [5000, 5100, 5200, 5300, 5400],
-  "postCreateCommand": "bash .devcontainer/post-create.sh"
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  // Podman on SELinux hosts (Fedora/RHEL): users may need to set
+  //   "runArgs": ["--security-opt", "label=disable"]
+  // or configure :Z mounts in their local devcontainer settings.
+  // Docker users: these settings are harmless and ignored.
+
+  "containerEnv": {
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+  }
 }
