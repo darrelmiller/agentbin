@@ -1,12 +1,12 @@
 {
   "summary": {
-    "timestamp": "2026-04-11T02:35:18.430989+00:00",
+    "timestamp": "2026-05-03T17:11:01.688517+00:00",
     "sut_url": "http://localhost:5100/spec",
     "spec_version": "",
-    "overall_compatibility": "85.9%",
-    "must_compatibility": "84.9%",
-    "should_compatibility": "100.0%",
-    "may_compatibility": "100.0%"
+    "overall_compatibility": "82.4%",
+    "must_compatibility": "85.1%",
+    "should_compatibility": "57.1%",
+    "may_compatibility": "75.0%"
   },
   "per_requirement": {
     "CARD-DISC-001": {
@@ -248,6 +248,19 @@
         "tests/compatibility/core_operations/test_data_model.py::TestTimestampFormat::test_timestamps_are_iso8601_utc"
       ]
     },
+    "DM-SERIAL-005": {
+      "level": "SHOULD",
+      "status": "PASS",
+      "transports": {
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_data_model.py::TestIgnoreUnrecognizedFields::test_extra_fields_ignored_jsonrpc",
+        "tests/compatibility/core_operations/test_data_model.py::TestIgnoreUnrecognizedFields::test_extra_fields_ignored_rest"
+      ]
+    },
     "CORE-ERR-001": {
       "level": "MUST",
       "status": "PASS",
@@ -296,6 +309,19 @@
       "errors": [],
       "test_ids": [
         "tests/compatibility/core_operations/test_error_handling.py::TestCapabilityStreaming::test_streaming_not_supported_jsonrpc"
+      ]
+    },
+    "CORE-CAP-004": {
+      "level": "MUST",
+      "status": "SKIPPED",
+      "transports": {
+        "jsonrpc": "SKIPPED",
+        "http_json": "SKIPPED"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_error_handling.py::TestCapabilityExtensionRequired::test_missing_required_extension_returns_error_http_json",
+        "tests/compatibility/core_operations/test_error_handling.py::TestCapabilityExtensionRequired::test_missing_required_extension_returns_error_jsonrpc"
       ]
     },
     "CORE-CAP-003": {
@@ -383,13 +409,10 @@
       "level": "MUST",
       "status": "FAIL",
       "transports": {
-        "jsonrpc": "FAIL"
+        "jsonrpc": "SKIPPED"
       },
       "errors": [
-        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\jsonrpc\\\\test_error_info.py', 77, 'Skipped: error.data is absent')",
-        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\jsonrpc\\\\test_error_info.py', 108, 'Skipped: error.data is not an array')",
-        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\jsonrpc\\\\test_error_info.py', 139, 'Skipped: error.data is not an array')",
-        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\jsonrpc\\\\test_error_info.py', 164, 'Skipped: error.data is not an array')"
+        "error.data is absent \u2014 A2A errors MUST include ErrorInfo in data array"
       ],
       "test_ids": [
         "tests/compatibility/core_operations/test_error_handling.py::TestJsonRpcErrorStructure::test_error_data_contains_error_info",
@@ -420,7 +443,7 @@
         "http_json": "FAIL"
       },
       "errors": [
-        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\core_operations\\\\test_error_handling.py', 584, 'Skipped: Response is not AIP-193 format')"
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\core_operations\\\\test_error_handling.py', 653, 'Skipped: Response is not AIP-193 format')"
       ],
       "test_ids": [
         "tests/compatibility/core_operations/test_error_handling.py::TestRestErrorStructure::test_a2a_error_info_in_details"
@@ -588,6 +611,51 @@
         "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationCrud::test_delete_is_idempotent[jsonrpc]"
       ]
     },
+    "PUSH-DELIVER-001": {
+      "level": "MUST",
+      "status": "SKIPPED",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "SKIPPED",
+        "http_json": "SKIPPED"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_includes_auth[grpc]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_includes_auth[http_json]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_includes_auth[jsonrpc]"
+      ]
+    },
+    "PUSH-DELIVER-002": {
+      "level": "MUST",
+      "status": "SKIPPED",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "SKIPPED",
+        "http_json": "SKIPPED"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_at_least_once[grpc]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_at_least_once[http_json]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_at_least_once[jsonrpc]"
+      ]
+    },
+    "PUSH-DELIVER-003": {
+      "level": "MUST",
+      "status": "SKIPPED",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "SKIPPED",
+        "http_json": "SKIPPED"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_payload_format[grpc]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_payload_format[http_json]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_payload_format[jsonrpc]"
+      ]
+    },
     "CORE-SEND-001": {
       "level": "MUST",
       "status": "PASS",
@@ -601,27 +669,6 @@
         "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-001-grpc]",
         "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-001-http_json]",
         "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-001-jsonrpc]"
-      ]
-    },
-    "CORE-SEND-002": {
-      "level": "MUST",
-      "status": "FAIL",
-      "transports": {
-        "grpc": "SKIPPED",
-        "jsonrpc": "PASS",
-        "http_json": "PASS"
-      },
-      "errors": [
-        "Expected error code -32004 (UnsupportedOperationError), got -32001",
-        "Expected error code 400 (UnsupportedOperationError), got 404"
-      ],
-      "test_ids": [
-        "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-002-grpc]",
-        "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-002-http_json]",
-        "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-002-jsonrpc]",
-        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[grpc]",
-        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[http_json]",
-        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[jsonrpc]"
       ]
     },
     "CORE-SEND-003": {
@@ -975,6 +1022,111 @@
         "tests/compatibility/core_operations/test_stream_ordering.py::TestStreamEventOrdering::test_streaming_event_ordering[jsonrpc]"
       ]
     },
+    "CORE-HIST-001": {
+      "level": "SHOULD",
+      "status": "FAIL",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "FAIL",
+        "http_json": "FAIL"
+      },
+      "errors": [
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\_task_helpers.py', 131, \"Skipped: Expected task state 'TASK_STATE_COMPLETED' but got 'TASK_STATE_INPUT_REQUIRED'\")",
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\_task_helpers.py', 131, \"Skipped: Expected task state 'TASK_STATE_COMPLETED' but got 'TASK_STATE_INPUT_REQUIRED'\")"
+      ],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroGetTask::test_get_task_history_length_zero[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroGetTask::test_get_task_history_length_zero[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroGetTask::test_get_task_history_length_zero[jsonrpc]"
+      ]
+    },
+    "CORE-HIST-002": {
+      "level": "MUST",
+      "status": "FAIL",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "FAIL",
+        "http_json": "FAIL"
+      },
+      "errors": [
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\_task_helpers.py', 131, \"Skipped: Expected task state 'TASK_STATE_COMPLETED' but got 'TASK_STATE_INPUT_REQUIRED'\")",
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\_task_helpers.py', 131, \"Skipped: Expected task state 'TASK_STATE_COMPLETED' but got 'TASK_STATE_INPUT_REQUIRED'\")"
+      ],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthLimit::test_get_task_history_does_not_exceed_limit[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthLimit::test_get_task_history_does_not_exceed_limit[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthLimit::test_get_task_history_does_not_exceed_limit[jsonrpc]"
+      ]
+    },
+    "CORE-HIST-003": {
+      "level": "SHOULD",
+      "status": "PASS",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroSendMessage::test_send_message_history_length_zero[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroSendMessage::test_send_message_history_length_zero[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroSendMessage::test_send_message_history_length_zero[jsonrpc]"
+      ]
+    },
+    "CORE-HIST-004": {
+      "level": "MAY",
+      "status": "FAIL",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "FAIL",
+        "http_json": "FAIL"
+      },
+      "errors": [
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\_task_helpers.py', 131, \"Skipped: Expected task state 'TASK_STATE_COMPLETED' but got 'TASK_STATE_INPUT_REQUIRED'\")",
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\_task_helpers.py', 131, \"Skipped: Expected task state 'TASK_STATE_COMPLETED' but got 'TASK_STATE_INPUT_REQUIRED'\")"
+      ],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryPersistence::test_get_task_returns_history[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryPersistence::test_get_task_returns_history[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryPersistence::test_get_task_returns_history[jsonrpc]"
+      ]
+    },
+    "CORE-HIST-005": {
+      "level": "SHOULD",
+      "status": "FAIL",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "FAIL",
+        "http_json": "FAIL"
+      },
+      "errors": [
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\_task_helpers.py', 181, \"Skipped: Expected task state 'TASK_STATE_COMPLETED' but got 'TASK_STATE_INPUT_REQUIRED'\")",
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\_task_helpers.py', 181, \"Skipped: Expected task state 'TASK_STATE_COMPLETED' but got 'TASK_STATE_INPUT_REQUIRED'\")"
+      ],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryOrdering::test_history_messages_in_chronological_order[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryOrdering::test_history_messages_in_chronological_order[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryOrdering::test_history_messages_in_chronological_order[jsonrpc]"
+      ]
+    },
+    "CORE-HIST-006": {
+      "level": "SHOULD",
+      "status": "FAIL",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "FAIL",
+        "http_json": "FAIL"
+      },
+      "errors": [
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\_task_helpers.py', 181, \"Skipped: Expected task state 'TASK_STATE_COMPLETED' but got 'TASK_STATE_INPUT_REQUIRED'\")",
+        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\_task_helpers.py', 181, \"Skipped: Expected task state 'TASK_STATE_COMPLETED' but got 'TASK_STATE_INPUT_REQUIRED'\")"
+      ],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryContent::test_history_content_matches_sent_messages[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryContent::test_history_content_matches_sent_messages[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryContent::test_history_content_matches_sent_messages[jsonrpc]"
+      ]
+    },
     "CORE-GET-001": {
       "level": "MUST",
       "status": "PASS",
@@ -1018,6 +1170,21 @@
         "tests/compatibility/core_operations/test_task_lifecycle.py::TestCancelTask::test_cancel_terminal_task_returns_error[grpc]",
         "tests/compatibility/core_operations/test_task_lifecycle.py::TestCancelTask::test_cancel_terminal_task_returns_error[http_json]",
         "tests/compatibility/core_operations/test_task_lifecycle.py::TestCancelTask::test_cancel_terminal_task_returns_error[jsonrpc]"
+      ]
+    },
+    "CORE-SEND-002": {
+      "level": "MUST",
+      "status": "PASS",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[grpc]",
+        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[http_json]",
+        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[jsonrpc]"
       ]
     },
     "CORE-MULTI-005": {
@@ -1304,41 +1471,6 @@
         "tests/compatibility/http_json/test_http_status.py::TestHttpJsonStatusCodes::test_version_not_supported_returns_400"
       ]
     },
-    "CORE-CAP-004": {
-      "level": "MUST",
-      "status": "NOT TESTED",
-      "transports": {},
-      "errors": [],
-      "test_ids": []
-    },
-    "DM-SERIAL-005": {
-      "level": "SHOULD",
-      "status": "NOT TESTED",
-      "transports": {},
-      "errors": [],
-      "test_ids": []
-    },
-    "PUSH-DELIVER-001": {
-      "level": "MUST",
-      "status": "NOT TESTED",
-      "transports": {},
-      "errors": [],
-      "test_ids": []
-    },
-    "PUSH-DELIVER-002": {
-      "level": "MUST",
-      "status": "NOT TESTED",
-      "transports": {},
-      "errors": [],
-      "test_ids": []
-    },
-    "PUSH-DELIVER-003": {
-      "level": "MUST",
-      "status": "NOT TESTED",
-      "transports": {},
-      "errors": [],
-      "test_ids": []
-    },
     "CARD-SIGN-001": {
       "level": "MUST",
       "status": "NOT TESTED",
@@ -1523,22 +1655,22 @@
       "skipped": 0
     },
     "grpc": {
-      "total": 64,
+      "total": 72,
       "passed": 0,
       "failed": 0,
-      "skipped": 64
+      "skipped": 72
     },
     "jsonrpc": {
-      "total": 92,
-      "passed": 72,
-      "failed": 10,
-      "skipped": 10
+      "total": 102,
+      "passed": 74,
+      "failed": 11,
+      "skipped": 17
     },
     "http_json": {
-      "total": 79,
-      "passed": 62,
-      "failed": 9,
-      "skipped": 8
+      "total": 89,
+      "passed": 64,
+      "failed": 13,
+      "skipped": 12
     }
   },
   "agent_card": {

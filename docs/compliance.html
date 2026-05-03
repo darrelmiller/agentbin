@@ -1,104 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
-<title>AgentBin — Server Compliance (TCK)</title>
+<meta charset="utf-8">
+<title>AgentBin TCK Compatibility Reports</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-         background: #0f172a; color: #e2e8f0; padding: 24px; max-width: 900px; margin: 0 auto; }
-  h1 { font-size: 22px; margin-bottom: 4px; }
-  .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
-  .subtitle a { color: #38bdf8; }
-  .note { background: #1e293b; border-left: 3px solid #3b82f6; padding: 12px 16px;
-           margin-bottom: 24px; border-radius: 0 8px 8px 0; font-size: 13px; color: #94a3b8; }
-  .note strong { color: #e2e8f0; }
-  .note a { color: #38bdf8; }
-  .summary { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
-  .card { background: #1e293b; border-radius: 10px; padding: 16px 20px; min-width: 140px; flex: 1;
-          text-decoration: none; color: inherit; transition: background 0.15s; }
-  .card:hover { background: #334155; }
-  .card .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-  .card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
-  .card .detail { font-size: 12px; color: #64748b; margin-top: 2px; }
-  .pass { color: #22c55e; }
-  .fail { color: #ef4444; }
-  .warn { color: #f59e0b; }
-  .gauge { width: 100%; height: 8px; background: #334155; border-radius: 4px; overflow: hidden; margin-top: 8px; }
-  .gauge-fill { height: 100%; border-radius: 4px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 16px; background: #1e293b; border-radius: 10px; overflow: hidden; }
-  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
-       color: #64748b; padding: 10px 16px; border-bottom: 1px solid #334155; }
-  td { padding: 10px 16px; border-bottom: 1px solid #0f172a; font-size: 14px; }
-  tr:hover { background: #334155; }
-  td a { color: #38bdf8; text-decoration: none; }
-  td a:hover { text-decoration: underline; }
-  .back { margin-top: 24px; display: inline-block; color: #38bdf8; text-decoration: none; font-size: 13px; }
+body { font-family: sans-serif; margin: 2em; background: #1a1a2e; color: #e0e0e0; }
+h1 { color: #00d4aa; }
+a { color: #4fc3f7; }
+ul { font-size: 1.2em; line-height: 2; }
 </style>
 </head>
 <body>
-
-<h1>&#x1F9EA; Server Compliance &mdash; A2A TCK</h1>
-<div class="subtitle">
-  A2A Technology Compatibility Kit results for all AgentBin server implementations &bull;
-  Tested: 2026-04-10 &bull;
-  <a href="https://github.com/a2aproject/a2a-tck">a2a-tck</a> @ 1.0-dev (0998130)
-</div>
-
-<div class="note">
-  <strong>What is this?</strong> The
-  <a href="https://github.com/a2aproject/a2a-tck">A2A TCK</a>
-  is a conformance test suite that validates A2A server implementations against the
-  <a href="https://github.com/a2aproject/a2a-spec">A2A v1.0 specification</a>.
-  Each server runs the same SpecAgent behavior; failures indicate SDK-level gaps.
-  Click a server name for its detailed compatibility report.
-</div>
-
-<div class="summary">
-  <a class="card" href="compliance-java.html">
-    <div class="label">Java</div>
-    <div class="value pass">96%</div>
-    <div class="detail">140 pass &bull; 6 fail &bull; 91 skip</div>
-    <div class="gauge"><div class="gauge-fill" style="width:96%;background:#22c55e"></div></div>
-  </a>
-  <a class="card" href="compliance-net.html">
-    <div class="label">.NET</div>
-    <div class="value pass">91%</div>
-    <div class="detail">125 pass &bull; 13 fail &bull; 99 skip</div>
-    <div class="gauge"><div class="gauge-fill" style="width:91%;background:#22c55e"></div></div>
-  </a>
-  <a class="card" href="compliance-go.html">
-    <div class="label">Go</div>
-    <div class="value fail">47%</div>
-    <div class="detail">66 pass &bull; 74 fail &bull; 91 skip</div>
-    <div class="gauge"><div class="gauge-fill" style="width:47%;background:#ef4444"></div></div>
-  </a>
-  <a class="card" href="compliance-python.html">
-    <div class="label">Python</div>
-    <div class="value fail">28%</div>
-    <div class="detail">34 pass &bull; 88 fail &bull; 107 skip</div>
-    <div class="gauge"><div class="gauge-fill" style="width:28%;background:#ef4444"></div></div>
-  </a>
-  <a class="card" href="compliance-rust.html">
-    <div class="label">Rust</div>
-    <div class="value fail">20%</div>
-    <div class="detail">15 pass &bull; 59 fail &bull; 157 skip</div>
-    <div class="gauge"><div class="gauge-fill" style="width:20%;background:#ef4444"></div></div>
-  </a>
-</div>
-
-<table>
-  <tr><th>Server</th><th>SDK</th><th>Transports</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Rate</th><th>Details</th></tr>
-  <tr><td>Java</td><td>a2a-java 1.0.0.Beta1-SNAPSHOT</td><td>jsonrpc, http_json</td><td class="pass">140</td><td class="fail">6</td><td>91</td><td class="pass">96%</td><td><a href="compliance-java.html">Report &rarr;</a></td></tr>
-  <tr><td>.NET</td><td>A2A 1.0.0-preview2</td><td>jsonrpc, http_json</td><td class="pass">125</td><td class="fail">13</td><td>99</td><td class="pass">91%</td><td><a href="compliance-net.html">Report &rarr;</a></td></tr>
-  <tr><td>Go</td><td>a2a-go v2.1.0</td><td>jsonrpc, http_json</td><td class="pass">66</td><td class="fail">74</td><td>91</td><td class="warn">47%</td><td><a href="compliance-go.html">Report &rarr;</a></td></tr>
-  <tr><td>Python</td><td>a2a-sdk 1.0.0a1</td><td>jsonrpc, http_json</td><td class="pass">34</td><td class="fail">88</td><td>107</td><td class="fail">28%</td><td><a href="compliance-python.html">Report &rarr;</a></td></tr>
-  <tr><td>Rust</td><td>a2a-rs 1.0.17</td><td>jsonrpc</td><td class="pass">15</td><td class="fail">59</td><td>157</td><td class="fail">20%</td><td><a href="compliance-rust.html">Report &rarr;</a></td></tr>
-</table>
-
-<a class="back" href="index.html">&larr; Back to Dashboard Index</a>
-
+<h1>AgentBin TCK Compatibility Reports</h1>
+<p>A2A Protocol Technology Compatibility Kit results per server implementation.</p>
+<ul>
+<li><a href="compliance-net.html">.NET Server</a></li><li><a href="compliance-go.html">Go Server</a></li><li><a href="compliance-python.html">Python Server</a></li><li><a href="compliance-rust.html">Rust Server</a></li><li><a href="compliance-java.html">Java Server</a></li>
+</ul>
 </body>
 </html>

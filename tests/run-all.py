@@ -742,12 +742,23 @@ _SERVER_DISPLAY = {
 
 
 def _count_tck_outcomes(results_dir: Path) -> tuple:
-    """Count pass/fail/skip from TCK *_results.json files, grouped by test function.
+    """Count pass/fail/skip from TCK result files.
 
-    Grouping mirrors generate_compliance.py: each test function is counted once
-    using the worst outcome across transports (error > failed > skipped > passed).
+    Prefers the new ``compatibility.json`` format (per-requirement statuses)
+    and falls back to legacy ``*_results.json`` files when it is absent.
     Returns (passed, failed, skipped) counts.
     """
+    # --- New format: compatibility.json ---
+    compat_path = results_dir / "compatibility.json"
+    if compat_path.exists():
+        data = json.loads(compat_path.read_text(encoding="utf-8"))
+        per_req = data.get("per_requirement", {})
+        passed = sum(1 for r in per_req.values() if r.get("status") == "PASS")
+        failed = sum(1 for r in per_req.values() if r.get("status") == "FAIL")
+        skipped = sum(1 for r in per_req.values() if r.get("status") == "SKIP")
+        return passed, failed, skipped
+
+    # --- Legacy format: *_results.json ---
     rank = {"error": 0, "failed": 1, "skipped": 2, "passed": 3}
     grouped: dict[tuple, str] = {}
 
@@ -790,6 +801,9 @@ def _update_index_tck_stats(docs_dir: Path, tck_dir: Path):
     for server_id in TCK_SERVERS:
         results_dir = tck_dir / server_id
         result_files = list(results_dir.glob("*_results.json")) if results_dir.is_dir() else []
+        compat_file = results_dir / "compatibility.json"
+        if compat_file.exists():
+            result_files.append(compat_file)
         if not result_files:
             continue
 

@@ -44,26 +44,21 @@
 </head>
 <body>
 <h1>AgentBin A2A Report Card</h1>
-<p class="subtitle">Generated 2026-05-03 17:01 UTC &bull; Target: <code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
+<p class="subtitle">Generated 2026-05-03 17:26 UTC &bull; Target: <code>https://agentbin.greensmoke-1163cb63.eastus.azurecontainerapps.io</code></p>
 
 <div class="client-section">
   <div class="client-header">
     <span class="client-name">&#9726; .NET</span>
     <span class="client-sdk">A2A 1.0.0-preview2</span>
-    <span class="client-score" style="color:#f85149">43/62</span>
+    <span class="client-score" style="color:#f85149">56/62</span>
   </div>
   <div class="binding-group">
     <div class="binding-label">JSON-RPC</div>
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">events=3, artifact=False, completed=True</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step1=InputRequired, step2=Working, step3=Working</td><td class="col-known">&mdash;</td></tr>
       <tr class="known-row"><td class="col-id"><code>jsonrpc/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">The operation was canceled.</td><td class="col-known">Known: SubscribeToTask returns 'Task is in a terminal state' — server-side issue with resubscription to completed tasks.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">ctx1=e80508d6-7f7e-4bf7-b0dd-644c09cc1062, ctx2=6dae0e81-2dee-4204-b280-9f541ec5a3ca</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">cannot subscribe to a task in terminal state</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">authentication required for extended agent card</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>jsonrpc/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -72,14 +67,9 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="unknown-row"><td class="col-id"><code>rest/echo-send-message</code></td><td class="col-name">Echo Send Message</td><td class="col-detail">text=</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-streaming</code></td><td class="col-name">Streaming</td><td class="col-detail">events=3, artifact=False, completed=True</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-multi-turn</code></td><td class="col-name">Multi-Turn</td><td class="col-detail">step1=InputRequired, step2=Working, step3=Working</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">taskId=adbabef2-cfcd-415d-84b6-259be2247c61, events=0</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-to-task</code></td><td class="col-name">SubscribeToTask</td><td class="col-detail">The operation was canceled.</td><td class="col-known">&mdash;</td></tr>
       <tr class="known-row"><td class="col-id"><code>rest/error-subscribe-not-found</code></td><td class="col-name">Subscribe Not Found</td><td class="col-detail">expected error, got events</td><td class="col-known">Known: REST subscribe returns events instead of NotFound error. Server-side issue with REST SSE error handling for non-existent tasks.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/multi-turn-context-preserved</code></td><td class="col-name">Context Preserved</td><td class="col-detail">ctx1=718106ec-9a6c-44ea-996c-9c61e148402d, ctx2=ff517f42-3d4f-4af6-a24f-6a88d977140f</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">taskId=6eb9eb58-f4c2-4dc8-9a85-2e57b9d9a41e, events=0, stream ended without terminal state (possible hang/timeout)</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>rest/spec-extended-card</code></td><td class="col-name">Extended Agent Card</td><td class="col-detail">HTTP 401: authentication required for extended agent card</td><td class="col-known">&mdash;</td></tr>
+      <tr class="unknown-row"><td class="col-id"><code>rest/subscribe-after-stream-disconnect</code></td><td class="col-name">subscribe-after-stream-disconnect</td><td class="col-detail">timeout — SubscribeToTaskAsync hung (a2a-dotnet#340)</td><td class="col-known">&mdash;</td></tr>
       </tbody>
     </table>
   </div>
@@ -88,10 +78,7 @@
     <table>
       <thead><tr><th class="col-id">Test ID</th><th class="col-name">Test Name</th><th class="col-detail">Failure Detail</th><th class="col-known">Known Issue</th></tr></thead>
       <tbody>
-      <tr class="known-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">HTTP request failed</td><td class="col-known">Known: .NET SDK rejects v0.3 agent card — missing 'supportedInterfaces'. V1.0 SDK cannot parse v0.3 agent cards that lack supportedInterfaces field.</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-send-message</code></td><td class="col-name">v0.3 Send Message</td><td class="col-detail">SDK error: Response status code does not indicate success: 404 (Not Found).</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-task-lifecycle</code></td><td class="col-name">v0.3 Task Lifecycle</td><td class="col-detail">SDK error: Response status code does not indicate success: 404 (Not Found).</td><td class="col-known">&mdash;</td></tr>
-      <tr class="unknown-row"><td class="col-id"><code>v03/spec03-streaming</code></td><td class="col-name">v0.3 Streaming</td><td class="col-detail">SDK error: Response status code does not indicate success: 404 (Not Found).</td><td class="col-known">&mdash;</td></tr>
+      <tr class="known-row"><td class="col-id"><code>v03/spec03-agent-card</code></td><td class="col-name">v0.3 Agent Card</td><td class="col-detail">Failed to parse JSON: JSON deserialization for type 'A2A.AgentCard' was missing required properties including: 'supportedInterfaces'.</td><td class="col-known">Known: .NET SDK rejects v0.3 agent card — missing 'supportedInterfaces'. V1.0 SDK cannot parse v0.3 agent cards that lack supportedInterfaces field.</td></tr>
       </tbody>
     </table>
   </div>

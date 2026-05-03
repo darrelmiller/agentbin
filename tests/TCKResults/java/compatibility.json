@@ -1,11 +1,11 @@
 {
   "summary": {
-    "timestamp": "2026-04-10T18:49:30.584652+00:00",
+    "timestamp": "2026-05-03T17:13:40.523369+00:00",
     "sut_url": "http://localhost:5000/spec",
     "spec_version": "",
-    "overall_compatibility": "94.9%",
-    "must_compatibility": "94.5%",
-    "should_compatibility": "100.0%",
+    "overall_compatibility": "97.6%",
+    "must_compatibility": "100.0%",
+    "should_compatibility": "71.4%",
     "may_compatibility": "100.0%"
   },
   "per_requirement": {
@@ -248,6 +248,22 @@
         "tests/compatibility/core_operations/test_data_model.py::TestTimestampFormat::test_timestamps_are_iso8601_utc"
       ]
     },
+    "DM-SERIAL-005": {
+      "level": "SHOULD",
+      "status": "FAIL",
+      "transports": {
+        "jsonrpc": "FAIL",
+        "http_json": "FAIL"
+      },
+      "errors": [
+        "Server rejected request with unrecognized fields: Invalid request content: tckUnknownField in message lf.a2a.v1.Message. Please verify the request matches the expected schema for this method.",
+        "Server rejected request with unrecognized fields: HTTP 422"
+      ],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_data_model.py::TestIgnoreUnrecognizedFields::test_extra_fields_ignored_jsonrpc",
+        "tests/compatibility/core_operations/test_data_model.py::TestIgnoreUnrecognizedFields::test_extra_fields_ignored_rest"
+      ]
+    },
     "CORE-ERR-001": {
       "level": "MUST",
       "status": "PASS",
@@ -296,6 +312,19 @@
       "errors": [],
       "test_ids": [
         "tests/compatibility/core_operations/test_error_handling.py::TestCapabilityStreaming::test_streaming_not_supported_jsonrpc"
+      ]
+    },
+    "CORE-CAP-004": {
+      "level": "MUST",
+      "status": "SKIPPED",
+      "transports": {
+        "jsonrpc": "SKIPPED",
+        "http_json": "SKIPPED"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_error_handling.py::TestCapabilityExtensionRequired::test_missing_required_extension_returns_error_http_json",
+        "tests/compatibility/core_operations/test_error_handling.py::TestCapabilityExtensionRequired::test_missing_required_extension_returns_error_jsonrpc"
       ]
     },
     "CORE-CAP-003": {
@@ -376,16 +405,11 @@
     },
     "JSONRPC-ERR-003": {
       "level": "MUST",
-      "status": "FAIL",
+      "status": "PASS",
       "transports": {
-        "jsonrpc": "FAIL"
+        "jsonrpc": "PASS"
       },
-      "errors": [
-        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\jsonrpc\\\\test_error_info.py', 77, 'Skipped: error.data is absent')",
-        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\jsonrpc\\\\test_error_info.py', 108, 'Skipped: error.data is not an array')",
-        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\jsonrpc\\\\test_error_info.py', 139, 'Skipped: error.data is not an array')",
-        "('D:\\\\github\\\\a2aproject\\\\a2a-tck\\\\tests\\\\compatibility\\\\jsonrpc\\\\test_error_info.py', 164, 'Skipped: error.data is not an array')"
-      ],
+      "errors": [],
       "test_ids": [
         "tests/compatibility/core_operations/test_error_handling.py::TestJsonRpcErrorStructure::test_error_data_contains_error_info",
         "tests/compatibility/jsonrpc/test_error_info.py::TestJsonRpcErrorInfo::test_data_contains_error_info",
@@ -585,6 +609,51 @@
         "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationCrud::test_delete_is_idempotent[jsonrpc]"
       ]
     },
+    "PUSH-DELIVER-001": {
+      "level": "MUST",
+      "status": "SKIPPED",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "SKIPPED",
+        "http_json": "SKIPPED"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_includes_auth[grpc]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_includes_auth[http_json]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_includes_auth[jsonrpc]"
+      ]
+    },
+    "PUSH-DELIVER-002": {
+      "level": "MUST",
+      "status": "SKIPPED",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "SKIPPED",
+        "http_json": "SKIPPED"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_at_least_once[grpc]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_at_least_once[http_json]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_at_least_once[jsonrpc]"
+      ]
+    },
+    "PUSH-DELIVER-003": {
+      "level": "MUST",
+      "status": "SKIPPED",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "SKIPPED",
+        "http_json": "SKIPPED"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_payload_format[grpc]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_payload_format[http_json]",
+        "tests/compatibility/core_operations/test_push_notifications.py::TestPushNotificationDelivery::test_delivery_payload_format[jsonrpc]"
+      ]
+    },
     "CORE-SEND-001": {
       "level": "MUST",
       "status": "PASS",
@@ -598,27 +667,6 @@
         "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-001-grpc]",
         "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-001-http_json]",
         "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-001-jsonrpc]"
-      ]
-    },
-    "CORE-SEND-002": {
-      "level": "MUST",
-      "status": "FAIL",
-      "transports": {
-        "grpc": "SKIPPED",
-        "jsonrpc": "PASS",
-        "http_json": "PASS"
-      },
-      "errors": [
-        "Expected UnsupportedOperationError but operation succeeded",
-        "Expected UnsupportedOperationError but operation succeeded"
-      ],
-      "test_ids": [
-        "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-002-grpc]",
-        "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-002-http_json]",
-        "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-002-jsonrpc]",
-        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[grpc]",
-        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[http_json]",
-        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[jsonrpc]"
       ]
     },
     "CORE-SEND-003": {
@@ -863,16 +911,13 @@
     },
     "CORE-MULTI-004": {
       "level": "MUST",
-      "status": "FAIL",
+      "status": "PASS",
       "transports": {
         "grpc": "SKIPPED",
-        "jsonrpc": "FAIL",
-        "http_json": "FAIL"
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
       },
-      "errors": [
-        "Expected TaskNotFoundError but operation succeeded",
-        "Expected TaskNotFoundError but operation succeeded"
-      ],
+      "errors": [],
       "test_ids": [
         "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-MULTI-004-grpc]",
         "tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-MULTI-004-http_json]",
@@ -971,6 +1016,99 @@
         "tests/compatibility/core_operations/test_stream_ordering.py::TestStreamEventOrdering::test_streaming_event_ordering[jsonrpc]"
       ]
     },
+    "CORE-HIST-001": {
+      "level": "SHOULD",
+      "status": "PASS",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroGetTask::test_get_task_history_length_zero[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroGetTask::test_get_task_history_length_zero[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroGetTask::test_get_task_history_length_zero[jsonrpc]"
+      ]
+    },
+    "CORE-HIST-002": {
+      "level": "MUST",
+      "status": "PASS",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthLimit::test_get_task_history_does_not_exceed_limit[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthLimit::test_get_task_history_does_not_exceed_limit[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthLimit::test_get_task_history_does_not_exceed_limit[jsonrpc]"
+      ]
+    },
+    "CORE-HIST-003": {
+      "level": "SHOULD",
+      "status": "FAIL",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "FAIL",
+        "http_json": "FAIL"
+      },
+      "errors": [
+        "SendMessage with historyLength=0 returned 2 history message(s), expected none",
+        "SendMessage with historyLength=0 returned 2 history message(s), expected none"
+      ],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroSendMessage::test_send_message_history_length_zero[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroSendMessage::test_send_message_history_length_zero[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryLengthZeroSendMessage::test_send_message_history_length_zero[jsonrpc]"
+      ]
+    },
+    "CORE-HIST-004": {
+      "level": "MAY",
+      "status": "PASS",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryPersistence::test_get_task_returns_history[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryPersistence::test_get_task_returns_history[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryPersistence::test_get_task_returns_history[jsonrpc]"
+      ]
+    },
+    "CORE-HIST-005": {
+      "level": "SHOULD",
+      "status": "PASS",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryOrdering::test_history_messages_in_chronological_order[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryOrdering::test_history_messages_in_chronological_order[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryOrdering::test_history_messages_in_chronological_order[jsonrpc]"
+      ]
+    },
+    "CORE-HIST-006": {
+      "level": "SHOULD",
+      "status": "PASS",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryContent::test_history_content_matches_sent_messages[grpc]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryContent::test_history_content_matches_sent_messages[http_json]",
+        "tests/compatibility/core_operations/test_task_history.py::TestHistoryContent::test_history_content_matches_sent_messages[jsonrpc]"
+      ]
+    },
     "CORE-GET-001": {
       "level": "MUST",
       "status": "PASS",
@@ -1014,6 +1152,21 @@
         "tests/compatibility/core_operations/test_task_lifecycle.py::TestCancelTask::test_cancel_terminal_task_returns_error[grpc]",
         "tests/compatibility/core_operations/test_task_lifecycle.py::TestCancelTask::test_cancel_terminal_task_returns_error[http_json]",
         "tests/compatibility/core_operations/test_task_lifecycle.py::TestCancelTask::test_cancel_terminal_task_returns_error[jsonrpc]"
+      ]
+    },
+    "CORE-SEND-002": {
+      "level": "MUST",
+      "status": "PASS",
+      "transports": {
+        "grpc": "SKIPPED",
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
+      },
+      "errors": [],
+      "test_ids": [
+        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[grpc]",
+        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[http_json]",
+        "tests/compatibility/core_operations/test_task_lifecycle.py::TestMultiTurn::test_send_message_to_terminal_task[jsonrpc]"
       ]
     },
     "CORE-MULTI-005": {
@@ -1063,16 +1216,13 @@
     },
     "STREAM-SUB-003": {
       "level": "MUST",
-      "status": "FAIL",
+      "status": "PASS",
       "transports": {
         "grpc": "SKIPPED",
-        "jsonrpc": "FAIL",
-        "http_json": "FAIL"
+        "jsonrpc": "PASS",
+        "http_json": "PASS"
       },
-      "errors": [
-        "SubscribeToTask on a terminal task should return an error, but succeeded",
-        "SubscribeToTask on a terminal task should return an error, but succeeded"
-      ],
+      "errors": [],
       "test_ids": [
         "tests/compatibility/core_operations/test_task_lifecycle.py::TestSubscribeLifecycle::test_subscribe_rejects_terminal_task[grpc]",
         "tests/compatibility/core_operations/test_task_lifecycle.py::TestSubscribeLifecycle::test_subscribe_rejects_terminal_task[http_json]",
@@ -1295,41 +1445,6 @@
         "tests/compatibility/http_json/test_http_status.py::TestHttpJsonStatusCodes::test_version_not_supported_returns_400"
       ]
     },
-    "CORE-CAP-004": {
-      "level": "MUST",
-      "status": "NOT TESTED",
-      "transports": {},
-      "errors": [],
-      "test_ids": []
-    },
-    "DM-SERIAL-005": {
-      "level": "SHOULD",
-      "status": "NOT TESTED",
-      "transports": {},
-      "errors": [],
-      "test_ids": []
-    },
-    "PUSH-DELIVER-001": {
-      "level": "MUST",
-      "status": "NOT TESTED",
-      "transports": {},
-      "errors": [],
-      "test_ids": []
-    },
-    "PUSH-DELIVER-002": {
-      "level": "MUST",
-      "status": "NOT TESTED",
-      "transports": {},
-      "errors": [],
-      "test_ids": []
-    },
-    "PUSH-DELIVER-003": {
-      "level": "MUST",
-      "status": "NOT TESTED",
-      "transports": {},
-      "errors": [],
-      "test_ids": []
-    },
     "CARD-SIGN-001": {
       "level": "MUST",
       "status": "NOT TESTED",
@@ -1514,22 +1629,22 @@
       "skipped": 0
     },
     "grpc": {
-      "total": 64,
+      "total": 72,
       "passed": 0,
       "failed": 0,
-      "skipped": 64
+      "skipped": 72
     },
     "jsonrpc": {
-      "total": 91,
-      "passed": 74,
-      "failed": 7,
-      "skipped": 10
+      "total": 101,
+      "passed": 85,
+      "failed": 2,
+      "skipped": 14
     },
     "http_json": {
-      "total": 86,
-      "passed": 75,
-      "failed": 3,
-      "skipped": 8
+      "total": 96,
+      "passed": 82,
+      "failed": 2,
+      "skipped": 12
     }
   },
   "agent_card": {
